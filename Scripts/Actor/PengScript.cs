@@ -44,9 +44,9 @@ namespace PengScript
         //脚本ID
         public int scriptID;
         //脚本流的入脚本ID
-        public int scriptFlowLastID = -1;
+        public int scriptFlowInID = -1;
         //脚本流的出脚本ID
-        public int scriptFlowNextID = -1;
+        public int scriptFlowOutID = -1;
         //脚本此次执行的次数
         public int thisRunFrame;
         //脚本总共执行的次数
