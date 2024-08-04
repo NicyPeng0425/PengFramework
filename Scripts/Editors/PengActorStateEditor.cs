@@ -16,30 +16,77 @@ public class PengActorStateEditorWindow : EditorWindow
     public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
     public PengNodeConnection selectingPoint;
     private Vector2 gridOffset;
+    private float nodeMapScale = 1f;
+    public Rect timeLineRect;
+    public Rect sideBarRect;
+
+    float sideBarWidth = 250f;
+    float timelineHeight = 350f;
+
+
+    //当前编辑状态的信息缓存
+    public Vector2 timelineScrollPos;
+    public int currentFrameLength;
+    public int currentTrackLength;
+    public int currentSelectedFrame;
+    public int currentSelectedTrack;
+    public List<PengTrack> tracks = new List<PengTrack>();
+    //
+
 
     [MenuItem("PengFramework/StateEditor")]
     static void Init()
     {
         PengActorStateEditorWindow window = (PengActorStateEditorWindow)EditorWindow.GetWindow(typeof(PengActorStateEditorWindow));
-        window.position = new Rect(100, 100, 1000, 800);
+        window.position = new Rect(100, 100, 1200, 700);
         window.titleContent = new GUIContent("彭框架角色状态编辑器");
     }
 
     private void OnEnable()
     {
-        nodes.Add(new PengNode(new Vector2(0, 0), "默认节点", this));
+        nodes.Add(new PengNode(new Vector2(0, 0), "默认节点", this, PengNode.NodeType.Event));
+
+        UpdateCurrentStateInfo();
+        gridOffset = new Vector2(300f, 415f);
+        DragAllNodes(new Vector2(300f, 415f));
     }
 
     private void OnGUI()
     {
+        GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
+        timeLineRect = new Rect(0, 0, position.width, timelineHeight);
+        sideBarRect = new Rect(0, 0, sideBarWidth, position.height);
+        
         DrawNodeGraph(nodes);
         ProcessEvents(Event.current);
         DrawPendingConnectionLine(Event.current);
+
+        GUI.Box(new Rect(0, 0, position.width, timelineHeight), "", style);
+        GUI.Box(new Rect(0, 0, sideBarWidth, position.height), "", style);
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        EditorGUILayout.BeginVertical(GUILayout.Height(position.height), GUILayout.Width(sideBarWidth));
+
+        PengEditorMain.DrawPengFrameworkIcon("角色状态编辑器");
+
+        EditorGUILayout.EndVertical();
+
+
+        EditorGUILayout.BeginVertical(GUILayout.Height(timelineHeight), GUILayout.Width(position.width));
+
+        DrawTimeLine();
+        EditorGUILayout.EndVertical();
+
+
+        EditorGUILayout.EndHorizontal();
 
         if (GUI.changed)
         {
             Repaint();
         }
+        
     }
 
     public static void CreateStateXML(string id, string stateName, int length)
@@ -66,10 +113,78 @@ public class PengActorStateEditorWindow : EditorWindow
 
     }
 
+    public void DrawTimeLine()
+    {
+        EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(timelineHeight));
+
+        EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(50));
+
+        DrawTimeLineTitle();
+
+        EditorGUILayout.EndVertical();
+
+        timelineScrollPos = EditorGUILayout.BeginScrollView(timelineScrollPos, GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(timelineHeight - 50));
+
+        GUIStyle style = new GUIStyle("GroupBox");
+        GUIStyle pointer = new GUIStyle("MeBlendPosition");
+        
+
+        EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 50), GUILayout.Height(20));
+        GUILayout.Space(50);
+        GUILayout.Box("", style, GUILayout.Width(currentFrameLength * 8f), GUILayout.Height(20));
+        GUILayout.Space( - currentFrameLength * 8f);
+        if(GUILayout.Button("", pointer, GUILayout.Height(20)))
+        {
+
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+    }
+
+    public void DrawSideBar()
+    {
+
+    }
+
+    public void DrawTimeLineTitle()
+    {
+        EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(40));
+
+        EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
+        GUILayout.Label("PengActor ID：");
+        GUILayout.Space(10);
+        GUILayout.Label("100425");
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
+        if(GUILayout.Button("创建轨道", GUILayout.Width(100)))
+        {
+            
+        }
+
+        //enumpop
+
+        //stateName
+
+        //stateLoop
+
+        //stateLength
+
+        //save
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
+
+    }    
+
     public void DrawNodeGraph(List<PengNode> nodes)
     {
-        DrawGrid(20, 0.2f, Color.gray);
-        DrawGrid(100, 0.4f, Color.gray);
+        DrawGrid(20 * nodeMapScale, 0.2f, Color.gray);
+        DrawGrid(100 * nodeMapScale, 0.4f, Color.gray);
         DrawNodes();
         DrawConnectionLines();
     }
@@ -98,13 +213,20 @@ public class PengActorStateEditorWindow : EditorWindow
                 }
                 break;
             case EventType.MouseDrag:
-                if (e.button == 0)
+                if (e.button == 0 && !timeLineRect.Contains(e.mousePosition) && !sideBarRect.Contains(e.mousePosition))
                 {
                     DragAllNodes(e.delta);
                     gridOffset += e.delta;
                     GUI.changed = true;
                 }
-                break;
+                break;/*
+            case EventType.ScrollWheel:
+                if (e.button == 2 && !timeLineRect.Contains(e.mousePosition) && !sideBarRect.Contains(e.mousePosition))
+                {
+                    nodeMapScale += e.delta.y;
+                    GUI.changed = true;
+                }
+                break;*/
         }
     }
 
@@ -117,7 +239,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessAddNode(Vector2 mousePos)
     {
-        nodes.Add(new PengNode(mousePos, "默认节点", this));
+        nodes.Add(new PengNode(mousePos, "默认节点", this, PengNode.NodeType.Action));
     }
 
     private void DrawNodes()
@@ -209,4 +331,12 @@ public class PengActorStateEditorWindow : EditorWindow
         Handles.EndGUI();
     }
 
+    public void UpdateCurrentStateInfo() 
+    {
+        currentFrameLength = 300;
+        currentSelectedFrame = 50;
+        currentSelectedTrack = 5;
+        currentTrackLength = 8;
+        timelineScrollPos = Vector2.zero;
+    }
 }

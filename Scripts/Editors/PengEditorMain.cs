@@ -67,14 +67,14 @@ public class PengEditorMain : EditorWindow
         GUIStyle style = new GUIStyle("Box");
         style.alignment = TextAnchor.MiddleCenter;
         style.fontStyle = FontStyle.Bold;
-        style.fontSize = 20;
+        style.fontSize = 12;
         Texture2D logo = new Texture2D(52, 42);
         byte[] logoData = File.ReadAllBytes(Application.dataPath + "/PengFramework/Logo/PengFWLogoSmall.png");
         logo.LoadImage(logoData);
         EditorGUI.DrawPreviewTexture(new Rect(4, 4, 52, 42), logo);
         GUILayout.Space(70);
         EditorGUILayout.BeginVertical();
-        GUILayout.Space(11);
+        GUILayout.Space(13);
         GUILayout.Box(new GUIContent("Åí¿ò¼Ü" + title), style);
         EditorGUILayout.EndVertical();
         EditorGUILayout.EndHorizontal();

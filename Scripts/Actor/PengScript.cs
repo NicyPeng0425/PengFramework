@@ -7,6 +7,8 @@ namespace PengScript
     /// <summary>
     /// 伟大的彭脚本！
     /// </summary>
+    /// 
+
     public enum PengScriptType
     { 
         DebugLogText,
@@ -17,14 +19,6 @@ namespace PengScript
         输出文本,
     }
 
-    public enum ExecTime
-    {
-        Enter,
-        Update,
-        Exit,
-    }
-
-
     public class BaseScript
     {
         //脚本名称，显示在编辑器上
@@ -33,14 +27,8 @@ namespace PengScript
         public string meaning = "脚本基类";
         //脚本的所有者
         public PengActor actor;
-        //脚本的执行时间
-        public ExecTime execTime;
         //脚本类型
         public PengScriptType type;
-        //脚本开始帧
-        public int time;
-        //脚本结束帧
-        public int end;
         //脚本ID
         public int scriptID;
         //脚本流的入脚本ID

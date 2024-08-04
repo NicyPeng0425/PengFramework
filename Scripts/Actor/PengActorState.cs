@@ -1,4 +1,3 @@
-using PengScript;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
@@ -10,7 +9,7 @@ public class PengActorState : IPengActorState
     public PengActor actor;
     public int length;
     public bool isLoop;
-    List<BaseScript> scripts = new List<BaseScript>();
+    public List<PengTrack> tracks = new List<PengTrack>();
 
     public int currentFrameNum;
 

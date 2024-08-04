@@ -24,15 +24,15 @@ public class PengNodeConnection
 
     public void Draw()
     {
-        rect.y = node.rect.y + node.rect.height * 0.22f - rect.height * 0.5f;
+        rect.y = node.rect.y + node.rect.height * 0.5f - rect.height * 0.5f + 1f;
 
         switch (type)
         {
             case ConnectionPointType.In:
-                rect.x = node.rect.x - rect.width;
+                rect.x = node.rect.x - rect.width + 5f;
                 break;
             case ConnectionPointType.Out:
-                rect.x = node.rect.x + node.rect.width - 2f;
+                rect.x = node.rect.x + node.rect.width - 7f;
                 break;
         }
 
