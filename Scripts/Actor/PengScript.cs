@@ -35,37 +35,35 @@ namespace PengScript
         public int scriptFlowInID = -1;
         //脚本流的出脚本ID
         public int scriptFlowOutID = -1;
-        //脚本此次执行的次数
-        public int thisRunFrame;
-        //脚本总共执行的次数
-        public int totalRunFrame;
         //脚本是否启用
         public bool enabled;
+        public PengTrack track;
 
-        //仅在开始执行时执行一次
-        public virtual void FirstExecute()
+        //执行一次
+        public virtual void Execute()
         {
-            thisRunFrame = 1;
-            totalRunFrame++;
+            
         }
 
-        //脚本持续期间，除了开始帧与结束帧，每个动作帧都执行一次
-        public virtual void ContinueExecute()
+        public bool ScriptFlowNext()
         {
-            thisRunFrame++;
-            totalRunFrame++;
-        }
-
-        //脚本持续的最后一帧执行一次
-        public virtual void EndExecute()
-        {
-            thisRunFrame++;
-            totalRunFrame++;
-        }
-
-        public void ScriptFlowNext()
-        {
-            //执行下一个脚本，还没写
+            if (scriptFlowOutID > 0)
+            {
+                for (int i = 0; i < track.scripts.Count; i++)
+                {
+                    if (track.scripts[i].scriptID == scriptFlowOutID)
+                    {
+                        track.scripts[i].Execute();
+                        track.scripts[i].ScriptFlowNext();
+                        break;
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public static Vector3 ParseStringToVector3(string s)

@@ -4,7 +4,21 @@ using UnityEngine;
 
 public class PengActor : MonoBehaviour
 {
+
     public PengGameManager game;
+
+
+    public static string initalName = "Idle";
+
+    //运行时动态数据
+    public string currentName;
+    public string lastName;
+    public Dictionary<string, IPengActorState> actorStates;
+    public IPengActorState current;
+    public IPengActorState last;
+    public float pauseTime;
+    public bool alive = true;
+
 
     private void Awake()
     {
@@ -20,6 +34,19 @@ public class PengActor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        current.OnUpdate();
+    }
+
+    public void TransState(string name)
+    {
+        if (current != null)
+        {
+            lastName = currentName;
+            last = current;
+            last.OnExit();
+        }
+        currentName = name;
+        current = actorStates[name];
+        current.OnEnter();
     }
 }
