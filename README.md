@@ -10,6 +10,12 @@ A framework for the development of action games.
 4. 让全中国的战斗策划都有Demo可做！
 5. 让Unity再次伟大！
 
+# 使用方式
+1. 创建一个URP的3D项目。
+2. 在你的项目中引入Cinemachine和Input System。
+3. 将此项目克隆到Asset文件夹。例如：C:nicy/PengFrameworkSample/Asset/PengFramework
+4. 打开启动器，进行全局配置后，开始使用。
+
 # 联系我
 
 B站：@Nicy彭彭
