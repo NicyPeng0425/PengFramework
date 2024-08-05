@@ -46,6 +46,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public int dragObject = -1;
     public int dragTrackIndex = -1;
     public bool isHorizontalBarDragging = false;
+    public bool isVerticalBarDragging = false;
     public List<PengTrack> tracks = new List<PengTrack>();
     //
 
@@ -84,24 +85,17 @@ public class PengActorStateEditorWindow : EditorWindow
         DrawTimelineMap();
 
         //»æÖÆTimeline Title
-        GUI.Box(new Rect(0, 0, position.width, 45), "", style);
         GUI.Box(new Rect(0, 0, sideBarWidth, position.height), "", style);
 
         EditorGUILayout.BeginHorizontal();
 
-
         EditorGUILayout.BeginVertical(GUILayout.Height(position.height), GUILayout.Width(sideBarWidth));
-
         PengEditorMain.DrawPengFrameworkIcon("½ÇÉ«×´Ì¬±à¼­Æ÷");
-
         EditorGUILayout.EndVertical();
-
 
         EditorGUILayout.BeginVertical(GUILayout.Height(timelineHeight), GUILayout.Width(position.width));
-
         DrawTimeLine();
         EditorGUILayout.EndVertical();
-
 
         EditorGUILayout.EndHorizontal();
 
@@ -109,7 +103,6 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             Repaint();
         }
-        
     }
 
     public static void CreateStateXML(string id, string stateName, int length)
@@ -164,206 +157,188 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             for (int i = 0; i < tracks.Count; i++)
             {
-                Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 70 + 27 * i, timelineLength, 14);
-                GUI.Box(rectBG, "", style);
-
-                Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 68 + 27 * i, 90, 18);
-                if(GUI.Button(rectButton, tracks[i].name))
-                {
-                    currentSelectedTrack = i;
-                }
-
-                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 70 + 27 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
-                GUI.Box(rectTrack, "", style1);
-
-                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 69 + 27 * i, 6, 16);
-                GUI.Box(rectLeft, "", style2);
-
-                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 69 + 27 * i, 6, 16);
-                GUI.Box(rectRight, "", style2);
-
+                Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 70 + 27 * i - timelineScrollPos.y, timelineLength, 14);
+                Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 68 + 27 * i - timelineScrollPos.y, 90, 18);
+                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 70 + 27 * i - timelineScrollPos.y, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
+                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 69 + 27 * i - timelineScrollPos.y, 6, 16);
+                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 69 + 27 * i - timelineScrollPos.y, 6, 16);
+                
                 Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
                 Rect rectLeftCursor = new Rect(rectLeft.x - 3, rectLeft.y, rectLeft.width + 6, rectLeft.height);
                 Rect rectRightCursor = new Rect(rectRight.x - 3, rectRight.y, rectRight.width + 6, rectRight.height);
-
                 Rect rectLeftFrame = new Rect(rectLeft.x, rectLeft.y + rectLeft.height - 2, 80, 80);
                 Rect rectRightFrame = new Rect(rectRight.x, rectRight.y + rectRight.height - 2, 80, 80);
 
-                EditorGUIUtility.AddCursorRect(rectTrackCursor, MouseCursor.Link);
-                EditorGUIUtility.AddCursorRect(rectLeftCursor, MouseCursor.SlideArrow);
-                EditorGUIUtility.AddCursorRect(rectRightCursor, MouseCursor.SlideArrow);
-
-                GUI.Box(rectLeftFrame, tracks[i].start.ToString(), style3);
-                GUI.Box(rectRightFrame, tracks[i].end.ToString(), style3);
-
-                if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && rectBG.Contains(Event.current.mousePosition)) 
+                if (timelineHeight >= rectButton.y + rectButton.height)
                 {
-                    currentDeleteTrack = i;
-                    GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent("É¾³ý¹ìµÀ"), false, () => { DeleteTrack(); });
-                    menu.ShowAsContext();
-                    Event.current.Use();
-                }
-                
-                if (Event.current.type == EventType.MouseDown && Event.current.button == 0 &&
-                    (rectTrackCursor.Contains(Event.current.mousePosition)||
-                    rectLeftCursor.Contains(Event.current.mousePosition)||
-                    rectRightCursor.Contains(Event.current.mousePosition)))
-                {
-                    if(rectTrackCursor.Contains(Event.current.mousePosition))
+                    GUI.Box(rectBG, "", style);
+                    if (GUI.Button(rectButton, tracks[i].name))
                     {
-                        dragObject = 1;
+                        currentSelectedTrack = i;
                     }
-                    else if(rectLeftCursor.Contains(Event.current.mousePosition))
-                    {
-                        dragObject = 0;
-                    }
-                    else if(rectRightCursor.Contains(Event.current.mousePosition))
-                    {
-                        dragObject = 2;
-                    }
-                    dragTrackIndex = i;
-                    isDragging = true;
-                    mouseXDelta = 0;
-                    GUI.changed = true;
-                    Event.current.Use();
-                }
+                    GUI.Box(rectTrack, "", style1);
+                    GUI.Box(rectLeft, "", style2);
+                    GUI.Box(rectRight, "", style2);
 
-                if(Event.current.type == EventType.MouseUp)
-                {
-                    isDragging = false;
-                }
+                    EditorGUIUtility.AddCursorRect(rectTrackCursor, MouseCursor.Link);
+                    EditorGUIUtility.AddCursorRect(rectLeftCursor, MouseCursor.SlideArrow);
+                    EditorGUIUtility.AddCursorRect(rectRightCursor, MouseCursor.SlideArrow);
 
-                if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
-                {
-                    switch (dragObject)
+                    if(timelineHeight + 65 >= rectLeftFrame.y + rectLeftFrame.height)
+                    { 
+                        GUI.Box(rectLeftFrame, tracks[i].start.ToString(), style3);
+                        GUI.Box(rectRightFrame, tracks[i].end.ToString(), style3);
+                    }
+
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && rectBG.Contains(Event.current.mousePosition))
                     {
-                        case 0:
-                            if(!isDragging)
-                            {
-                                break;
-                            }
-                            mouseXDelta += Event.current.delta.x;
-                            while (Mathf.Abs(mouseXDelta) >= 10)
-                            {
-                                if (mouseXDelta >= 10)
+                        currentDeleteTrack = i;
+                        GenericMenu menu = new GenericMenu();
+                        menu.AddItem(new GUIContent("É¾³ý¹ìµÀ"), false, () => { DeleteTrack(); });
+                        menu.ShowAsContext();
+                        Event.current.Use();
+                    }
+
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0 &&
+                        (rectTrackCursor.Contains(Event.current.mousePosition) ||
+                        rectLeftCursor.Contains(Event.current.mousePosition) ||
+                        rectRightCursor.Contains(Event.current.mousePosition)))
+                    {
+                        if (rectTrackCursor.Contains(Event.current.mousePosition))
+                        {
+                            dragObject = 1;
+                        }
+                        else if (rectLeftCursor.Contains(Event.current.mousePosition))
+                        {
+                            dragObject = 0;
+                        }
+                        else if (rectRightCursor.Contains(Event.current.mousePosition))
+                        {
+                            dragObject = 2;
+                        }
+                        dragTrackIndex = i;
+                        isDragging = true;
+                        mouseXDelta = 0;
+                        GUI.changed = true;
+                        Event.current.Use();
+                    }
+
+                    if (Event.current.type == EventType.MouseUp)
+                    {
+                        isDragging = false;
+                    }
+
+                    if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+                    {
+                        switch (dragObject)
+                        {
+                            case 0:
+                                if (!isDragging)
                                 {
-                                    tracks[dragTrackIndex].start++;
-                                    mouseXDelta -= 10;
-                                    if (tracks[dragTrackIndex].start > tracks[dragTrackIndex    ].end)
-                                    {
-                                        tracks[dragTrackIndex].start--;
-                                    }
+                                    break;
                                 }
-                                else if (mouseXDelta <= -10)
+                                mouseXDelta += Event.current.delta.x;
+                                while (Mathf.Abs(mouseXDelta) >= 10)
                                 {
-                                    tracks[dragTrackIndex].start--;
-                                    mouseXDelta += 10;
-                                    if (tracks[dragTrackIndex].start < 0)
+                                    if (mouseXDelta >= 10)
                                     {
                                         tracks[dragTrackIndex].start++;
+                                        mouseXDelta -= 10;
+                                        if (tracks[dragTrackIndex].start > tracks[dragTrackIndex].end)
+                                        {
+                                            tracks[dragTrackIndex].start--;
+                                        }
                                     }
-                                }
-                            }
-                            Event.current.Use();
-                            break;
-                        case 1:
-                            if (!isDragging)
-                            {
-                                break;
-                            }
-                            mouseXDelta += Event.current.delta.x;
-                            while (Mathf.Abs(mouseXDelta) >= 10)
-                            {
-                                if (mouseXDelta >= 10)
-                                {
-                                    tracks[dragTrackIndex].start++;
-                                    tracks[dragTrackIndex].end++;
-                                    mouseXDelta -= 10;
-                                    if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                    else if (mouseXDelta <= -10)
                                     {
                                         tracks[dragTrackIndex].start--;
-                                        tracks[dragTrackIndex].end--;
+                                        mouseXDelta += 10;
+                                        if (tracks[dragTrackIndex].start < 0)
+                                        {
+                                            tracks[dragTrackIndex].start++;
+                                        }
                                     }
                                 }
-                                else if (mouseXDelta <= -10)
+                                Event.current.Use();
+                                break;
+                            case 1:
+                                if (!isDragging)
                                 {
-                                    tracks[dragTrackIndex].start--;
-                                    tracks[dragTrackIndex].end--;
-                                    mouseXDelta += 10;
-                                    if (tracks[dragTrackIndex].start < 0)
+                                    break;
+                                }
+                                mouseXDelta += Event.current.delta.x;
+                                while (Mathf.Abs(mouseXDelta) >= 10)
+                                {
+                                    if (mouseXDelta >= 10)
                                     {
                                         tracks[dragTrackIndex].start++;
                                         tracks[dragTrackIndex].end++;
+                                        mouseXDelta -= 10;
+                                        if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                        {
+                                            tracks[dragTrackIndex].start--;
+                                            tracks[dragTrackIndex].end--;
+                                        }
                                     }
-                                }
-                            }
-                            Event.current.Use();
-                            break;
-                        case 2:
-                            if (!isDragging)
-                            {
-                                break;
-                            }
-                            mouseXDelta += Event.current.delta.x;
-                            while (Mathf.Abs(mouseXDelta) >= 10)
-                            {
-                                if (mouseXDelta >= 10)
-                                {
-                                    tracks[dragTrackIndex].end++;
-                                    mouseXDelta -= 10;
-                                    if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                    else if (mouseXDelta <= -10)
                                     {
+                                        tracks[dragTrackIndex].start--;
                                         tracks[dragTrackIndex].end--;
+                                        mouseXDelta += 10;
+                                        if (tracks[dragTrackIndex].start < 0)
+                                        {
+                                            tracks[dragTrackIndex].start++;
+                                            tracks[dragTrackIndex].end++;
+                                        }
                                     }
                                 }
-                                else if (mouseXDelta <= -10)
+                                Event.current.Use();
+                                break;
+                            case 2:
+                                if (!isDragging)
                                 {
-                                    tracks[dragTrackIndex].end--;
-                                    mouseXDelta += 10;
-                                    if (tracks[dragTrackIndex].end < tracks[dragTrackIndex].start)
+                                    break;
+                                }
+                                mouseXDelta += Event.current.delta.x;
+                                while (Mathf.Abs(mouseXDelta) >= 10)
+                                {
+                                    if (mouseXDelta >= 10)
                                     {
                                         tracks[dragTrackIndex].end++;
+                                        mouseXDelta -= 10;
+                                        if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                        {
+                                            tracks[dragTrackIndex].end--;
+                                        }
+                                    }
+                                    else if (mouseXDelta <= -10)
+                                    {
+                                        tracks[dragTrackIndex].end--;
+                                        mouseXDelta += 10;
+                                        if (tracks[dragTrackIndex].end < tracks[dragTrackIndex].start)
+                                        {
+                                            tracks[dragTrackIndex].end++;
+                                        }
                                     }
                                 }
-                            }
-                            Event.current.Use();
-                            break;
-                        default:
-                            isDragging = false;
-                            break;
+                                Event.current.Use();
+                                break;
+                            default:
+                                isDragging = false;
+                                break;
+                        }
+                        GUI.changed = true;
                     }
-                    GUI.changed = true;
                 }
             }
         }
 
-    }
+        GUIStyle style7 = new GUIStyle("ObjectPickerPreviewBackground");
+        GUI.Box(new Rect(0, 0, position.width, 68), "", style7);
 
-    public void DeleteTrack()
-    {
-        if(currentDeleteTrack == tracks.Count - 1)
-        {
-            if(tracks.Count != 1 && currentSelectedTrack == tracks.Count - 1)
-            {
-                currentSelectedTrack--;
-            }
-            tracks.RemoveAt(tracks.Count - 1);
-        }
-        else
-        {
-            tracks.RemoveAt(currentDeleteTrack);
-        }
-    }
+        Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
+        GUI.Box(rect, "", style);
 
-    public void DrawSideBar()
-    {
-
-    }
-
-    public void DrawTimeLineTitle()
-    {
-        GUIStyle style = new GUIStyle("LODBlackBox");
         GUIStyle style4 = new GUIStyle("BoldLabel");
         style4.alignment = TextAnchor.UpperLeft;
         style4.normal.textColor = Color.white;
@@ -376,63 +351,6 @@ public class PengActorStateEditorWindow : EditorWindow
         style6.alignment = TextAnchor.UpperLeft;
         style6.normal.textColor = Color.white;
         style6.fontSize = 20;
-        GUIStyle style7 = new GUIStyle("grey_border");
-        GUIStyle style8 = new GUIStyle("Button");
-
-        Rect border1 = new Rect(sideBarWidth + 4, 65, position.width - sideBarWidth - 8, 281);
-        Rect border2 = new Rect(sideBarWidth + 1, 40, position.width - sideBarWidth - 1, 310);
-        
-        Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
-        GUI.Box(rect, "", style);
-
-        if(currentFrameLength * 10f + 100 >= position.width - sideBarWidth)
-        {
-            border1.height -= 16;
-            Rect scrollHorizontal = new Rect(sideBarWidth+2, border1.y + border1.height+2, position.width - sideBarWidth - 4, 15);
-
-            float ratio = (position.width - sideBarWidth) / (currentFrameLength * 10f + 100);
-            Rect scrollHorizontalHandle = new Rect(timelineScrollPos.x + sideBarWidth + 3, scrollHorizontal.y + 2, (scrollHorizontal.width - 2) * ratio, 11);
-
-            EditorGUIUtility.AddCursorRect(scrollHorizontalHandle, MouseCursor.Link);
-
-            GUI.Box(scrollHorizontal, "", style);
-            GUI.Box(scrollHorizontalHandle, "", style8);
-            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && scrollHorizontalHandle.Contains(Event.current.mousePosition))
-            {
-                isHorizontalBarDragging = true;
-                GUI.changed = true;
-                Event.current.Use();
-            }
-
-            if (Event.current.type == EventType.MouseUp || nodeMapRect.Contains(Event.current.mousePosition))
-            {
-                isHorizontalBarDragging = false;
-            }
-
-            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
-            {
-                if (isHorizontalBarDragging)
-                {
-                    timelineScrollPos.x += Event.current.delta.x;
-                    if (timelineScrollPos.x <= 0)
-                    {
-                        timelineScrollPos.x = 0;
-                    }
-                    else if (timelineScrollPos.x >= position.width - sideBarWidth - (scrollHorizontal.width - 2) * ratio - 8)
-                    {
-                        timelineScrollPos.x = position.width - sideBarWidth - (scrollHorizontal.width - 2) * ratio - 8;
-                    }
-                    Event.current.Use();
-                    GUI.changed = true;
-                }
-            }
-        }
-        else
-        {
-            timelineScrollPos.x = 0;
-        }
-        GUI.Box(border1, "", style7);
-        GUI.Box(border2, "", style7);
 
         if (currentFrameLength == 0)
         {
@@ -458,6 +376,134 @@ public class PengActorStateEditorWindow : EditorWindow
                 GUI.Box(pointer, "|", style5);
             }
         }
+
+    }
+
+    public void DeleteTrack()
+    {
+        if(currentDeleteTrack == tracks.Count - 1)
+        {
+            if(tracks.Count != 1 && currentSelectedTrack == tracks.Count - 1)
+            {
+                currentSelectedTrack--;
+            }
+            tracks.RemoveAt(tracks.Count - 1);
+        }
+        else
+        {
+            tracks.RemoveAt(currentDeleteTrack);
+        }
+        GUI.changed = true;
+    }
+
+    public void DrawSideBar()
+    {
+
+    }
+
+    public void DrawTimeLineTitle()
+    {
+        GUIStyle style = new GUIStyle("LODBlackBox");
+        GUIStyle style7 = new GUIStyle("grey_border");
+        GUIStyle style8 = new GUIStyle("Button");
+
+        Rect border1 = new Rect(sideBarWidth + 4, 65, position.width - sideBarWidth - 8, 281);
+        Rect border2 = new Rect(sideBarWidth + 1, 40, position.width - sideBarWidth - 1, 310);
+        
+        if(currentFrameLength * 10f + 150 >= position.width - sideBarWidth)
+        {
+            border1.height -= 16;
+            Rect scrollHorizontal = new Rect(sideBarWidth+2, border1.y + border1.height+2, position.width - sideBarWidth - 4, 15);
+
+            float ratio = (position.width - sideBarWidth) / (currentFrameLength * 10f + 150);
+            Rect scrollHorizontalHandle = new Rect((timelineScrollPos.x / (currentFrameLength * 10f + 150)) * (scrollHorizontal.width - 2) + sideBarWidth + 4, scrollHorizontal.y + 2, (scrollHorizontal.width - 2) * ratio, 11);
+
+            EditorGUIUtility.AddCursorRect(scrollHorizontalHandle, MouseCursor.Link);
+
+            GUI.Box(scrollHorizontal, "", style);
+            GUI.Box(scrollHorizontalHandle, "", style8);
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && scrollHorizontalHandle.Contains(Event.current.mousePosition))
+            {
+                isHorizontalBarDragging = true;
+                GUI.changed = true;
+                Event.current.Use();
+            }
+
+            if (Event.current.type == EventType.MouseUp || nodeMapRect.Contains(Event.current.mousePosition))
+            {
+                isHorizontalBarDragging = false;
+            }
+
+            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+            {
+                if (isHorizontalBarDragging)
+                {
+                    timelineScrollPos.x += (Event.current.delta.x / (position.width - sideBarWidth)) * (currentFrameLength * 10f + 150);
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+            }
+            if (timelineScrollPos.x <= 0)
+            {
+                timelineScrollPos.x = 0;
+            }
+            else if (timelineScrollPos.x >= (currentFrameLength * 10f + 150) - (position.width - sideBarWidth))
+            {
+                timelineScrollPos.x = (currentFrameLength * 10f + 150) - (position.width - sideBarWidth);
+            }
+        }
+        else
+        {
+            timelineScrollPos.x = 0;
+        }
+
+        if(27 * tracks.Count + 20 >= timelineHeight - border1.y - 20)
+        {
+            //border1.height -= 16;
+            Rect scrollVertical = new Rect(position.width - 19, border1.y + 3, 15, timelineHeight - border1.y - 20);
+
+            float ratio = (timelineHeight - border1.y - 20) / (27 * tracks.Count + 20);
+            Rect scrollVerticalHandle = new Rect(scrollVertical.x + 2, (timelineScrollPos.y / (27 * tracks.Count + 20)) * (scrollVertical.height - 2) + border1.y + 5,  11, (scrollVertical.height - 2) * ratio);
+
+            EditorGUIUtility.AddCursorRect(scrollVerticalHandle, MouseCursor.Link);
+
+            GUI.Box(scrollVertical, "", style);
+            GUI.Box(scrollVerticalHandle, "", style8);
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && scrollVerticalHandle.Contains(Event.current.mousePosition))
+            {
+                isVerticalBarDragging = true;
+                GUI.changed = true;
+                Event.current.Use();
+            }
+
+            if (Event.current.type == EventType.MouseUp || nodeMapRect.Contains(Event.current.mousePosition))
+            {
+                isVerticalBarDragging = false;
+            }
+
+            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+            {
+                if (isVerticalBarDragging)
+                {
+                    timelineScrollPos.y += (Event.current.delta.y / (timelineHeight - border1.y - 20)) * (27 * tracks.Count + 20);
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+            }
+            if (timelineScrollPos.y <= 0)
+            {
+                timelineScrollPos.y = 0;
+            }
+            else if (timelineScrollPos.y >= (27 * tracks.Count + 20) - (timelineHeight - border1.y - 20))
+            {
+                timelineScrollPos.y = (27 * tracks.Count + 20) - (timelineHeight - border1.y - 20);
+            }
+        }
+        else
+        {
+            timelineScrollPos.y = 0;
+        }
+
         EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(40));
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
