@@ -15,15 +15,18 @@ public class PengTrack
     public ExecTime execTime;
     public int start;
     public int end;
-    public List<PengNode> nodes;
-    public List<BaseScript> scripts;
+    public List<PengNode> nodes = new List<PengNode>();
+    public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
+
+    public List<BaseScript> scripts = new List<BaseScript>();
     
-    public PengTrack(ExecTime time, string name, int start, int end)
+    public PengTrack(ExecTime time, string name, int start, int end, PengActorStateEditorWindow master)
     {
         this.name = name;
         this.execTime = time;
         this.start = start;
         this.end = end;
+        nodes.Add(new OnExecute(Vector2.zero, master, this));
     }
 
     public void ExecuteOnce()

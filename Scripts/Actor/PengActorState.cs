@@ -76,7 +76,7 @@ public class PengActorState : IPengActorState
                     {
                         for(int j = 0; j < tracks.Count; j++)
                         {
-                            if (tracks[j].execTime == PengTrack.ExecTime.Update)
+                            if (tracks[j].execTime == PengTrack.ExecTime.Update && i >= tracks[j].start && i <= tracks[j].end)
                             {
                                 tracks[j].ExecuteOnce();
                             }

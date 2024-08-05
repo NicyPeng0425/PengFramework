@@ -7,36 +7,49 @@ public enum ConnectionPointType
 {
     In,
     Out,
+    FlowIn,
+    FlowOut,
 }
 
 public class PengNodeConnection
 {
     public Rect rect;
     public ConnectionPointType type;
+    public PengVariables.PengVar pengVar;
     public PengNode node;
+    public int lineNum = 0;
 
-    public PengNodeConnection(ConnectionPointType type, PengNode node)
+    public PengNodeConnection(ConnectionPointType type, PengNode node, PengVariables.PengVar pengVar)
     {
         this.type = type;
         this.node = node;
+        this.pengVar = pengVar;
         rect = new Rect(0f, 0f, 12f, 18f);
     }
 
-    public void Draw()
+    public void Draw(Rect rect)
     {
-        rect.y = node.rect.y + node.rect.height * 0.5f - rect.height * 0.5f + 1f;
+        this.rect.y = rect.y + rect.height * 0.5f - this.rect.height * 0.5f + 1f;
 
         switch (type)
         {
             case ConnectionPointType.In:
-                rect.x = node.rect.x - rect.width + 5f;
+                this.rect.x = rect.x - this.rect.width;
+                this.rect.height = 15f;
                 break;
             case ConnectionPointType.Out:
-                rect.x = node.rect.x + node.rect.width - 7f;
+                this.rect.x = rect.x + rect.width;
+                this.rect.height = 15f;
+                break;
+            case ConnectionPointType.FlowIn:
+                this.rect.x = rect.x - this.rect.width + 5f;
+                break;
+            case ConnectionPointType.FlowOut:
+                this.rect.x = rect.x + rect.width - 5f;
                 break;
         }
 
-        if(GUI.Button(rect, ""))
+        if(GUI.Button(this.rect, ""))
         {
             if (node.master.selectingPoint == null)
             {
@@ -44,15 +57,34 @@ public class PengNodeConnection
             }
             else
             {
-                if (node.master.selectingPoint.type != this.type)
+                if (node.master.selectingPoint.type != this.type && node.master.selectingPoint.node != node)
                 {
-                    if (type == ConnectionPointType.In)
+                    switch(type)
                     {
-                        node.master.lines.Add(new PengNodeConnectionLine(this, node.master.selectingPoint));
-                    }
-                    else
-                    {
-                        node.master.lines.Add(new PengNodeConnectionLine(node.master.selectingPoint, this));
+                        case ConnectionPointType.In:
+                            if(node.master.selectingPoint.type == ConnectionPointType.Out && lineNum == 0 && node.master.selectingPoint.pengVar.type == pengVar.type)
+                            {
+                                node.trackMaster.lines.Add(new PengNodeConnectionLine(this, node.master.selectingPoint));
+                            }
+                            break;
+                        case ConnectionPointType.Out:
+                            if (node.master.selectingPoint.type == ConnectionPointType.In && node.master.selectingPoint.pengVar.type == pengVar.type)
+                            {
+                                node.trackMaster.lines.Add(new PengNodeConnectionLine(node.master.selectingPoint, this));
+                            }
+                            break;
+                        case ConnectionPointType.FlowIn:
+                            if (node.master.selectingPoint.type == ConnectionPointType.FlowOut && node.master.selectingPoint.lineNum == 0)
+                            {
+                                node.trackMaster.lines.Add(new PengNodeConnectionLine(this, node.master.selectingPoint));
+                            }
+                            break;
+                        case ConnectionPointType.FlowOut:
+                            if (node.master.selectingPoint.type == ConnectionPointType.FlowIn && lineNum == 0)
+                            {
+                                node.trackMaster.lines.Add(new PengNodeConnectionLine(node.master.selectingPoint, this));
+                            }
+                            break;
                     }
                     node.master.selectingPoint = null;
                 }

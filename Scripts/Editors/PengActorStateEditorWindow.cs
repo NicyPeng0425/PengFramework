@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -19,9 +20,11 @@ public class PengActorStateEditorWindow : EditorWindow
     private float nodeMapScale = 1f;
     public Rect timeLineRect;
     public Rect sideBarRect;
+    public Rect nodeMapRect;
 
     float sideBarWidth = 250f;
     float timelineHeight = 350f;
+    float timelineLength = 10f;
 
 
     //当前编辑状态的信息缓存
@@ -44,7 +47,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void OnEnable()
     {
-        nodes.Add(new PengNode(new Vector2(0, 0), "默认节点", this, PengNode.NodeType.Event));
+        tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
 
         UpdateCurrentStateInfo();
         gridOffset = new Vector2(300f, 415f);
@@ -54,14 +57,21 @@ public class PengActorStateEditorWindow : EditorWindow
     private void OnGUI()
     {
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
-        timeLineRect = new Rect(0, 0, position.width, timelineHeight);
+        GUIStyle style1 = new GUIStyle("flow background");
+        timeLineRect = new Rect(0, 45f, position.width, timelineHeight);
         sideBarRect = new Rect(0, 0, sideBarWidth, position.height);
+        nodeMapRect = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, position.height - timelineHeight);
+        GUI.Box(nodeMapRect, "", style1);
         
-        DrawNodeGraph(nodes);
+        DrawNodeGraph();
         ProcessEvents(Event.current);
         DrawPendingConnectionLine(Event.current);
 
         GUI.Box(new Rect(0, 0, position.width, timelineHeight), "", style);
+        DrawTimelineMap();
+
+        //绘制Timeline Title
+        GUI.Box(new Rect(0, 0, position.width, 45), "", style);
         GUI.Box(new Rect(0, 0, sideBarWidth, position.height), "", style);
 
         EditorGUILayout.BeginHorizontal();
@@ -122,29 +132,67 @@ public class PengActorStateEditorWindow : EditorWindow
         DrawTimeLineTitle();
 
         EditorGUILayout.EndVertical();
-
+        /*
         timelineScrollPos = EditorGUILayout.BeginScrollView(timelineScrollPos, GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(timelineHeight - 50));
 
         GUIStyle style = new GUIStyle("GroupBox");
         GUIStyle pointer = new GUIStyle("MeBlendPosition");
         
 
-        EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 50), GUILayout.Height(20));
-        GUILayout.Space(50);
+        EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 100), GUILayout.Height(20));
+        GUILayout.Space(100);
         GUILayout.Box("", style, GUILayout.Width(currentFrameLength * 8f), GUILayout.Height(20));
         GUILayout.Space( - currentFrameLength * 8f);
         if(GUILayout.Button("", pointer, GUILayout.Height(20)))
         {
 
         }
-
         EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginVertical();
+        if (tracks.Count > 0)
+        {
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 100), GUILayout.Height(20));
+                if (GUILayout.Button(tracks[i].name, GUILayout.Width(100), GUILayout.Height(20)))
+                {
+                    currentSelectedTrack = i;
+                }
+                GUILayout.Box("", style, GUILayout.Width(currentFrameLength * 8f), GUILayout.Height(20));
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        EditorGUILayout.EndVertical();
 
 
-        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndScrollView();*/
         EditorGUILayout.EndVertical();
     }
 
+    public void DrawTimelineMap()
+    {
+        GUIStyle style = new GUIStyle("LODBlackBox");
+        GUIStyle style1 = new GUIStyle("IN EditColliderButton");
+        Rect rect = new Rect(sideBarWidth + 100, 45, timelineLength, 20);
+        GUI.Box(rect, "", style);
+
+        if (tracks.Count > 0)
+        {
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                Rect rectBG = new Rect(sideBarWidth + 100, 70 + 20 * i, timelineLength, 20);
+                GUI.Box(rectBG, "", style);
+                Rect rectButton = new Rect(sideBarWidth + 5, 70 + 20 * i, 90, 20 );
+                if(GUI.Button(rectButton, tracks[i].name))
+                {
+                    currentSelectedTrack = i;
+                }
+                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10, 70 + 20 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 18);
+                GUI.Box(rectTrack, "", style1);
+            }
+        }
+    }
     public void DrawSideBar()
     {
 
@@ -164,7 +212,7 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
         if(GUILayout.Button("创建轨道", GUILayout.Width(100)))
         {
-            
+            tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
         }
 
         //enumpop
@@ -181,7 +229,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
     }    
 
-    public void DrawNodeGraph(List<PengNode> nodes)
+    public void DrawNodeGraph()
     {
         DrawGrid(20 * nodeMapScale, 0.2f, Color.gray);
         DrawGrid(100 * nodeMapScale, 0.4f, Color.gray);
@@ -191,42 +239,38 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessEvents(Event e)
     {
-        for (int i = nodes.Count - 1; i >= 0; i--)
+        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            bool dragged = nodes[i].ProcessEvents(e);
-            if (dragged)
+            for (int i = tracks[currentSelectedTrack].nodes.Count - 1; i >= 0; i--)
             {
-                GUI.changed = true;
+                bool dragged = tracks[currentSelectedTrack].nodes[i].ProcessEvents(e);
+                if (dragged)
+                {
+                    GUI.changed = true;
+                }
             }
-        }
 
-        switch (e.type)
-        {
-            case EventType.MouseDown:
-                if(e.button == 1)
-                {
-                    RightMouseMenu(e.mousePosition);
-                }
-                if (e.button == 0)
-                {
-                    selectingPoint = null;
-                }
-                break;
-            case EventType.MouseDrag:
-                if (e.button == 0 && !timeLineRect.Contains(e.mousePosition) && !sideBarRect.Contains(e.mousePosition))
-                {
-                    DragAllNodes(e.delta);
-                    gridOffset += e.delta;
-                    GUI.changed = true;
-                }
-                break;/*
-            case EventType.ScrollWheel:
-                if (e.button == 2 && !timeLineRect.Contains(e.mousePosition) && !sideBarRect.Contains(e.mousePosition))
-                {
-                    nodeMapScale += e.delta.y;
-                    GUI.changed = true;
-                }
-                break;*/
+            switch (e.type)
+            {
+                case EventType.MouseDown:
+                    if (e.button == 1)
+                    {
+                        RightMouseMenu(e.mousePosition);
+                    }
+                    if (e.button == 0)
+                    {
+                        selectingPoint = null;
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (e.button == 0 && nodeMapRect.Contains(e.mousePosition))
+                    {
+                        DragAllNodes(e.delta);
+                        gridOffset += e.delta;
+                        GUI.changed = true;
+                    }
+                    break;
+            }
         }
     }
 
@@ -239,27 +283,27 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessAddNode(Vector2 mousePos)
     {
-        nodes.Add(new PengNode(mousePos, "默认节点", this, PengNode.NodeType.Action));
+        tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], "Idle", true, 0, 0, 0));
     }
 
     private void DrawNodes()
     {
-        if (nodes.Count > 0)
+        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
             {
-                nodes[i].Draw();
+                tracks[currentSelectedTrack].nodes[i].Draw();
             }
         }
     }
 
     private void DrawConnectionLines()
     {
-        if (lines.Count > 0)
+        if (tracks[currentSelectedTrack].lines.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < lines.Count; i++)
+            for (int i = 0; i < tracks[currentSelectedTrack].lines.Count; i++)
             {
-                lines[i].Draw();
+                tracks[currentSelectedTrack].lines[i].Draw();
             }
         }
     }
@@ -270,7 +314,9 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             Vector3 start = (selectingPoint.type == ConnectionPointType.In) ? selectingPoint.rect.center : e.mousePosition;
             Vector3 end = (selectingPoint.type == ConnectionPointType.In) ? e.mousePosition : selectingPoint.rect.center;
-            Handles.DrawBezier(start, end, start + Vector3.left * 40f, end - Vector3.left * 40f, Color.white, null, 3f);
+            
+            if (selectingPoint.type == ConnectionPointType.In || selectingPoint.type == ConnectionPointType.Out) { Handles.DrawBezier(start, end, start + Vector3.left * 40f, end - Vector3.left * 40f, Color.white, null, 3f); }
+            else if (selectingPoint.type == ConnectionPointType.FlowIn || selectingPoint.type == ConnectionPointType.FlowOut) { Handles.DrawBezier(start, end, start + Vector3.left * 40f, end - Vector3.left * 40f, Color.white, null, 6f); }
 
             GUI.changed = true;
 
@@ -294,16 +340,16 @@ public class PengActorStateEditorWindow : EditorWindow
             }
         }
         toRemove = null;
-        nodes.Remove(node);
+        tracks[currentSelectedTrack].nodes.Remove(node);
     }
 
     private void DragAllNodes(Vector2 change)
     {
-        if (nodes.Count > 0)
+        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
             {
-                nodes[i].ProcessDrag(change);
+                tracks[currentSelectedTrack].nodes[i].ProcessDrag(change);
             }
         }
     }
@@ -333,10 +379,30 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void UpdateCurrentStateInfo() 
     {
-        currentFrameLength = 300;
-        currentSelectedFrame = 50;
-        currentSelectedTrack = 5;
-        currentTrackLength = 8;
+        currentFrameLength = 60;
+        currentSelectedFrame = 40;
+        currentSelectedTrack = 0;
+        currentTrackLength = 0;
         timelineScrollPos = Vector2.zero;
+        timelineLength = currentFrameLength * 10f;
+    }
+
+    public static XmlElement ConstructNewTrackXML(ref XmlDocument doc, PengTrack.ExecTime execTime, int start, int end)
+    {
+        XmlElement xml = doc.CreateElement("Track");
+        xml.SetAttribute("Name", "Track");
+        xml.SetAttribute("ExecTime", execTime.ToString());
+        xml.SetAttribute("Start", start.ToString());
+        xml.SetAttribute("End", end.ToString());
+
+        return xml;
+    }
+
+    public static XmlElement ConstructNewScriptXML(ref XmlDocument doc, PengNode node)
+    {
+        XmlElement ele = doc.CreateElement(node.nodeName);
+
+
+        return ele;
     }
 }

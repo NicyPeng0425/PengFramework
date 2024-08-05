@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace PengScript
@@ -10,13 +11,13 @@ namespace PengScript
     /// 
 
     public enum PengScriptType
-    { 
-        DebugLogText,
-    }
-
-    public enum PengScriptTypeCN
     {
-        输出文本,
+        [Description("轨道执行")]
+        OnExecute,
+        [Description("输出文本")]
+        DebugLogText,
+        [Description("播放动画")]
+        PlayAnimation,
     }
 
     public class BaseScript
