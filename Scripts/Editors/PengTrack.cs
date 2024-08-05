@@ -13,8 +13,10 @@ public class PengTrack
     }
     public string name;
     public ExecTime execTime;
+
     public int start;
     public int end;
+    PengActorStateEditorWindow master;
     public List<PengNode> nodes = new List<PengNode>();
     public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
 
@@ -26,7 +28,10 @@ public class PengTrack
         this.execTime = time;
         this.start = start;
         this.end = end;
+        this.master = master;
         nodes.Add(new OnExecute(Vector2.zero, master, this));
+
+        nodes[0].ProcessDrag(new Vector2(300f, 415f));
     }
 
     public void ExecuteOnce()
@@ -37,4 +42,25 @@ public class PengTrack
             scripts[0].ScriptFlowNext();
         }
     }
+/*
+#if UNITY_EDITOR
+    public void ProcessEvent(Event e)
+    {
+        switch (e.type)
+        {
+            case EventType.MouseDown:
+                if (e.button == 1)
+                {
+
+                }
+                break;
+        }
+    }
+
+    public void RightButtonMenu()
+    {
+
+    }
+
+#endif*/
 }

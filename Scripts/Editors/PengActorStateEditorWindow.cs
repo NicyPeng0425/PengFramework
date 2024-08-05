@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Timeline;
+using static Cinemachine.CinemachineBlendDefinition;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -32,7 +34,17 @@ public class PengActorStateEditorWindow : EditorWindow
     public int currentFrameLength;
     public int currentTrackLength;
     public int currentSelectedFrame;
-    public int currentSelectedTrack;
+    int m_currentSelectedTrack;
+    public int currentSelectedTrack
+    { 
+        get { return m_currentSelectedTrack; }
+        set { m_currentSelectedTrack = value; OnCurrentSelectedTrackChanged(); }
+    }
+    public int currentDeleteTrack = 0;
+    public float mouseXDelta = 0;
+    public bool isDragging = false;
+    public int dragObject = -1;
+    public int dragTrackIndex = -1;
     public List<PengTrack> tracks = new List<PengTrack>();
     //
 
@@ -49,9 +61,9 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
 
-        UpdateCurrentStateInfo();
+        UpdateCurrentStateInfo();/*
         gridOffset = new Vector2(300f, 415f);
-        DragAllNodes(new Vector2(300f, 415f));
+        DragAllNodes(new Vector2(300f, 415f));*/
     }
 
     private void OnGUI()
@@ -174,25 +186,210 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         GUIStyle style = new GUIStyle("LODBlackBox");
         GUIStyle style1 = new GUIStyle("IN EditColliderButton");
-        Rect rect = new Rect(sideBarWidth + 100, 45, timelineLength, 20);
-        GUI.Box(rect, "", style);
-
+        GUIStyle style2 = new GUIStyle("Tooltip");
+        GUIStyle style3 = new GUIStyle("BoldLabel");
+        style3.alignment = TextAnchor.UpperLeft;
+        style3.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
+        style3.fontSize = 10;
+        
+       
         if (tracks.Count > 0)
         {
             for (int i = 0; i < tracks.Count; i++)
             {
-                Rect rectBG = new Rect(sideBarWidth + 100, 70 + 20 * i, timelineLength, 20);
+                Rect rectBG = new Rect(sideBarWidth + 100, 70 + 27 * i, timelineLength, 14);
                 GUI.Box(rectBG, "", style);
-                Rect rectButton = new Rect(sideBarWidth + 5, 70 + 20 * i, 90, 20 );
+
+                Rect rectButton = new Rect(sideBarWidth + 5, 68 + 27 * i, 90, 18);
                 if(GUI.Button(rectButton, tracks[i].name))
                 {
                     currentSelectedTrack = i;
                 }
-                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10, 70 + 20 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 18);
+
+                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10, 70 + 27 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
                 GUI.Box(rectTrack, "", style1);
+
+                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10, 69 + 27 * i, 6, 16);
+                GUI.Box(rectLeft, "", style2);
+               
+
+                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f, 69 + 27 * i, 6, 16);
+                GUI.Box(rectRight, "", style2);
+
+                Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
+                Rect rectLeftCursor = new Rect(rectLeft.x - 3, rectLeft.y, rectLeft.width + 6, rectLeft.height);
+                Rect rectRightCursor = new Rect(rectRight.x - 3, rectRight.y, rectRight.width + 6, rectRight.height);
+
+                Rect rectLeftFrame = new Rect(rectLeft.x, rectLeft.y + rectLeft.height - 2, 80, 80);
+                Rect rectRightFrame = new Rect(rectRight.x, rectRight.y + rectRight.height - 2, 80, 80);
+
+                EditorGUIUtility.AddCursorRect(rectTrackCursor, MouseCursor.Link);
+                EditorGUIUtility.AddCursorRect(rectLeftCursor, MouseCursor.SlideArrow);
+                EditorGUIUtility.AddCursorRect(rectRightCursor, MouseCursor.SlideArrow);
+
+                GUI.Box(rectLeftFrame, tracks[i].start.ToString(), style3);
+                GUI.Box(rectRightFrame, tracks[i].end.ToString(), style3);
+
+                if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && rectBG.Contains(Event.current.mousePosition)) 
+                {
+                    currentDeleteTrack = i;
+                    GenericMenu menu = new GenericMenu();
+                    menu.AddItem(new GUIContent("删除轨道"), false, () => { DeleteTrack(); });
+                    menu.ShowAsContext();
+                    Event.current.Use();
+                }
+                
+                if (Event.current.type == EventType.MouseDown && Event.current.button == 0 &&
+                    (rectTrackCursor.Contains(Event.current.mousePosition)||
+                    rectLeftCursor.Contains(Event.current.mousePosition)||
+                    rectRightCursor.Contains(Event.current.mousePosition)))
+                {
+                    if(rectTrackCursor.Contains(Event.current.mousePosition))
+                    {
+                        dragObject = 1;
+                    }
+                    else if(rectLeftCursor.Contains(Event.current.mousePosition))
+                    {
+                        dragObject = 0;
+                    }
+                    else if(rectRightCursor.Contains(Event.current.mousePosition))
+                    {
+                        dragObject = 2;
+                    }
+                    dragTrackIndex = i;
+                    isDragging = true;
+                    mouseXDelta = 0;
+                    GUI.changed = true;
+                    Event.current.Use();
+                }
+
+                if(Event.current.type == EventType.MouseUp)
+                {
+                    isDragging = false;
+                }
+
+                if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+                {
+                    switch (dragObject)
+                    {
+                        case 0:
+                            if(!isDragging)
+                            {
+                                break;
+                            }
+                            mouseXDelta += Event.current.delta.x;
+                            while (Mathf.Abs(mouseXDelta) >= 10)
+                            {
+                                if (mouseXDelta >= 10)
+                                {
+                                    tracks[dragTrackIndex].start++;
+                                    mouseXDelta -= 10;
+                                    if (tracks[dragTrackIndex].start > tracks[dragTrackIndex    ].end)
+                                    {
+                                        tracks[dragTrackIndex].start--;
+                                    }
+                                }
+                                else if (mouseXDelta <= -10)
+                                {
+                                    tracks[dragTrackIndex].start--;
+                                    mouseXDelta += 10;
+                                    if (tracks[dragTrackIndex].start < 0)
+                                    {
+                                        tracks[dragTrackIndex].start++;
+                                    }
+                                }
+                            }
+                            Event.current.Use();
+                            break;
+                        case 1:
+                            if (!isDragging)
+                            {
+                                break;
+                            }
+                            mouseXDelta += Event.current.delta.x;
+                            while (Mathf.Abs(mouseXDelta) >= 10)
+                            {
+                                if (mouseXDelta >= 10)
+                                {
+                                    tracks[dragTrackIndex].start++;
+                                    tracks[dragTrackIndex].end++;
+                                    mouseXDelta -= 10;
+                                    if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                    {
+                                        tracks[dragTrackIndex].start--;
+                                        tracks[dragTrackIndex].end--;
+                                    }
+                                }
+                                else if (mouseXDelta <= -10)
+                                {
+                                    tracks[dragTrackIndex].start--;
+                                    tracks[dragTrackIndex].end--;
+                                    mouseXDelta += 10;
+                                    if (tracks[dragTrackIndex].start < 0)
+                                    {
+                                        tracks[dragTrackIndex].start++;
+                                        tracks[dragTrackIndex].end++;
+                                    }
+                                }
+                            }
+                            Event.current.Use();
+                            break;
+                        case 2:
+                            if (!isDragging)
+                            {
+                                break;
+                            }
+                            mouseXDelta += Event.current.delta.x;
+                            while (Mathf.Abs(mouseXDelta) >= 10)
+                            {
+                                if (mouseXDelta >= 10)
+                                {
+                                    tracks[dragTrackIndex].end++;
+                                    mouseXDelta -= 10;
+                                    if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                    {
+                                        tracks[dragTrackIndex].end--;
+                                    }
+                                }
+                                else if (mouseXDelta <= -10)
+                                {
+                                    tracks[dragTrackIndex].end--;
+                                    mouseXDelta += 10;
+                                    if (tracks[dragTrackIndex].end < tracks[dragTrackIndex].start)
+                                    {
+                                        tracks[dragTrackIndex].end++;
+                                    }
+                                }
+                            }
+                            Event.current.Use();
+                            break;
+                        default:
+                            isDragging = false;
+                            break;
+                    }
+                    GUI.changed = true;
+                }
             }
         }
+
     }
+
+    public void DeleteTrack()
+    {
+        if(currentDeleteTrack == tracks.Count - 1)
+        {
+            if(tracks.Count != 1 && currentSelectedTrack == tracks.Count - 1)
+            {
+                currentSelectedTrack--;
+            }
+            tracks.RemoveAt(tracks.Count - 1);
+        }
+        else
+        {
+            tracks.RemoveAt(currentDeleteTrack);
+        }
+    }
+
     public void DrawSideBar()
     {
 
@@ -200,6 +397,47 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void DrawTimeLineTitle()
     {
+        GUIStyle style = new GUIStyle("LODBlackBox");
+        GUIStyle style4 = new GUIStyle("BoldLabel");
+        style4.alignment = TextAnchor.UpperLeft;
+        style4.normal.textColor = Color.white;
+        style4.fontSize = 11;
+        GUIStyle style5 = new GUIStyle("LargeBoldLabel");
+        style5.alignment = TextAnchor.UpperLeft;
+        style5.normal.textColor = Color.gray;
+        style5.fontSize = 6;
+        GUIStyle style6 = new GUIStyle("LargeBoldLabel");
+        style6.alignment = TextAnchor.UpperLeft;
+        style6.normal.textColor = Color.white;
+        style6.fontSize = 20;
+
+        Rect rect = new Rect(sideBarWidth + 100, 45, timelineLength, 20);
+        GUI.Box(rect, "", style);
+
+        if (currentFrameLength == 0)
+        {
+            return;
+        }
+        for (int i = 0; i < currentFrameLength; i++)
+        {
+            Rect pointer = new Rect(rect.x + i * 10f - 2, rect.y + rect.height - 6, 10, 6);
+            if (i == currentFrameLength - 1)
+            {
+                Rect rectFrameNum = new Rect(rect.x + i * 10f, rect.y + 3, 80, 80);
+                GUI.Box(rectFrameNum, i.ToString(), style4);
+                GUI.Box(pointer, "|", style6);
+            }
+            else if (i % 5 == 0)
+            {
+                Rect rectFrameNum = new Rect(rect.x + (i / 5) * 50f, rect.y + 3, 80, 80);
+                GUI.Box(rectFrameNum, i.ToString(), style4);
+                GUI.Box(pointer, "|", style6);
+            }
+            else
+            {
+                GUI.Box(pointer, "|", style5);
+            }
+        }
         EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(40));
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
@@ -239,37 +477,40 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessEvents(Event e)
     {
-        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = tracks[currentSelectedTrack].nodes.Count - 1; i >= 0; i--)
+            if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
-                bool dragged = tracks[currentSelectedTrack].nodes[i].ProcessEvents(e);
-                if (dragged)
+                for (int i = tracks[currentSelectedTrack].nodes.Count - 1; i >= 0; i--)
                 {
-                    GUI.changed = true;
-                }
-            }
-
-            switch (e.type)
-            {
-                case EventType.MouseDown:
-                    if (e.button == 1)
+                    bool dragged = tracks[currentSelectedTrack].nodes[i].ProcessEvents(e);
+                    if (dragged)
                     {
-                        RightMouseMenu(e.mousePosition);
-                    }
-                    if (e.button == 0)
-                    {
-                        selectingPoint = null;
-                    }
-                    break;
-                case EventType.MouseDrag:
-                    if (e.button == 0 && nodeMapRect.Contains(e.mousePosition))
-                    {
-                        DragAllNodes(e.delta);
-                        gridOffset += e.delta;
                         GUI.changed = true;
                     }
-                    break;
+                }
+
+                switch (e.type)
+                {
+                    case EventType.MouseDown:
+                        if (e.button == 1 && nodeMapRect.Contains(e.mousePosition))
+                        {
+                            RightMouseMenu(e.mousePosition);
+                        }
+                        if (e.button == 0)
+                        {
+                            selectingPoint = null;
+                        }
+                        break;
+                    case EventType.MouseDrag:
+                        if (e.button == 0 && nodeMapRect.Contains(e.mousePosition))
+                        {
+                            DragAllNodes(e.delta);
+                            gridOffset += e.delta;
+                            GUI.changed = true;
+                        }
+                        break;
+                }
             }
         }
     }
@@ -277,33 +518,45 @@ public class PengActorStateEditorWindow : EditorWindow
     private void RightMouseMenu(Vector2 mousePos)
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("添加节点"), false, () => { ProcessAddNode(mousePos); });
+        menu.AddItem(new GUIContent("添加节点/按功能类型/角色表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/B/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
         menu.ShowAsContext();
     }
 
-    private void ProcessAddNode(Vector2 mousePos)
+    private void ProcessAddNode(Vector2 mousePos, PengScript.PengScriptType type)
     {
-        tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], "Idle", true, 0, 0, 0));
+        switch (type)
+        {
+            case PengScript.PengScriptType.PlayAnimation:
+                tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], "Idle", true, 0, 0, 0));
+                break;
+        }
     }
 
     private void DrawNodes()
     {
-        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+            if (tracks[currentSelectedTrack].nodes.Count > 0) 
             {
-                tracks[currentSelectedTrack].nodes[i].Draw();
+                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                {
+                    tracks[currentSelectedTrack].nodes[i].Draw();
+                } 
             }
         }
     }
 
     private void DrawConnectionLines()
     {
-        if (tracks[currentSelectedTrack].lines.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < tracks[currentSelectedTrack].lines.Count; i++)
+            if (tracks[currentSelectedTrack].lines.Count > 0)
             {
-                tracks[currentSelectedTrack].lines[i].Draw();
+                for (int i = 0; i < tracks[currentSelectedTrack].lines.Count; i++)
+                {
+                    tracks[currentSelectedTrack].lines[i].Draw();
+                }
             }
         }
     }
@@ -345,11 +598,14 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void DragAllNodes(Vector2 change)
     {
-        if (tracks[currentSelectedTrack].nodes.Count > 0 && tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+            if(tracks[currentSelectedTrack].nodes.Count > 0) 
             {
-                tracks[currentSelectedTrack].nodes[i].ProcessDrag(change);
+                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                {
+                    tracks[currentSelectedTrack].nodes[i].ProcessDrag(change);
+                }
             }
         }
     }
@@ -385,6 +641,11 @@ public class PengActorStateEditorWindow : EditorWindow
         currentTrackLength = 0;
         timelineScrollPos = Vector2.zero;
         timelineLength = currentFrameLength * 10f;
+    }
+
+    public void OnCurrentSelectedTrackChanged()
+    {
+        
     }
 
     public static XmlElement ConstructNewTrackXML(ref XmlDocument doc, PengTrack.ExecTime execTime, int start, int end)
