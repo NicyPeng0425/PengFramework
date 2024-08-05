@@ -30,7 +30,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
 
     //当前编辑状态的信息缓存
-    public Vector2 timelineScrollPos;
+    public Vector2 timelineScrollPos = Vector2.zero;
     public int currentFrameLength;
     public int currentTrackLength;
     public int currentSelectedFrame;
@@ -45,6 +45,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public bool isDragging = false;
     public int dragObject = -1;
     public int dragTrackIndex = -1;
+    public bool isHorizontalBarDragging = false;
     public List<PengTrack> tracks = new List<PengTrack>();
     //
 
@@ -144,41 +145,7 @@ public class PengActorStateEditorWindow : EditorWindow
         DrawTimeLineTitle();
 
         EditorGUILayout.EndVertical();
-        /*
-        timelineScrollPos = EditorGUILayout.BeginScrollView(timelineScrollPos, GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(timelineHeight - 50));
-
-        GUIStyle style = new GUIStyle("GroupBox");
-        GUIStyle pointer = new GUIStyle("MeBlendPosition");
         
-
-        EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 100), GUILayout.Height(20));
-        GUILayout.Space(100);
-        GUILayout.Box("", style, GUILayout.Width(currentFrameLength * 8f), GUILayout.Height(20));
-        GUILayout.Space( - currentFrameLength * 8f);
-        if(GUILayout.Button("", pointer, GUILayout.Height(20)))
-        {
-
-        }
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.BeginVertical();
-        if (tracks.Count > 0)
-        {
-            for (int i = 0; i < tracks.Count; i++)
-            {
-                EditorGUILayout.BeginHorizontal(GUILayout.Width(currentFrameLength * 8f + 100), GUILayout.Height(20));
-                if (GUILayout.Button(tracks[i].name, GUILayout.Width(100), GUILayout.Height(20)))
-                {
-                    currentSelectedTrack = i;
-                }
-                GUILayout.Box("", style, GUILayout.Width(currentFrameLength * 8f), GUILayout.Height(20));
-                EditorGUILayout.EndHorizontal();
-            }
-        }
-
-        EditorGUILayout.EndVertical();
-
-
-        EditorGUILayout.EndScrollView();*/
         EditorGUILayout.EndVertical();
     }
 
@@ -197,23 +164,22 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             for (int i = 0; i < tracks.Count; i++)
             {
-                Rect rectBG = new Rect(sideBarWidth + 100, 70 + 27 * i, timelineLength, 14);
+                Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 70 + 27 * i, timelineLength, 14);
                 GUI.Box(rectBG, "", style);
 
-                Rect rectButton = new Rect(sideBarWidth + 5, 68 + 27 * i, 90, 18);
+                Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 68 + 27 * i, 90, 18);
                 if(GUI.Button(rectButton, tracks[i].name))
                 {
                     currentSelectedTrack = i;
                 }
 
-                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10, 70 + 27 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
+                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 70 + 27 * i, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
                 GUI.Box(rectTrack, "", style1);
 
-                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10, 69 + 27 * i, 6, 16);
+                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 69 + 27 * i, 6, 16);
                 GUI.Box(rectLeft, "", style2);
-               
 
-                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f, 69 + 27 * i, 6, 16);
+                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 69 + 27 * i, 6, 16);
                 GUI.Box(rectRight, "", style2);
 
                 Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
@@ -410,9 +376,63 @@ public class PengActorStateEditorWindow : EditorWindow
         style6.alignment = TextAnchor.UpperLeft;
         style6.normal.textColor = Color.white;
         style6.fontSize = 20;
+        GUIStyle style7 = new GUIStyle("grey_border");
+        GUIStyle style8 = new GUIStyle("Button");
 
-        Rect rect = new Rect(sideBarWidth + 100, 45, timelineLength, 20);
+        Rect border1 = new Rect(sideBarWidth + 4, 65, position.width - sideBarWidth - 8, 281);
+        Rect border2 = new Rect(sideBarWidth + 1, 40, position.width - sideBarWidth - 1, 310);
+        
+        Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
         GUI.Box(rect, "", style);
+
+        if(currentFrameLength * 10f + 100 >= position.width - sideBarWidth)
+        {
+            border1.height -= 16;
+            Rect scrollHorizontal = new Rect(sideBarWidth+2, border1.y + border1.height+2, position.width - sideBarWidth - 4, 15);
+
+            float ratio = (position.width - sideBarWidth) / (currentFrameLength * 10f + 100);
+            Rect scrollHorizontalHandle = new Rect(timelineScrollPos.x + sideBarWidth + 3, scrollHorizontal.y + 2, (scrollHorizontal.width - 2) * ratio, 11);
+
+            EditorGUIUtility.AddCursorRect(scrollHorizontalHandle, MouseCursor.Link);
+
+            GUI.Box(scrollHorizontal, "", style);
+            GUI.Box(scrollHorizontalHandle, "", style8);
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && scrollHorizontalHandle.Contains(Event.current.mousePosition))
+            {
+                isHorizontalBarDragging = true;
+                GUI.changed = true;
+                Event.current.Use();
+            }
+
+            if (Event.current.type == EventType.MouseUp || nodeMapRect.Contains(Event.current.mousePosition))
+            {
+                isHorizontalBarDragging = false;
+            }
+
+            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+            {
+                if (isHorizontalBarDragging)
+                {
+                    timelineScrollPos.x += Event.current.delta.x;
+                    if (timelineScrollPos.x <= 0)
+                    {
+                        timelineScrollPos.x = 0;
+                    }
+                    else if (timelineScrollPos.x >= position.width - sideBarWidth - (scrollHorizontal.width - 2) * ratio - 8)
+                    {
+                        timelineScrollPos.x = position.width - sideBarWidth - (scrollHorizontal.width - 2) * ratio - 8;
+                    }
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+            }
+        }
+        else
+        {
+            timelineScrollPos.x = 0;
+        }
+        GUI.Box(border1, "", style7);
+        GUI.Box(border2, "", style7);
 
         if (currentFrameLength == 0)
         {
