@@ -12,7 +12,20 @@ public class PengNode
 {
     public string nodeName = "默认";
     public PengScript.PengScriptType scriptType;
-    public Rect rect;
+    public Vector2 pos;
+    Rect m_Rect;
+    public Rect rect
+    { 
+        get
+        {
+            return m_Rect;
+        }
+        set
+        {
+            m_Rect = value;
+            pos = m_Rect.position;
+        }
+    }
     public Rect rectSmall;
     private bool isDragged;
     private bool m_isSelected;
@@ -27,13 +40,15 @@ public class PengNode
     public PengNodeConnection outPoint;
     public PengActorStateEditorWindow master;
     public PengTrack trackMaster;
+    public int nodeID;
 
     public enum NodeType
     {
         Event,
         Action,
-        Conditional,
+        Branch,
         Value,
+        Iterator,
     }
 
     public NodeType type;
@@ -58,7 +73,7 @@ public class PengNode
                 inPoint.Draw(rect);
                 outPoint.Draw(rect);
                 break;
-            case NodeType.Conditional:
+            case NodeType.Branch:
                 GUIStyle style2 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
                 GUI.Box(rect, nodeName, style2);
                 inPoint.Draw(rect);
@@ -69,7 +84,7 @@ public class PengNode
 
     public void ProcessDrag(Vector2 change)
     {
-        rect.position += change;
+        rect = new Rect(rect.x + change.x, rect.y +  change.y, rect.width, rect.height);
         rectSmall.position += change;
     }
 
@@ -193,6 +208,52 @@ public class PengNode
         List<string> list = new List<string>();
         return list;
     }
+
+    public static string ParseRectToString(Rect rect)
+    {
+        string result = "";
+        result += rect.x.ToString() + ",";
+        result += rect.y.ToString() + ",";
+        result += rect.width.ToString() + ",";
+        result += rect.height.ToString();
+        return result;
+    }
+
+    public static Rect ParseStringToRect(string str)
+    {
+        string[] s = str.Split(",");
+        if (s.Length == 4)
+        {
+            return new Rect(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2]), float.Parse(s[3]));
+        }
+        else
+        {
+            Debug.LogError("字符串格式不正确，无法转成Rect！");
+            return new Rect(0,0,0,0);
+        }
+    }
+
+    public static string ParseVector2ToString(Vector2 vec)
+    {
+        string result = "";
+        result += vec.x.ToString() + ",";
+        result += vec.y.ToString();
+        return result;
+    }
+
+    public static Vector2 ParseStringToVector2(string str)
+    {
+        string[] s = str.Split(",");
+        if (s.Length == 2)
+        {
+            return new Vector2(float.Parse(s[0]), float.Parse(s[1]));
+        }
+        else
+        {
+            Debug.LogError("字符串格式不正确，无法转成Vector2！");
+            return Vector2.zero;
+        }
+    }
 }
 
 public class OnExecute : PengNode
@@ -203,10 +264,11 @@ public class OnExecute : PengNode
     public PengInt pengTrackExecuteFrame;
     public PengInt pengStateExecuteFrame;
 
-    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster) 
+    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster, int nodeID) 
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
 
         this.type = NodeType.Event;
         this.scriptType = PengScript.PengScriptType.OnExecute;
@@ -214,16 +276,16 @@ public class OnExecute : PengNode
 
         paraNum = 2;
 
-        pengTrackExecuteFrame = new PengInt(this, "当前轨道帧", trackExecuteFrame, ConnectionPointType.Out);
-        pengStateExecuteFrame = new PengInt(this, "当前状态帧", stateExecuteFrame, ConnectionPointType.Out);
+        pengTrackExecuteFrame = new PengInt(this, "当前轨道帧", 0, trackExecuteFrame, ConnectionPointType.Out);
+        pengStateExecuteFrame = new PengInt(this, "当前状态帧", 1, stateExecuteFrame, ConnectionPointType.Out);
     }
 
     public override void Draw()
     {
         base.Draw();
 
-        pengTrackExecuteFrame.DrawVar(false, 0);
-        pengStateExecuteFrame.DrawVar(false, 1);
+        pengTrackExecuteFrame.DrawVar();
+        pengStateExecuteFrame.DrawVar();
     }
 }
 
@@ -243,10 +305,11 @@ public class PlayAnimation : PengNode
     public PengInt pengAnimationLayer;
 
 
-    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster, string animationName, bool hardCut, float transitionNormalizedTime, float startAtNormalizedTime, int animatorLayer)
+    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster, int nodeID, string animationName, bool hardCut, float transitionNormalizedTime, float startAtNormalizedTime, int animatorLayer)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
 
         this.type = NodeType.Action;
         this.scriptType = PengScript.PengScriptType.PlayAnimation;
@@ -259,11 +322,11 @@ public class PlayAnimation : PengNode
         this.startAtNormalizedTime = startAtNormalizedTime;
         this.animatorLayer = animatorLayer;
 
-        pengAnimationName = new PengString(this, "动画名称", animationName, ConnectionPointType.In);
-        pengHardCut = new PengBool(this, "是否硬切", hardCut, ConnectionPointType.In);
-        pengTransitionNormalizedTime = new PengFloat(this, "过渡时间", transitionNormalizedTime, ConnectionPointType.In);
-        pengStartAtNormalizedTime = new PengFloat(this, "开始时间", startAtNormalizedTime, ConnectionPointType.In);
-        pengAnimationLayer = new PengInt(this, "动画层", animatorLayer, ConnectionPointType.In);
+        pengAnimationName = new PengString(this, "动画名称", 0, animationName, ConnectionPointType.In);
+        pengHardCut = new PengBool(this, "是否硬切", 1, hardCut, ConnectionPointType.In);
+        pengTransitionNormalizedTime = new PengFloat(this, "过渡时间", 2, transitionNormalizedTime, ConnectionPointType.In);
+        pengStartAtNormalizedTime = new PengFloat(this, "开始时间", 3, startAtNormalizedTime, ConnectionPointType.In);
+        pengAnimationLayer = new PengInt(this, "动画层", animatorLayer, 4, ConnectionPointType.In);
 
         paraNum = 5;
     }
@@ -272,11 +335,11 @@ public class PlayAnimation : PengNode
     {
         base.Draw();
 
-        pengAnimationName.DrawVar(true, 0);
-        pengHardCut.DrawVar(true, 1);
-        pengTransitionNormalizedTime.DrawVar(true, 2);
-        pengStartAtNormalizedTime.DrawVar(true, 3);
-        pengAnimationLayer.DrawVar(true, 4);
+        pengAnimationName.DrawVar();
+        pengHardCut.DrawVar();
+        pengTransitionNormalizedTime.DrawVar();
+        pengStartAtNormalizedTime.DrawVar();
+        pengAnimationLayer.DrawVar();
     }
 }
 

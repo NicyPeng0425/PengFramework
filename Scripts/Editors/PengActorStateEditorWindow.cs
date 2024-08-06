@@ -2,14 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.Timeline;
-using static Cinemachine.CinemachineBlendDefinition;
-using static UnityEditor.VersionControl.Asset;
+using System.IO;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -1101,10 +1097,24 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessAddNode(Vector2 mousePos, PengScript.PengScriptType type)
     {
+        int id = 1;
+        bool idSame = true;
+        while(idSame)
+        {
+            idSame = false;
+            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+            {
+                if(id == tracks[currentSelectedTrack].nodes[i].nodeID)
+                {
+                    idSame = true;
+                    id++;
+                }
+            }
+        }
         switch (type)
         {
             case PengScript.PengScriptType.PlayAnimation:
-                tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], "Idle", true, 0, 0, 0));
+                tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], id, "Idle", true, 0, 0, 0));
                 break;
         }
     }
@@ -1344,7 +1354,37 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public static void SaveActorData(int actorID, int actorCamp, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop)
     {
+        //Actor数据结构：
+        //<Actor>
+        //  <ActorInfo>
+        //      <ActorID ActorID = "..." />
+        //      <Camp Camp = "..." />
+        //  </ActorInfo>
+        //  <ActorState>
+        //      <StateGroup Name = "...">
+        //          <State Name = "..." IsLoop = "..." Length = "...">
+        //              <Track Name = "..." Start = "..." End = "..." ExecTime = "...">
+        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //                  ...
+        //              </Track>
+        //              ...
+        //          </State>
+        //          <State Name = "..." IsLoop = "..." Length = "...">
+        //              <Track Name = "..." Start = "..." End = "..." ExecTime = "...">
+        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //                  ...
+        //              </Track>
+        //              ...
+        //          </State>
+        //          ...
+        //      </StateGroup>
+        //      ...
+        //  </ActorState>
+        //</Actor>
         XmlDocument doc = new XmlDocument();
+        XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
         //一二级结构
         XmlElement root = doc.CreateElement("Actor");
         XmlElement info = doc.CreateElement("ActorInfo");
@@ -1373,7 +1413,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         XmlElement state = doc.CreateElement("State");
                         string stateName = stateGroup.ElementAt(i).Value[j];
                         state.SetAttribute("Name", stateName);
-                        state.SetAttribute("IsLoop", statesLoop[stateName].ToString());
+                        state.SetAttribute("IsLoop", statesLoop[stateName] ? "1" : "0");
                         state.SetAttribute("Length", statesLength[stateName].ToString());
                         if (stateTrack[stateName].Count > 0)
                         {
@@ -1394,6 +1434,8 @@ public class PengActorStateEditorWindow : EditorWindow
                                         node.SetAttribute("Name", pengNode.nodeName);
                                         node.SetAttribute("ScriptType", pengNode.scriptType.ToString());
                                         node.SetAttribute("NodeType", pengNode.type.ToString());
+                                        node.SetAttribute("NodePos", PengNode.ParseVector2ToString(pengNode.pos));
+                                        node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
                                         List<string> paraName = pengNode.GetParaName();
                                         List<string> paraValue = pengNode.GetParaValue();
                                         if (paraName.Count > 0 && paraName.Count == paraValue.Count) 
@@ -1429,5 +1471,132 @@ public class PengActorStateEditorWindow : EditorWindow
 
         doc.Save(Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
         Debug.Log("保存成功，保存于" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+    }
+
+    public void ReadActorData(int actorID)
+    {
+        string path = Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("未读取到ID为" + actorID.ToString() + "的角色数据！读取地址：" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+            return;
+        }
+        TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + actorID.ToString() + "/" + actorID.ToString());
+        if (textAsset == null)
+        {
+            Debug.LogError(actorID.ToString() + "的数据读取失败！怎么回事呢？");
+            return;
+        }
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(textAsset.text);
+
+        XmlElement root = doc.DocumentElement;
+        XmlNodeList childs = root.ChildNodes;
+
+        XmlElement actorInfo = null;
+        XmlElement actorState = null;
+        foreach(XmlElement ele in childs)
+        {
+            if(ele.Name == "ActorInfo")
+            {
+                actorInfo = ele;
+                continue;
+            }
+            if(ele.Name == "ActorState")
+            {
+                actorState = ele;
+                continue;
+            }
+        }
+
+        if (actorInfo == null || actorInfo.ChildNodes.Count == 0)
+        {
+            Debug.LogError(actorID.ToString() + "的角色数据里没有角色信息！怎么回事呢？");
+            return;
+        }
+
+        if (actorState == null || actorState.ChildNodes.Count == 0)
+        {
+            Debug.LogError(actorID.ToString() + "的角色数据里没有角色状态！怎么回事呢？");
+            return;
+        }
+
+        XmlNodeList infoChilds = actorInfo.ChildNodes;
+        foreach (XmlElement ele in infoChilds)
+        {
+            if(ele.Name == "ActorID")
+            {
+                //读取ID
+                currentActorID = int.Parse(ele.GetAttribute("ActorID"));
+                continue;
+            }
+            if(ele.Name == "Camp")
+            {
+                currentActorCamp = int.Parse(ele.GetAttribute("Camp"));
+            }
+        }
+
+        XmlNodeList stateGroupChild = actorState.ChildNodes;
+        states = new Dictionary<string, List<string>>();
+        statesFold = new Dictionary<string, bool>();
+        statesLength = new Dictionary<string, int>();
+        statesLoop = new Dictionary<string, bool>();
+        statesTrack = new Dictionary<string, List<PengTrack>>();
+        foreach (XmlElement ele in stateGroupChild)
+        {
+            List<string> stateNames = new List<string>();
+            foreach(XmlElement ele2 in ele.ChildNodes)
+            {
+                stateNames.Add(ele2.GetAttribute("Name"));
+                statesLength.Add(ele2.GetAttribute("Name"), int.Parse(ele2.GetAttribute("Length")));
+                statesLoop.Add(ele2.GetAttribute("Name"), int.Parse(ele2.GetAttribute("IsLoop")) > 0);
+                List<PengTrack> pengTracks = new List<PengTrack>();
+                foreach(XmlElement trackEle in ele2.ChildNodes)
+                {
+                    //读取Track
+                    PengTrack track = new PengTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), trackEle.GetAttribute("ExecTime")),
+                        trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")), int.Parse(trackEle.GetAttribute("End")), this);
+                    foreach(XmlElement nodeEle in trackEle.ChildNodes)
+                    {
+                        //读取Node，没写完
+                        PengNode node = ReadPengNode(nodeEle);
+                        track.nodes.Add(node);
+                    }
+
+                    //读取Line，没写完
+                    if (track.nodes.Count > 0)
+                    {
+                        for(int i = 0;  i < track.nodes.Count; i++)
+                        {
+
+                        }
+                    }
+                    pengTracks.Add(track);
+                }
+                statesTrack.Add(ele2.GetAttribute("Name"), pengTracks);
+            }
+            states.Add(ele.GetAttribute("Name"), stateNames);
+            statesFold.Add(ele.GetAttribute("Name"), false);
+        }
+
+        currentStateName = "Idle";
+        currentFrameLength = statesLength[currentStateName];
+        currentStateLoop = statesLoop[currentStateName];
+        tracks = statesTrack[currentStateName];
+        currentSelectedTrack = 2;
+        currentSelectedFrame = 0;
+        dragTrackIndex = 0;
+        timelineScrollPos = Vector2.zero;
+    }
+
+    public static PengNode ReadPengNode(XmlElement ele)
+    {
+        PengNode.NodeType nodeType = (PengNode.NodeType)Enum.Parse(typeof(PengNode.NodeType), ele.GetAttribute("ScriptType"));
+        switch (nodeType)
+        {
+            default:
+                return null;
+            //没写完
+        }
     }
 }

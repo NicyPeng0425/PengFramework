@@ -29,7 +29,7 @@ public class PengTrack
         this.start = start;
         this.end = end;
         this.master = master;
-        nodes.Add(new OnExecute(Vector2.zero, master, this));
+        nodes.Add(new OnExecute(Vector2.zero, master, this, 1));
 
         nodes[0].ProcessDrag(new Vector2(300f, 415f));
     }
