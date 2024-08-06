@@ -88,7 +88,7 @@ public class PengEditorMain : EditorWindow
         {
             CreateResourcesDirectory("");
             CreateResourcesDirectory("/Actors");
-            CreateResourcesDirectory("/ActorStates");
+            CreateResourcesDirectory("/ActorData");
             CreateResourcesDirectory("/AIs");
             CreateResourcesDirectory("/Cameras");
             CreateResourcesDirectory("/Fonts");

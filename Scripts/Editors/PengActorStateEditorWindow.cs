@@ -61,6 +61,9 @@ public class PengActorStateEditorWindow : EditorWindow
     public bool trackNameEditing = false;
     public bool currentStateLoop = false;
     public List<PengTrack> tracks = new List<PengTrack>();
+    public int currentActorID = 100425;
+    public int currentActorCamp = 1;
+
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //状态组是否折叠
@@ -91,7 +94,15 @@ public class PengActorStateEditorWindow : EditorWindow
     }
 
     private void OnGUI()
-    {
+    {/*
+        if (Selection.activeGameObject == null)
+            return;
+        if (Selection.activeGameObject.GetComponent<PengActor>() == null)
+            return;*/
+
+
+        
+
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
         GUIStyle style1 = new GUIStyle("flow background");
         timeLineRect = new Rect(0, 45f, position.width, timelineHeight);
@@ -124,6 +135,7 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
 
         DrawSideBar(new Rect(3, 150, sideBarWidth - 6, position.height - 153));
+        DrawActorInfo(new Rect(3, 50, sideBarWidth - 6, 99));
 
         if (GUI.changed)
         {
@@ -195,190 +207,223 @@ public class PengActorStateEditorWindow : EditorWindow
         style9.alignment = TextAnchor.UpperLeft;
         style9.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
         style9.fontSize = 12;
+        GUIStyle style10 = new GUIStyle("Button");
+        style10.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
+        style10.fontStyle = FontStyle.Bold;
+
+        Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
+        Rect onEnter = new Rect();
+        int enterIndex = -1;
+        Rect onExit = new Rect();
+        int exitIndex = -1;
 
         if (tracks.Count > 0)
         {
             for (int i = 0; i < tracks.Count; i++)
             {
-                Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 70 + 27 * i - timelineScrollPos.y, timelineLength, 14);
-                Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 68 + 27 * i - timelineScrollPos.y, 90, 18);
-                Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 70 + 27 * i - timelineScrollPos.y, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
-                Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 69 + 27 * i - timelineScrollPos.y, 6, 16);
-                Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 69 + 27 * i - timelineScrollPos.y, 6, 16);
+                if (tracks[i].execTime == PengTrack.ExecTime.Update)
+                { 
+                    Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, timelineLength, 14);
+                    Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 71 + 27 * (i - 2) - timelineScrollPos.y, 90, 18);
+                    Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
+                    Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
+                    Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
                 
-                Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
-                Rect rectLeftCursor = new Rect(rectLeft.x - 3, rectLeft.y, rectLeft.width + 6, rectLeft.height);
-                Rect rectRightCursor = new Rect(rectRight.x - 3, rectRight.y, rectRight.width + 6, rectRight.height);
-                Rect rectLeftFrame = new Rect(rectLeft.x, rectLeft.y + rectLeft.height - 2, 80, 80);
-                Rect rectRightFrame = new Rect(rectRight.x, rectRight.y + rectRight.height - 2, 80, 80);
+                    Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
+                    Rect rectLeftCursor = new Rect(rectLeft.x - 3, rectLeft.y, rectLeft.width + 6, rectLeft.height);
+                    Rect rectRightCursor = new Rect(rectRight.x - 3, rectRight.y, rectRight.width + 6, rectRight.height);
+                    Rect rectLeftFrame = new Rect(rectLeft.x, rectLeft.y + rectLeft.height - 2, 80, 80);
+                    Rect rectRightFrame = new Rect(rectRight.x, rectRight.y + rectRight.height - 2, 80, 80);
 
-                if (timelineHeight >= rectButton.y + rectButton.height)
+                    if (i == currentSelectedTrack && currentSelectedTrack >= 2)
+                    {
+                        Rect currentSelected = new Rect(rectBG.x - 100, rectBG.y - 4, rectBG.width + 103, rectBG.height + 14);
+                        GUI.Box(currentSelected, "", style8);
+                    }
+
+                    if (timelineHeight >= rectButton.y + rectButton.height)
+                    {
+                        GUI.Box(rectBG, "", style);
+                        if (GUI.Button(rectButton, tracks[i].name))
+                        {
+                            currentSelectedTrack = i;
+                        }
+                        GUI.Box(rectTrack, "", style1);
+                        GUI.Box(rectLeft, "", style2);
+                        GUI.Box(rectRight, "", style2);
+
+                        EditorGUIUtility.AddCursorRect(rectTrackCursor, MouseCursor.Link);
+                        EditorGUIUtility.AddCursorRect(rectLeftCursor, MouseCursor.SlideArrow);
+                        EditorGUIUtility.AddCursorRect(rectRightCursor, MouseCursor.SlideArrow);
+
+                        if (timelineHeight + 65 >= rectLeftFrame.y + rectLeftFrame.height)
+                        {
+                            GUI.Box(rectLeftFrame, tracks[i].start.ToString(), style3);
+                            GUI.Box(rectRightFrame, tracks[i].end.ToString(), style3);
+                        }
+
+                        if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && rectBG.Contains(Event.current.mousePosition))
+                        {
+                            currentDeleteTrack = i;
+                            GenericMenu menu = new GenericMenu();
+                            menu.AddItem(new GUIContent("删除轨道"), false, () => { DeleteTrack(); });
+                            menu.ShowAsContext();
+                            Event.current.Use();
+                        }
+
+                        if (Event.current.type == EventType.MouseDown && Event.current.button == 0 &&
+                            (rectTrackCursor.Contains(Event.current.mousePosition) ||
+                            rectLeftCursor.Contains(Event.current.mousePosition) ||
+                            rectRightCursor.Contains(Event.current.mousePosition)))
+                        {
+                            if (rectTrackCursor.Contains(Event.current.mousePosition))
+                            {
+                                dragObject = 1;
+                            }
+                            else if (rectLeftCursor.Contains(Event.current.mousePosition))
+                            {
+                                dragObject = 0;
+                            }
+                            else if (rectRightCursor.Contains(Event.current.mousePosition))
+                            {
+                                dragObject = 2;
+                            }
+                            dragTrackIndex = i;
+                            isDragging = true;
+                            mouseXDelta = 0;
+                            GUI.changed = true;
+                            Event.current.Use();
+                        }
+
+                        if (Event.current.type == EventType.MouseUp)
+                        {
+                            isDragging = false;
+                        }
+
+                        if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+                        {
+                            if (tracks[dragTrackIndex].start > currentFrameLength)
+                            {
+                                tracks[dragTrackIndex].start = currentFrameLength - 1;
+                            }
+                            if (tracks[dragTrackIndex].end > currentFrameLength)
+                            {
+                                tracks[dragTrackIndex].end = currentFrameLength - 1;
+                            }
+                            switch (dragObject)
+                            {
+                                case 0:
+                                    if (!isDragging)
+                                    {
+                                        break;
+                                    }
+                                    mouseXDelta += Event.current.delta.x;
+                                    while (Mathf.Abs(mouseXDelta) >= 10)
+                                    {
+                                        if (mouseXDelta >= 10)
+                                        {
+                                            tracks[dragTrackIndex].start++;
+                                            mouseXDelta -= 10;
+                                            if (tracks[dragTrackIndex].start > tracks[dragTrackIndex].end)
+                                            {
+                                                tracks[dragTrackIndex].start--;
+                                            }
+                                        }
+                                        else if (mouseXDelta <= -10)
+                                        {
+                                            tracks[dragTrackIndex].start--;
+                                            mouseXDelta += 10;
+                                            if (tracks[dragTrackIndex].start < 0)
+                                            {
+                                                tracks[dragTrackIndex].start++;
+                                            }
+                                        }
+                                    }
+                                    Event.current.Use();
+                                    break;
+                                case 1:
+                                    if (!isDragging)
+                                    {
+                                        break;
+                                    }
+                                    mouseXDelta += Event.current.delta.x;
+                                    while (Mathf.Abs(mouseXDelta) >= 10)
+                                    {
+                                        if (mouseXDelta >= 10)
+                                        {
+                                            tracks[dragTrackIndex].start++;
+                                            tracks[dragTrackIndex].end++;
+                                            mouseXDelta -= 10;
+                                            if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                            {
+                                                tracks[dragTrackIndex].start--;
+                                                tracks[dragTrackIndex].end--;
+                                            }
+                                        }
+                                        else if (mouseXDelta <= -10)
+                                        {
+                                            tracks[dragTrackIndex].start--;
+                                            tracks[dragTrackIndex].end--;
+                                            mouseXDelta += 10;
+                                            if (tracks[dragTrackIndex].start < 0)
+                                            {
+                                                tracks[dragTrackIndex].start++;
+                                                tracks[dragTrackIndex].end++;
+                                            }
+                                        }
+                                    }
+                                    Event.current.Use();
+                                    break;
+                                case 2:
+                                    if (!isDragging)
+                                    {
+                                        break;
+                                    }
+                                    mouseXDelta += Event.current.delta.x;
+                                    while (Mathf.Abs(mouseXDelta) >= 10)
+                                    {
+                                        if (mouseXDelta >= 10)
+                                        {
+                                            tracks[dragTrackIndex].end++;
+                                            mouseXDelta -= 10;
+                                            if (tracks[dragTrackIndex].end >= currentFrameLength)
+                                            {
+                                                tracks[dragTrackIndex].end--;
+                                            }
+                                        }
+                                        else if (mouseXDelta <= -10)
+                                        {
+                                            tracks[dragTrackIndex].end--;
+                                            mouseXDelta += 10;
+                                            if (tracks[dragTrackIndex].end < tracks[dragTrackIndex].start)
+                                            {
+                                                tracks[dragTrackIndex].end++;
+                                            }
+                                        }
+                                    }
+                                    Event.current.Use();
+                                    break;
+                                default:
+                                    isDragging = false;
+                                    break;
+                            }
+                            GUI.changed = true;
+                        }
+
+                        
+                    }
+                }
+                if (tracks[i].execTime == PengTrack.ExecTime.Enter || tracks[i].execTime == PengTrack.ExecTime.Exit)
                 {
-                    GUI.Box(rectBG, "", style);
-                    if (GUI.Button(rectButton, tracks[i].name))
+                    if(tracks[i].execTime == PengTrack.ExecTime.Exit)
                     {
-                        currentSelectedTrack = i;
+                        onExit = new Rect(rect.x + rect.width + 5, rect.y + 3, 90, 18);
+                        exitIndex = i;
                     }
-                    GUI.Box(rectTrack, "", style1);
-                    GUI.Box(rectLeft, "", style2);
-                    GUI.Box(rectRight, "", style2);
-
-                    EditorGUIUtility.AddCursorRect(rectTrackCursor, MouseCursor.Link);
-                    EditorGUIUtility.AddCursorRect(rectLeftCursor, MouseCursor.SlideArrow);
-                    EditorGUIUtility.AddCursorRect(rectRightCursor, MouseCursor.SlideArrow);
-
-                    if(timelineHeight + 65 >= rectLeftFrame.y + rectLeftFrame.height)
-                    { 
-                        GUI.Box(rectLeftFrame, tracks[i].start.ToString(), style3);
-                        GUI.Box(rectRightFrame, tracks[i].end.ToString(), style3);
-                    }
-
-                    if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && rectBG.Contains(Event.current.mousePosition))
+                    else
                     {
-                        currentDeleteTrack = i;
-                        GenericMenu menu = new GenericMenu();
-                        menu.AddItem(new GUIContent("删除轨道"), false, () => { DeleteTrack(); });
-                        menu.ShowAsContext();
-                        Event.current.Use();
-                    }
-
-                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0 &&
-                        (rectTrackCursor.Contains(Event.current.mousePosition) ||
-                        rectLeftCursor.Contains(Event.current.mousePosition) ||
-                        rectRightCursor.Contains(Event.current.mousePosition)))
-                    {
-                        if (rectTrackCursor.Contains(Event.current.mousePosition))
-                        {
-                            dragObject = 1;
-                        }
-                        else if (rectLeftCursor.Contains(Event.current.mousePosition))
-                        {
-                            dragObject = 0;
-                        }
-                        else if (rectRightCursor.Contains(Event.current.mousePosition))
-                        {
-                            dragObject = 2;
-                        }
-                        dragTrackIndex = i;
-                        isDragging = true;
-                        mouseXDelta = 0;
-                        GUI.changed = true;
-                        Event.current.Use();
-                    }
-
-                    if (Event.current.type == EventType.MouseUp)
-                    {
-                        isDragging = false;
-                    }
-
-                    if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
-                    {
-                        if(tracks[dragTrackIndex].start > currentFrameLength)
-                        {
-                            tracks[dragTrackIndex].start = currentFrameLength - 1;
-                        }
-                        if (tracks[dragTrackIndex].end > currentFrameLength)
-                        {
-                            tracks[dragTrackIndex].end = currentFrameLength - 1;
-                        }
-                        switch (dragObject)
-                        {
-                            case 0:
-                                if (!isDragging)
-                                {
-                                    break;
-                                }
-                                mouseXDelta += Event.current.delta.x;
-                                while (Mathf.Abs(mouseXDelta) >= 10)
-                                {
-                                    if (mouseXDelta >= 10)
-                                    {
-                                        tracks[dragTrackIndex].start++;
-                                        mouseXDelta -= 10;
-                                        if (tracks[dragTrackIndex].start > tracks[dragTrackIndex].end)
-                                        {
-                                            tracks[dragTrackIndex].start--;
-                                        }
-                                    }
-                                    else if (mouseXDelta <= -10)
-                                    {
-                                        tracks[dragTrackIndex].start--;
-                                        mouseXDelta += 10;
-                                        if (tracks[dragTrackIndex].start < 0)
-                                        {
-                                            tracks[dragTrackIndex].start++;
-                                        }
-                                    }
-                                }
-                                Event.current.Use();
-                                break;
-                            case 1:
-                                if (!isDragging)
-                                {
-                                    break;
-                                }
-                                mouseXDelta += Event.current.delta.x;
-                                while (Mathf.Abs(mouseXDelta) >= 10)
-                                {
-                                    if (mouseXDelta >= 10)
-                                    {
-                                        tracks[dragTrackIndex].start++;
-                                        tracks[dragTrackIndex].end++;
-                                        mouseXDelta -= 10;
-                                        if (tracks[dragTrackIndex].end >= currentFrameLength)
-                                        {
-                                            tracks[dragTrackIndex].start--;
-                                            tracks[dragTrackIndex].end--;
-                                        }
-                                    }
-                                    else if (mouseXDelta <= -10)
-                                    {
-                                        tracks[dragTrackIndex].start--;
-                                        tracks[dragTrackIndex].end--;
-                                        mouseXDelta += 10;
-                                        if (tracks[dragTrackIndex].start < 0)
-                                        {
-                                            tracks[dragTrackIndex].start++;
-                                            tracks[dragTrackIndex].end++;
-                                        }
-                                    }
-                                }
-                                Event.current.Use();
-                                break;
-                            case 2:
-                                if (!isDragging)
-                                {
-                                    break;
-                                }
-                                mouseXDelta += Event.current.delta.x;
-                                while (Mathf.Abs(mouseXDelta) >= 10)
-                                {
-                                    if (mouseXDelta >= 10)
-                                    {
-                                        tracks[dragTrackIndex].end++;
-                                        mouseXDelta -= 10;
-                                        if (tracks[dragTrackIndex].end >= currentFrameLength)
-                                        {
-                                            tracks[dragTrackIndex].end--;
-                                        }
-                                    }
-                                    else if (mouseXDelta <= -10)
-                                    {
-                                        tracks[dragTrackIndex].end--;
-                                        mouseXDelta += 10;
-                                        if (tracks[dragTrackIndex].end < tracks[dragTrackIndex].start)
-                                        {
-                                            tracks[dragTrackIndex].end++;
-                                        }
-                                    }
-                                }
-                                Event.current.Use();
-                                break;
-                            default:
-                                isDragging = false;
-                                break;
-                        }
-                        GUI.changed = true;
+                        onEnter = new Rect(rect.x - 95, rect.y + 3, 90, 18);
+                        enterIndex = i;
                     }
                 }
             }
@@ -386,8 +431,19 @@ public class PengActorStateEditorWindow : EditorWindow
 
         GUI.Box(new Rect(0, 0, position.width, 68), "", style7);
 
-
-        Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
+        if (enterIndex >= 0 && exitIndex >= 0)
+        {
+            if (GUI.Button(onEnter, tracks[enterIndex].name, style10))
+            {
+                currentSelectedTrack = enterIndex;
+            }
+            if (GUI.Button(onExit, tracks[exitIndex].name, style10))
+            {
+                currentSelectedTrack = exitIndex;
+            }
+            GUI.changed = true;
+        }
+        
         GUI.Box(rect, "", style);
 
         if (currentFrameLength == 0)
@@ -431,14 +487,22 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         if(currentDeleteTrack == tracks.Count - 1)
         {
-            if(tracks.Count != 1 && currentSelectedTrack == tracks.Count - 1)
+            if(currentSelectedTrack == tracks.Count - 1)
             {
                 currentSelectedTrack--;
+            }
+            if(dragTrackIndex == tracks.Count - 1)
+            {
+                dragTrackIndex--;
             }
             tracks.RemoveAt(tracks.Count - 1);
         }
         else
         {
+            if (currentDeleteTrack < currentSelectedTrack)
+            {
+                currentSelectedTrack --;
+            }
             tracks.RemoveAt(currentDeleteTrack);
         }
         GUI.changed = true;
@@ -582,6 +646,8 @@ public class PengActorStateEditorWindow : EditorWindow
                         statesFold[states.ElementAt(i).Key] = false;
 
                         List<PengTrack> tracks1 = new List<PengTrack>();
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, this));
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this));
                         tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
                         statesTrack.Add(stateName, tracks1);
 
@@ -632,7 +698,7 @@ public class PengActorStateEditorWindow : EditorWindow
                                 {
                                     currentStateName = states.ElementAt(i).Value[j];
                                     tracks = statesTrack[currentStateName];
-                                    currentSelectedTrack = 0;
+                                    currentSelectedTrack = 2;
                                     currentFrameLength = statesLength[currentStateName];
                                     currentStateLoop = statesLoop[currentStateName];
                                     GUI.changed = true;
@@ -721,6 +787,37 @@ public class PengActorStateEditorWindow : EditorWindow
         }
     }
 
+    public void DrawActorInfo(Rect rectangle)
+    {
+        GUIStyle style = new GUIStyle("grey_border");
+        GUIStyle style1 = new GUIStyle("dockarea");
+        style1.alignment = TextAnchor.MiddleLeft;
+        style1.fontStyle = FontStyle.Bold;
+        GUIStyle style2 = new GUIStyle("AM HeaderStyle");
+        style2.alignment = TextAnchor.MiddleLeft;
+        style2.fontStyle = FontStyle.Bold;
+
+        Rect border = new Rect(rectangle.x - 1, rectangle.y - 1, rectangle.width + 2, rectangle.height);
+        Rect header = new Rect(rectangle.x + 1, rectangle.y + 1, rectangle.width - 2, 30);
+        Rect headerTitle = new Rect(header.x + 7, header.y + 6, 150, 20);
+
+        Rect actorNameLabel = new Rect(headerTitle.x, header.y + header.height + 2, sideBarWidth * 0.25f, 20);
+        Rect actorName = new Rect(headerTitle.x + sideBarWidth * 0.25f, header.y + header.height + 2, sideBarWidth * 0.3f, 20);
+
+        Rect actorCampLabel = new Rect(headerTitle.x + sideBarWidth * 0.5f, header.y + header.height + 2, sideBarWidth * 0.25f, 20);
+        Rect actorCamp = new Rect(headerTitle.x + sideBarWidth * 0.75f, header.y + header.height + 2, sideBarWidth * 0.3f, 20);
+
+        GUI.Box(border, "", style);
+        GUI.Box(header, "", style1);
+        GUI.Box(headerTitle, "角色基本信息", style1);
+
+        GUI.Box(actorNameLabel, "角色ID：", style2);
+        GUI.Box(actorName, currentActorID.ToString(), style2);
+
+        GUI.Box(actorCampLabel, "角色阵营：", style2);
+        GUI.Box(actorCamp, currentActorCamp.ToString(), style2);
+    }
+
     public void DrawTimeLineTitle()
     {
         GUIStyle style = new GUIStyle("LODBlackBox");
@@ -777,13 +874,13 @@ public class PengActorStateEditorWindow : EditorWindow
             timelineScrollPos.x = 0;
         }
 
-        if(27 * tracks.Count + 20 >= timelineHeight - border1.y - 20)
+        if(27 * (tracks.Count - 2) + 20 >= timelineHeight - border1.y - 20)
         {
             //border1.height -= 16;
             Rect scrollVertical = new Rect(position.width - 19, border1.y + 3, 15, timelineHeight - border1.y - 20);
 
-            float ratio = (timelineHeight - border1.y - 20) / (27 * tracks.Count + 20);
-            Rect scrollVerticalHandle = new Rect(scrollVertical.x + 2, (timelineScrollPos.y / (27 * tracks.Count + 20)) * (scrollVertical.height - 2) + border1.y + 5,  11, (scrollVertical.height - 2) * ratio);
+            float ratio = (timelineHeight - border1.y - 20) / (27 * (tracks.Count - 2) + 20);
+            Rect scrollVerticalHandle = new Rect(scrollVertical.x + 2, (timelineScrollPos.y / (27 * (tracks.Count - 2) + 20)) * (scrollVertical.height - 2) + border1.y + 5,  11, (scrollVertical.height - 2) * ratio);
 
             EditorGUIUtility.AddCursorRect(scrollVerticalHandle, MouseCursor.Link);
 
@@ -805,7 +902,7 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 if (isVerticalBarDragging)
                 {
-                    timelineScrollPos.y += (Event.current.delta.y / (timelineHeight - border1.y - 20)) * (27 * tracks.Count + 20);
+                    timelineScrollPos.y += (Event.current.delta.y / (timelineHeight - border1.y - 20)) * (27 * (tracks.Count - 2) + 20);
                     Event.current.Use();
                     GUI.changed = true;
                 }
@@ -814,9 +911,9 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 timelineScrollPos.y = 0;
             }
-            else if (timelineScrollPos.y >= (27 * tracks.Count + 20) - (timelineHeight - border1.y - 20))
+            else if (timelineScrollPos.y >= (27 * (tracks.Count - 2) + 20) - (timelineHeight - border1.y - 20))
             {
-                timelineScrollPos.y = (27 * tracks.Count + 20) - (timelineHeight - border1.y - 20);
+                timelineScrollPos.y = (27 * (tracks.Count - 2) + 20) - (timelineHeight - border1.y - 20);
             }
         }
         else
@@ -829,7 +926,7 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
         GUILayout.Label("PengActor ID：");
         GUILayout.Space(10);
-        GUILayout.Label("100425");
+        GUILayout.Label(currentActorID.ToString());
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
 
@@ -1039,11 +1136,29 @@ public class PengActorStateEditorWindow : EditorWindow
             Rect box = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, 30);
             Rect label1 = new Rect(box.x + 8, box.y + 3, 80, 20);
             Rect text1 = new Rect(box.x + 88, box.y + 3, 120, 20);
+            
 
             GUI.Box(box, "", style);
             GUI.Box(label1, "轨道名称：", style);
 
-            if (trackNameEditing)
+            if (tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
+            {
+                Rect label2 = new Rect(box.x + 218, box.y + 3, 80, 20);
+                Rect start = new Rect(label2.x + 90, box.y + 3, 60, 20);
+                Rect label3 = new Rect(box.x + 378, box.y + 3, 80, 20);
+                Rect end = new Rect(label3.x + 90, box.y + 3, 60, 20);
+                Rect label4 = new Rect(box.x + 538, box.y + 3, 80, 20);
+                Rect period = new Rect(label4.x + 90, box.y + 3, 60, 20);
+
+                GUI.Box(label2, "开始帧：", style);
+                GUI.Box(start, tracks[currentSelectedTrack].start.ToString(), style);
+                GUI.Box(label3, "结束帧：", style);
+                GUI.Box(end, tracks[currentSelectedTrack].end.ToString(), style);
+                GUI.Box(label4, "持续帧：", style);
+                GUI.Box(period, (tracks[currentSelectedTrack].end - tracks[currentSelectedTrack].start + 1).ToString(), style);
+            }
+
+            if (trackNameEditing && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
             {
                 tracks[currentSelectedTrack].name = GUI.TextField(text1, tracks[currentSelectedTrack].name, style1);
             }
@@ -1179,6 +1294,9 @@ public class PengActorStateEditorWindow : EditorWindow
                     for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
                     {
                         List<PengTrack> tracks1 = new List<PengTrack>();
+                        
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, this));
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this));
                         tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
                         statesTrack.Add(states.ElementAt(i).Value[j], tracks1);
 
@@ -1191,7 +1309,8 @@ public class PengActorStateEditorWindow : EditorWindow
 
         currentFrameLength = 60;
         currentSelectedFrame = 0;
-        currentSelectedTrack = 0;
+        currentSelectedTrack = 2;
+        dragTrackIndex = 0;
         currentTrackLength = 0;
         timelineScrollPos = Vector2.zero;
         timelineLength = currentFrameLength * 10f;
@@ -1221,5 +1340,94 @@ public class PengActorStateEditorWindow : EditorWindow
 
 
         return ele;
+    }
+
+    public static void SaveActorData(int actorID, int actorCamp, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop)
+    {
+        XmlDocument doc = new XmlDocument();
+        //一二级结构
+        XmlElement root = doc.CreateElement("Actor");
+        XmlElement info = doc.CreateElement("ActorInfo");
+        XmlElement states = doc.CreateElement("ActorState");
+
+        //info下的三级结构
+        XmlElement ID = doc.CreateElement("ActorID");
+        ID.SetAttribute("ActorID", actorID.ToString());
+        XmlElement camp = doc.CreateElement("Camp");
+        camp.SetAttribute("Camp", actorCamp.ToString());
+        info.AppendChild(ID);
+        info.AppendChild(camp);
+
+        //states下的三级结构
+        //死亡迭代
+        if (stateGroup.Count > 0)
+        {
+            for (int i = 0; i < stateGroup.Count; i++)
+            {
+                XmlElement group = doc.CreateElement("StateGroup");
+                group.SetAttribute("Name", stateGroup.ElementAt(i).Key);
+                if(stateGroup.ElementAt(i).Value.Count > 0)
+                {
+                    for(int j = 0; j < stateGroup.ElementAt(i).Value.Count; j++)
+                    {
+                        XmlElement state = doc.CreateElement("State");
+                        string stateName = stateGroup.ElementAt(i).Value[j];
+                        state.SetAttribute("Name", stateName);
+                        state.SetAttribute("IsLoop", statesLoop[stateName].ToString());
+                        state.SetAttribute("Length", statesLength[stateName].ToString());
+                        if (stateTrack[stateName].Count > 0)
+                        {
+                            for(int k = 0;  k < stateTrack[stateName].Count; k++)
+                            {
+                                XmlElement track = doc.CreateElement("Track");
+                                PengTrack pengTrack = stateTrack[stateName][k];
+                                track.SetAttribute("Name", pengTrack.name);
+                                track.SetAttribute("Start", pengTrack.start.ToString());
+                                track.SetAttribute("End", pengTrack.end.ToString());
+                                track.SetAttribute("ExecTime", pengTrack.execTime.ToString());
+                                if (pengTrack.nodes.Count > 0)
+                                {
+                                    for (int l = 0; l < pengTrack.nodes.Count; l++)
+                                    {
+                                        XmlElement node = doc.CreateElement("Script");
+                                        PengNode pengNode = stateTrack[stateName][k].nodes[l];
+                                        node.SetAttribute("Name", pengNode.nodeName);
+                                        node.SetAttribute("ScriptType", pengNode.scriptType.ToString());
+                                        node.SetAttribute("NodeType", pengNode.type.ToString());
+                                        List<string> paraName = pengNode.GetParaName();
+                                        List<string> paraValue = pengNode.GetParaValue();
+                                        if (paraName.Count > 0 && paraName.Count == paraValue.Count) 
+                                        {
+                                            for(int m = 0; m < paraName.Count; m++)
+                                            {
+                                                node.SetAttribute(paraName[m], paraValue[m]);
+                                            }
+                                        }
+                                        else if(paraValue.Count != paraName.Count)
+                                        {
+                                            Debug.LogError("节点的参数名与参数值数量对不上，请检查是不是节点脚本写错了。");
+                                            return;
+                                        }
+
+                                        //记录脚本流
+                                        track.AppendChild(node);
+                                    }
+                                }
+                                state.AppendChild(track);
+                            }
+                        }
+                        group.AppendChild(state);
+                    }
+                }  
+                states.AppendChild(group);
+            }
+        }
+
+        root.AppendChild(info);
+        root.AppendChild(states);
+        doc.AppendChild(root);
+
+        doc.Save(Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+        Debug.Log("保存成功，保存于" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
     }
 }

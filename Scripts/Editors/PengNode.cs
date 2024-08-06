@@ -142,8 +142,11 @@ public class PengNode
     private void RightMouseMenu()
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("删除节点"), false, ()=> master.ProcessRemoveNode(this));
-        menu.ShowAsContext();
+        if(scriptType != PengScript.PengScriptType.OnExecute)
+        {
+            menu.AddItem(new GUIContent("删除节点"), false, () => master.ProcessRemoveNode(this));
+            menu.ShowAsContext();
+        }
     }
 
     private void OnSelectedChange(bool changeTo)
@@ -177,6 +180,18 @@ public class PengNode
             }
         }
         return null;
+    }
+
+    public virtual List<string> GetParaName()
+    {
+        List<string> list = new List<string>();
+        return list;
+    }
+
+    public virtual List<string> GetParaValue()
+    {
+        List<string> list = new List<string>();
+        return list;
     }
 }
 
