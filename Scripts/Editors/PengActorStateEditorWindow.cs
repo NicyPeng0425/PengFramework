@@ -1,12 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.Timeline;
 using static Cinemachine.CinemachineBlendDefinition;
+using static UnityEditor.VersionControl.Asset;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -32,7 +35,12 @@ public class PengActorStateEditorWindow : EditorWindow
 
     //当前编辑状态的信息缓存
     public Vector2 timelineScrollPos = Vector2.zero;
-    public int currentFrameLength;
+    private int m_currentFrameLength;
+    public int currentFrameLength
+    {
+        get { return m_currentFrameLength; }
+        set { m_currentFrameLength = value; timelineLength = 10f * value; }
+    }
     public int currentTrackLength;
     public int currentSelectedFrame;
     int m_currentSelectedTrack;
@@ -48,9 +56,22 @@ public class PengActorStateEditorWindow : EditorWindow
     public int dragTrackIndex = -1;
     public bool isHorizontalBarDragging = false;
     public bool isVerticalBarDragging = false;
+    public float sideScrollOffset = 0;
+    public bool isSideScrollBarDragging = false;
     public bool trackNameEditing = false;
+    public bool currentStateLoop = false;
     public List<PengTrack> tracks = new List<PengTrack>();
+    //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
+    //状态组是否折叠
+    public Dictionary<string, bool> statesFold = new Dictionary<string, bool>();
+    //所有状态及其对应的轨道组
+    public Dictionary<string, List<PengTrack>> statesTrack = new Dictionary<string, List<PengTrack>>();
+    //所有状态及其对应的长度
+    public Dictionary<string, int> statesLength = new Dictionary<string, int>();
+    //所有状态及其对应的是否循环
+    public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
+    public string currentStateName;
     //
 
 
@@ -64,19 +85,6 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void OnEnable()
     {
-        tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
-        List<string> stateGroup1 = new List<string>();
-        List<string> stateGroup2 = new List<string>();
-        stateGroup1.Add("StopL");
-        stateGroup1.Add("StopR");
-        stateGroup1.Add("Idle");
-        stateGroup1.Add("Intro");
-        stateGroup2.Add("Move");
-        stateGroup2.Add("Dash");
-        stateGroup2.Add("Boost");
-        states.Add("Idle", stateGroup1);
-        states.Add("Move", stateGroup2);
-
         UpdateCurrentStateInfo();/*
         gridOffset = new Vector2(300f, 415f);
         DragAllNodes(new Vector2(300f, 415f));*/
@@ -88,16 +96,17 @@ public class PengActorStateEditorWindow : EditorWindow
         GUIStyle style1 = new GUIStyle("flow background");
         timeLineRect = new Rect(0, 45f, position.width, timelineHeight);
         sideBarRect = new Rect(0, 0, sideBarWidth, position.height);
-        nodeMapRect = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, position.height - timelineHeight);
-        GUI.Box(nodeMapRect, "", style1);
-        
-        DrawNodeGraph();
-        ProcessEvents(Event.current);
-        DrawPendingConnectionLine(Event.current);
+        nodeMapRect = new Rect(sideBarWidth, timelineHeight + 30, position.width - sideBarWidth, position.height - timelineHeight);
 
-        GUI.Box(new Rect(0, 0, position.width, timelineHeight), "", style);
-        DrawTimelineMap();
-
+        if (currentStateName != "")
+        {
+            GUI.Box(nodeMapRect, "", style1);
+            DrawNodeGraph();
+            ProcessEvents(Event.current);
+            DrawPendingConnectionLine(Event.current);
+            GUI.Box(new Rect(0, 0, position.width, timelineHeight), "", style);
+            DrawTimelineMap();
+        }
         //绘制Timeline Title
         GUI.Box(new Rect(0, 0, sideBarWidth, position.height), "", style);
 
@@ -108,12 +117,13 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.BeginVertical(GUILayout.Height(timelineHeight), GUILayout.Width(position.width));
-        DrawTimeLine();
+        if (currentStateName != "")
+            DrawTimeLine();
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.EndHorizontal();
 
-        DrawSideBar(new Rect(3, 50, sideBarWidth - 6, position.height - 53));
+        DrawSideBar(new Rect(3, 150, sideBarWidth - 6, position.height - 153));
 
         if (GUI.changed)
         {
@@ -263,6 +273,14 @@ public class PengActorStateEditorWindow : EditorWindow
 
                     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
                     {
+                        if(tracks[dragTrackIndex].start > currentFrameLength)
+                        {
+                            tracks[dragTrackIndex].start = currentFrameLength - 1;
+                        }
+                        if (tracks[dragTrackIndex].end > currentFrameLength)
+                        {
+                            tracks[dragTrackIndex].end = currentFrameLength - 1;
+                        }
                         switch (dragObject)
                         {
                             case 0:
@@ -432,27 +450,274 @@ public class PengActorStateEditorWindow : EditorWindow
         GUIStyle style1 = new GUIStyle("dockarea");
         style1.alignment = TextAnchor.MiddleLeft;
         style1.fontStyle = FontStyle.Bold;
+        GUIStyle style2 = new GUIStyle("AssetLabel");
+        style2.alignment = TextAnchor.MiddleLeft;
+        style2.fontStyle = FontStyle.Bold;
+        GUIStyle style3 = new GUIStyle("AssetLabel Partial");
+        style3.alignment = TextAnchor.MiddleLeft;
+        style3.fontStyle = FontStyle.Normal;
+        GUIStyle style4 = new GUIStyle("ShurikenMinus");
+        style4.alignment = TextAnchor.UpperLeft;
+        GUIStyle style5 = new GUIStyle("ShurikenPlus");
+        GUIStyle style6 = new GUIStyle("AssetLabel Partial");
+        style6.alignment = TextAnchor.MiddleLeft;
+        style6.fontStyle = FontStyle.Bold;
+        style6.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
+        style6.fontSize = 13;
+        GUIStyle style7 = new GUIStyle("Button");
+        style7.alignment = TextAnchor.MiddleCenter;
+        style7.fontStyle = FontStyle.Bold;
+        style7.fontSize = 10;
 
-        Rect border = new Rect(rectangle.x - 1, rectangle.y -1, rectangle.width + 2, rectangle.height + 2);
-        Rect header = new Rect(rectangle.x + 1 , rectangle.y + 1, rectangle.width - 2, 30);
+        Rect header = new Rect(rectangle.x + 1, rectangle.y + 1, rectangle.width - 2, 30);
+
+        if (states.Count > 0)
+        {
+            bool deleteStateGroup = false;
+            int deleteStateGroupAt = 0;
+            bool deleteState = false;
+            int deleteStateAt = 0;
+            int row = 0;
+
+            int showRow = 0;
+            for (int i = 0; i < states.Count; i++)
+            {
+                showRow++;
+                if(states.ElementAt(i).Value.Count > 0 && !statesFold[states.ElementAt(i).Key])
+                {
+                    showRow += states.ElementAt(i).Value.Count;
+                }
+            }
+
+            bool hasScroll = false;
+            if(showRow * 20 + 6 >= rectangle.height - 36)
+            {
+                GUIStyle styleBG = new GUIStyle("LODBlackBox");
+                GUIStyle styleHandle = new GUIStyle("Button");
+
+                hasScroll = true;
+                float ratio = (rectangle.height - 30) / (showRow * 20 + 6);
+                float offsetRatio = sideScrollOffset / (showRow * 20 + 6);
+                Rect scrollBG = new Rect(rectangle.x + rectangle.width - 20, rectangle.y + 33, 20, rectangle.height - 36);
+                Rect scrollHandle = new Rect(scrollBG.x + 2, scrollBG.y + 3 + offsetRatio * (rectangle.height - 36), scrollBG.width - 4, (scrollBG.height - 6) * ratio);
+
+                GUI.Box(scrollBG, "", styleBG);
+                GUI.Box(scrollHandle, "", styleHandle);
+                if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && scrollHandle.Contains(Event.current.mousePosition))
+                {
+                    isSideScrollBarDragging = true;
+                    GUI.changed = true;
+                    Event.current.Use();
+                }
+
+                if (Event.current.type == EventType.MouseUp || !sideBarRect.Contains(Event.current.mousePosition))
+                {
+                    isSideScrollBarDragging = false;
+                }
+
+                if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+                {
+                    if (isSideScrollBarDragging)
+                    {
+                        sideScrollOffset += (Event.current.delta.y / (rectangle.height - 36)) * (showRow * 20 + 6);
+                        Event.current.Use();
+                        GUI.changed = true;
+                    }
+                }
+                if (sideScrollOffset <= 0)
+                {
+                    sideScrollOffset = 0;
+                }
+                else if (sideScrollOffset >= (showRow * 20 + 6) - (rectangle.height - 36))
+                {
+                    sideScrollOffset = (showRow * 20 + 6) - (rectangle.height - 36);
+                }
+            }
+            else
+            {
+                sideScrollOffset = 0;
+            }
+
+
+            for (int i = 0; i < states.Count; i++)
+            {
+                Rect entry = new Rect(header.x + 5, header.y + header.height + 3 + 20 * row - sideScrollOffset, header.width - 10 - (hasScroll ? 20 : 0), 20);
+                Rect entryFold = new Rect(entry.x, entry.y, entry.width - 30, 20);
+                Rect entryAdd = new Rect(entryFold.x + entryFold.width, entryFold.y + 5, 15, 15);
+                Rect entryDelete = new Rect(entryFold.x + entryFold.width + 15, entryFold.y + 5, 15, 15);
+
+                if(entry.y + entry.height > header.y + header.height)
+                {
+                    GUI.Box(entry, states.ElementAt(i).Key, style2);
+                    GUI.Box(entryAdd, "", style5);
+                    GUI.Box(entryDelete, "", style4);
+                    if(Event.current.type == EventType.MouseDown &&  Event.current.button == 0 && entryFold.Contains(Event.current.mousePosition))
+                    {
+                        statesFold[states.ElementAt(i).Key] = !statesFold[states.ElementAt(i).Key];
+                        GUI.changed = true;
+                    }
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryAdd.Contains(Event.current.mousePosition))
+                    {
+                        //创建新状态
+                        string stateName = "NewState";
+                        bool sameName = true;
+                        int index = 1;
+                        while (sameName)
+                        {
+                            sameName = false;
+                            if(statesTrack.Count > 0)
+                            {
+                                for(int k = 0; k < statesTrack.Count; k ++)
+                                {
+                                    if(stateName == statesTrack.ElementAt(k).Key)
+                                    {
+                                        sameName = true;
+                                        stateName = "NewState" + index.ToString();
+                                        index++;
+                                    }
+                                }
+                            }
+                        }
+                        states.ElementAt(i).Value.Add(stateName);
+                        statesFold[states.ElementAt(i).Key] = false;
+
+                        List<PengTrack> tracks1 = new List<PengTrack>();
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+                        statesTrack.Add(stateName, tracks1);
+
+                        statesLength.Add(stateName, 55);
+                        statesLoop.Add(stateName, false);
+                        GUI.changed = true;
+                    }
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryDelete.Contains(Event.current.mousePosition))
+                    {
+                        deleteStateGroupAt = i;
+                        deleteStateGroup = EditorUtility.DisplayDialog("删除状态分组", "是否要删除状态分组" + states.ElementAt(deleteStateGroupAt).Key + "?", "删除", "取消");
+                    }
+                }
+
+                if (states.ElementAt(i).Value.Count > 0 && ! statesFold[states.ElementAt(i).Key])
+                {
+                    for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
+                    {
+                        row++;
+                        Rect sonEntry = new Rect(header.x + 35, header.y + header.height + 3 + 20 * row - sideScrollOffset, header.width - 40 - (hasScroll ? 20 : 0), 20);
+                        Rect sonEntrySelect = new Rect(sonEntry.x, sonEntry.y, sonEntry.width - 15, 20);
+                        Rect sonEntryDelete = new Rect(sonEntry.x + sonEntry.width - 15, sonEntry.y + 5, 15, 15);
+                        Rect sonEntryLength = new Rect(sonEntry.x + sonEntry.width - 50, sonEntry.y, 30, 15);
+                        Rect sonEntryLoop = new Rect(sonEntry.x + sonEntry.width - 75, sonEntry.y, 25, 15);
+
+                        if (sonEntry.y + sonEntry.height > header.y + header.height)
+                        {
+                            if (currentStateName != states.ElementAt(i).Value[j])
+                                GUI.Box(sonEntry, states.ElementAt(i).Value[j], style3);
+                            else
+                                GUI.Box(sonEntry, states.ElementAt(i).Value[j], style6);
+                            GUI.Box(sonEntryDelete, "", style4);
+
+                            GUIStyle styleLoop = new GUIStyle("MiniLabel");
+                            styleLoop.normal.textColor = new Color(0.36f, 0.95f, 0.72f, 0.7f);
+                            styleLoop.fontSize = 9;
+                            styleLoop.alignment = TextAnchor.MiddleRight;
+
+                            if (statesLoop[states.ElementAt(i).Value[j]])
+                            {
+                                GUI.Box(sonEntryLoop, "Loop", styleLoop);
+                            }
+                            GUI.Box(sonEntryLength, statesLength[states.ElementAt(i).Value[j]].ToString() + "F", styleLoop);
+                            //更改当前选择的状态
+                            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && sonEntrySelect.Contains(Event.current.mousePosition))
+                            {
+                                if (currentStateName != states.ElementAt(i).Value[j])
+                                {
+                                    currentStateName = states.ElementAt(i).Value[j];
+                                    tracks = statesTrack[currentStateName];
+                                    currentSelectedTrack = 0;
+                                    currentFrameLength = statesLength[currentStateName];
+                                    currentStateLoop = statesLoop[currentStateName];
+                                    GUI.changed = true;
+                                }
+                            }
+                            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && sonEntryDelete.Contains(Event.current.mousePosition))
+                            {
+                                deleteStateGroupAt = i;
+                                deleteStateAt = j;
+                                deleteState = EditorUtility.DisplayDialog("删除状态", "是否要删除状态" + states.ElementAt(deleteStateGroupAt).Value[deleteStateAt] + "?", "删除", "取消");
+                            }
+                        }
+                    }
+                }
+                row++;
+            }
+            if(deleteStateGroup)
+            {
+                string key = states.ElementAt(deleteStateGroupAt).Key;
+                states.Remove(key);
+                statesFold.Remove(key);
+                GUI.changed = true;
+            }
+            if(deleteState)
+            {
+                string deleteStateName = states.ElementAt(deleteStateGroupAt).Value[deleteStateAt];
+                if (deleteStateName == currentStateName)
+                {
+                    currentStateName = "";
+                }
+                states.ElementAt(deleteStateGroupAt).Value.Remove(deleteStateName);
+                statesTrack.Remove(deleteStateName);
+                statesLength.Remove(deleteStateName);
+                statesLoop.Remove(deleteStateName);
+                GUI.changed = true;
+            }
+        }
+
+        Rect border = new Rect(rectangle.x - 1, rectangle.y - 1, rectangle.width + 2, rectangle.height + 2);
         Rect headerTitle = new Rect(header.x + 7, header.y + 6, 150, 20);
         Rect addState = new Rect(header.x + header.width - 25, header.y + 5, 20, 20);
+        Rect unfoldAll = new Rect(header.x + header.width - 115, header.y + 5, 40, 20);
+        Rect foldAll = new Rect(header.x + header.width - 70, header.y + 5, 40, 20);
 
         GUI.Box(border, "", style);
         GUI.Box(header, "", style1);
         GUI.Box(headerTitle, "角色状态列表", style1);
-        if(GUI.Button(addState, "+"))
+        if (GUI.Button(addState, "+"))
         {
             List<string> stateGroup = new List<string>();
-            states.Add("NewStateGroup", stateGroup);
+            string key = "NewStateGroup";
+            int index = 1;
+            while (states.ContainsKey(key))
+            {
+                key = "NewStateGroup" + index.ToString();
+                index++;
+            }
+            states.Add(key, stateGroup);
+            statesFold.Add(key, true);
+
+            GUI.changed = true;
         }
 
-        if (states.Count > 0)
+        if (GUI.Button(unfoldAll, "全展开", style7))
         {
-            for (int i = 0; i < states.Count; i++)
+            if (statesFold.Count > 0)
             {
-
+                for (int i = 0; i < statesFold.Count; i++)
+                {
+                    statesFold[statesFold.ElementAt(i).Key] = false;
+                }
             }
+            GUI.changed = true;
+        }
+
+        if (GUI.Button(foldAll, "全折叠", style7))
+        {
+            if (statesFold.Count > 0)
+            {
+                for (int i = 0; i < statesFold.Count; i++)
+                {
+                    statesFold[statesFold.ElementAt(i).Key] = true;
+                }
+            }
+            GUI.changed = true;
         }
     }
 
@@ -569,33 +834,113 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
-        if(GUILayout.Button("创建轨道", GUILayout.Width(100)))
+
+        if(currentStateName!= "")
         {
-            int index = (tracks.Count + 1);
-            string trackName = "Track" + index.ToString();
-            if (tracks.Count > 0)
+            if (GUILayout.Button("创建轨道", GUILayout.Width(100)))
             {
-                for (int i = 0; i < tracks.Count; i++)
+                int index = (tracks.Count + 1);
+                string trackName = "Track" + index.ToString();
+                if (tracks.Count > 0)
                 {
-                    if(trackName == tracks[i].name)
+                    for (int i = 0; i < tracks.Count; i++)
                     {
-                        index++;  
-                        trackName = "Track" + index.ToString();
+                        if (trackName == tracks[i].name)
+                        {
+                            index++;
+                            trackName = "Track" + index.ToString();
+                        }
                     }
                 }
+                statesTrack[currentStateName].Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
             }
-            tracks.Add(new PengTrack(PengTrack.ExecTime.Update, trackName, 3, 20, this));
+
+            GUILayout.Space(10);
+
+            GUILayout.Label("状态名称：", GUILayout.Width(65));
+
+            GUILayout.Space(5);
+
+            string stateName = currentStateName;
+            stateName = EditorGUILayout.TextField(stateName, GUILayout.Width(100));
+            if (stateName != currentStateName)
+            {
+                if(states.Count > 0)
+                {
+                    int index1 = 0;
+                    int index2 = 0;
+                    for (int i = 0;i < states.Count;i++)
+                    {
+                        if (states.ElementAt(i).Value.Count  > 0)
+                        {
+                            for(int j = 0; j < states.ElementAt(i).Value.Count;j++)
+                            {
+                                if (states.ElementAt(i).Value[j] == currentStateName)
+                                {
+                                    index1 = i;
+                                    index2 = j;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    states.ElementAt(index1).Value[index2] = stateName;
+                }
+
+                if (statesTrack.Count > 0)
+                {
+                    for (int i = 0; i < statesTrack.Count; i++)
+                    {
+                        if(statesTrack.ElementAt(i).Key == currentStateName)
+                        {
+                            statesTrack.Add(stateName, statesTrack.ElementAt(i).Value);
+                            statesTrack.Remove(currentStateName);
+                            break;
+                        }
+                    }
+                }
+
+                if (statesLength.Count > 0)
+                {
+                    for (int i = 0; i < statesLength.Count; i++)
+                    {
+                        if (statesLength.ElementAt(i).Key == currentStateName)
+                        {
+                            statesLength.Add(stateName, statesLength.ElementAt(i).Value);
+                            statesLength.Remove(currentStateName);
+                            break;
+                        }
+                    }
+                }
+
+                if (statesLoop.Count > 0)
+                {
+                    for (int i = 0; i < statesLoop.Count; i++)
+                    {
+                        if (statesLoop.ElementAt(i).Key == currentStateName)
+                        {
+                            statesLoop.Add(stateName, statesLoop.ElementAt(i).Value);
+                            statesLoop.Remove(currentStateName);
+                            break;
+                        }
+                    }
+                }
+                currentStateName = stateName;
+            }
+            GUILayout.Space(10);
+            GUILayout.Label("是否循环：", GUILayout.Width(65));
+            GUILayout.Space(5);
+            statesLoop[currentStateName] = EditorGUILayout.Toggle(statesLoop[currentStateName], GUILayout.Width(25));
+
+            GUILayout.Space(10);
+            GUILayout.Label("状态长度：", GUILayout.Width(65));
+            GUILayout.Space(5);
+
+            statesLength[currentStateName] = EditorGUILayout.IntField(statesLength[currentStateName], GUILayout.Width(65));
+            currentFrameLength = statesLength[currentStateName];
+
         }
 
-        //enumpop
-
-        //stateName
-
-        //stateLoop
-
-        //stateLength
-
-        //save
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.EndVertical();
 
@@ -812,12 +1157,46 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void UpdateCurrentStateInfo() 
     {
+        List<string> stateGroup1 = new List<string>();
+        List<string> stateGroup2 = new List<string>();
+        stateGroup1.Add("StopL");
+        stateGroup1.Add("StopR");
+        stateGroup1.Add("Idle");
+        stateGroup1.Add("Intro");
+        stateGroup2.Add("Move");
+        stateGroup2.Add("Dash");
+        stateGroup2.Add("Boost");
+        states.Add("Idle", stateGroup1);
+        states.Add("Move", stateGroup2);
+        statesFold.Add("Idle", true);
+        statesFold.Add("Move", true);
+        if (states.Count > 0)
+        {
+            for (int i = 0; i < states.Count; i++)
+            {
+                if (states.ElementAt(i).Value.Count > 0)
+                {
+                    for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
+                    {
+                        List<PengTrack> tracks1 = new List<PengTrack>();
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+                        statesTrack.Add(states.ElementAt(i).Value[j], tracks1);
+
+                        statesLength.Add(states.ElementAt(i).Value[j], 55);
+                        statesLoop.Add(states.ElementAt(i).Value[j], false);
+                    }
+                }
+            }
+        }
+
         currentFrameLength = 60;
-        currentSelectedFrame = 40;
+        currentSelectedFrame = 0;
         currentSelectedTrack = 0;
         currentTrackLength = 0;
         timelineScrollPos = Vector2.zero;
         timelineLength = currentFrameLength * 10f;
+        currentStateLoop = false;
+        currentStateName = "";
     }
 
     public void OnCurrentSelectedTrackChanged()
