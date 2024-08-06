@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.Timeline;
 using static Cinemachine.CinemachineBlendDefinition;
 
@@ -47,7 +48,9 @@ public class PengActorStateEditorWindow : EditorWindow
     public int dragTrackIndex = -1;
     public bool isHorizontalBarDragging = false;
     public bool isVerticalBarDragging = false;
+    public bool trackNameEditing = false;
     public List<PengTrack> tracks = new List<PengTrack>();
+    public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //
 
 
@@ -62,6 +65,17 @@ public class PengActorStateEditorWindow : EditorWindow
     private void OnEnable()
     {
         tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+        List<string> stateGroup1 = new List<string>();
+        List<string> stateGroup2 = new List<string>();
+        stateGroup1.Add("StopL");
+        stateGroup1.Add("StopR");
+        stateGroup1.Add("Idle");
+        stateGroup1.Add("Intro");
+        stateGroup2.Add("Move");
+        stateGroup2.Add("Dash");
+        stateGroup2.Add("Boost");
+        states.Add("Idle", stateGroup1);
+        states.Add("Move", stateGroup2);
 
         UpdateCurrentStateInfo();/*
         gridOffset = new Vector2(300f, 415f);
@@ -98,6 +112,8 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.EndHorizontal();
+
+        DrawSideBar(new Rect(3, 50, sideBarWidth - 6, position.height - 53));
 
         if (GUI.changed)
         {
@@ -147,12 +163,29 @@ public class PengActorStateEditorWindow : EditorWindow
         GUIStyle style = new GUIStyle("LODBlackBox");
         GUIStyle style1 = new GUIStyle("IN EditColliderButton");
         GUIStyle style2 = new GUIStyle("Tooltip");
-        GUIStyle style3 = new GUIStyle("BoldLabel");
+        GUIStyle style3 = new GUIStyle("LargeBoldLabel");
         style3.alignment = TextAnchor.UpperLeft;
         style3.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
         style3.fontSize = 10;
-        
-       
+        GUIStyle style4 = new GUIStyle("LargeBoldLabel");
+        style4.alignment = TextAnchor.UpperLeft;
+        style4.normal.textColor = Color.white;
+        style4.fontSize = 12;
+        GUIStyle style5 = new GUIStyle("LargeBoldLabel");
+        style5.alignment = TextAnchor.UpperLeft;
+        style5.normal.textColor = Color.gray;
+        style5.fontSize = 6;
+        GUIStyle style6 = new GUIStyle("LargeBoldLabel");
+        style6.alignment = TextAnchor.UpperLeft;
+        style6.normal.textColor = Color.white;
+        style6.fontSize = 20;
+        GUIStyle style7 = new GUIStyle("ObjectPickerPreviewBackground");
+        GUIStyle style8 = new GUIStyle("SelectionRect");
+        GUIStyle style9 = new GUIStyle("LargeBoldLabel");
+        style9.alignment = TextAnchor.UpperLeft;
+        style9.normal.textColor = new Color(0.94f, 0.4f, 0.26f);
+        style9.fontSize = 12;
+
         if (tracks.Count > 0)
         {
             for (int i = 0; i < tracks.Count; i++)
@@ -333,24 +366,11 @@ public class PengActorStateEditorWindow : EditorWindow
             }
         }
 
-        GUIStyle style7 = new GUIStyle("ObjectPickerPreviewBackground");
         GUI.Box(new Rect(0, 0, position.width, 68), "", style7);
+
 
         Rect rect = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 42, timelineLength, 20);
         GUI.Box(rect, "", style);
-
-        GUIStyle style4 = new GUIStyle("BoldLabel");
-        style4.alignment = TextAnchor.UpperLeft;
-        style4.normal.textColor = Color.white;
-        style4.fontSize = 11;
-        GUIStyle style5 = new GUIStyle("LargeBoldLabel");
-        style5.alignment = TextAnchor.UpperLeft;
-        style5.normal.textColor = Color.gray;
-        style5.fontSize = 6;
-        GUIStyle style6 = new GUIStyle("LargeBoldLabel");
-        style6.alignment = TextAnchor.UpperLeft;
-        style6.normal.textColor = Color.white;
-        style6.fontSize = 20;
 
         if (currentFrameLength == 0)
         {
@@ -358,7 +378,13 @@ public class PengActorStateEditorWindow : EditorWindow
         }
         for (int i = 0; i < currentFrameLength; i++)
         {
-            Rect pointer = new Rect(rect.x + i * 10f - 2, rect.y + rect.height - 6, 10, 6);
+            Rect pointer = new Rect(rect.x + i * 10f - 3, rect.y + rect.height - 6, 10, 6);
+            Rect index = new Rect(rect.x + i * 10, rect.y, 10, rect.height);
+            if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && index.Contains(Event.current.mousePosition))
+            {
+                currentSelectedFrame = i;
+                Event.current.Use();
+            }
             if (i == currentFrameLength - 1)
             {
                 Rect rectFrameNum = new Rect(rect.x + i * 10f, rect.y + 3, 80, 80);
@@ -367,7 +393,7 @@ public class PengActorStateEditorWindow : EditorWindow
             }
             else if (i % 5 == 0)
             {
-                Rect rectFrameNum = new Rect(rect.x + (i / 5) * 50f, rect.y + 3, 80, 80);
+                Rect rectFrameNum = new Rect(rect.x + (i / 5) * 50f - 1, rect.y + 3, 80, 80);
                 GUI.Box(rectFrameNum, i.ToString(), style4);
                 GUI.Box(pointer, "|", style6);
             }
@@ -377,6 +403,10 @@ public class PengActorStateEditorWindow : EditorWindow
             }
         }
 
+        Rect currentFrame = new Rect(rect.x + currentSelectedFrame * 10, rect.y, 10, 285);
+        Rect currentFrameIndex = new Rect(rect.x + currentSelectedFrame * 10 - 1, rect.y + 3, 40, 40);
+        GUI.Box(currentFrame, "", style8);
+        GUI.Box(currentFrameIndex, currentSelectedFrame.ToString(), style9);
     }
 
     public void DeleteTrack()
@@ -396,9 +426,34 @@ public class PengActorStateEditorWindow : EditorWindow
         GUI.changed = true;
     }
 
-    public void DrawSideBar()
+    public void DrawSideBar(Rect rectangle)
     {
+        GUIStyle style = new GUIStyle("grey_border");
+        GUIStyle style1 = new GUIStyle("dockarea");
+        style1.alignment = TextAnchor.MiddleLeft;
+        style1.fontStyle = FontStyle.Bold;
 
+        Rect border = new Rect(rectangle.x - 1, rectangle.y -1, rectangle.width + 2, rectangle.height + 2);
+        Rect header = new Rect(rectangle.x + 1 , rectangle.y + 1, rectangle.width - 2, 30);
+        Rect headerTitle = new Rect(header.x + 7, header.y + 6, 150, 20);
+        Rect addState = new Rect(header.x + header.width - 25, header.y + 5, 20, 20);
+
+        GUI.Box(border, "", style);
+        GUI.Box(header, "", style1);
+        GUI.Box(headerTitle, "角色状态列表", style1);
+        if(GUI.Button(addState, "+"))
+        {
+            List<string> stateGroup = new List<string>();
+            states.Add("NewStateGroup", stateGroup);
+        }
+
+        if (states.Count > 0)
+        {
+            for (int i = 0; i < states.Count; i++)
+            {
+
+            }
+        }
     }
 
     public void DrawTimeLineTitle()
@@ -516,7 +571,20 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
         if(GUILayout.Button("创建轨道", GUILayout.Width(100)))
         {
-            tracks.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+            int index = (tracks.Count + 1);
+            string trackName = "Track" + index.ToString();
+            if (tracks.Count > 0)
+            {
+                for (int i = 0; i < tracks.Count; i++)
+                {
+                    if(trackName == tracks[i].name)
+                    {
+                        index++;  
+                        trackName = "Track" + index.ToString();
+                    }
+                }
+            }
+            tracks.Add(new PengTrack(PengTrack.ExecTime.Update, trackName, 3, 20, this));
         }
 
         //enumpop
@@ -609,6 +677,49 @@ public class PengActorStateEditorWindow : EditorWindow
                 {
                     tracks[currentSelectedTrack].nodes[i].Draw();
                 } 
+            }
+
+            GUIStyle style = new GUIStyle("AnimLeftPaneSeparator");
+            style.alignment = TextAnchor.MiddleLeft;
+            style.fontStyle = FontStyle.Bold;
+            GUIStyle style1 = new GUIStyle("BoldTextField");
+            style1.alignment = TextAnchor.MiddleLeft;
+            style1.fontStyle = FontStyle.Bold;
+            style1.fontSize = 12;
+            GUIStyle style2 = new GUIStyle("dragtab");
+            style2.alignment = TextAnchor.MiddleLeft;
+            style2.fontStyle = FontStyle.Bold;
+            style2.fontSize = 12;
+
+            Rect box = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, 30);
+            Rect label1 = new Rect(box.x + 8, box.y + 3, 80, 20);
+            Rect text1 = new Rect(box.x + 88, box.y + 3, 120, 20);
+
+            GUI.Box(box, "", style);
+            GUI.Box(label1, "轨道名称：", style);
+
+            if (trackNameEditing)
+            {
+                tracks[currentSelectedTrack].name = GUI.TextField(text1, tracks[currentSelectedTrack].name, style1);
+            }
+            else
+            {
+                GUI.Box(text1, tracks[currentSelectedTrack].name, style2);
+            }
+
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+            {
+                if(text1.Contains(Event.current.mousePosition))
+                {
+                    trackNameEditing = true;
+                    GUI.changed = true;
+                }
+                else
+                {
+                    trackNameEditing = false;
+                    GUI.changed = true;
+                }
+
             }
         }
     }
