@@ -6,6 +6,7 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
+using UnityEditor.Experimental.GraphView;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -96,7 +97,6 @@ public class PengActorStateEditorWindow : EditorWindow
         if (Selection.activeGameObject.GetComponent<PengActor>() == null)
             return;*/
 
-
         
 
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
@@ -132,6 +132,18 @@ public class PengActorStateEditorWindow : EditorWindow
 
         DrawSideBar(new Rect(3, 150, sideBarWidth - 6, position.height - 153));
         DrawActorInfo(new Rect(3, 50, sideBarWidth - 6, 99));
+
+        GUIStyle styleSave = new GUIStyle("Button");
+        styleSave.alignment = TextAnchor.MiddleCenter;
+        styleSave.fontStyle = FontStyle.Bold;
+        styleSave.fontSize = 13;
+        styleSave.normal.textColor = new Color(0.4f, 0.95f, 0.6f);
+        Rect save = new Rect(sideBarWidth - 45, 5, 40, 40);
+        if (GUI.Button(save, "保存\n数据", styleSave))
+        {
+            SaveActorData(currentActorID, currentActorCamp, states, statesTrack, statesLength, statesLoop);
+        }
+        EditorGUIUtility.AddCursorRect(save, MouseCursor.Link);
 
         if (GUI.changed)
         {
@@ -606,7 +618,9 @@ public class PengActorStateEditorWindow : EditorWindow
                 Rect entryAdd = new Rect(entryFold.x + entryFold.width, entryFold.y + 5, 15, 15);
                 Rect entryDelete = new Rect(entryFold.x + entryFold.width + 15, entryFold.y + 5, 15, 15);
 
-                if(entry.y + entry.height > header.y + header.height)
+                EditorGUIUtility.AddCursorRect(entry, MouseCursor.Link);
+
+                if (entry.y + entry.height > header.y + header.height)
                 {
                     GUI.Box(entry, states.ElementAt(i).Key, style2);
                     GUI.Box(entryAdd, "", style5);
@@ -642,9 +656,9 @@ public class PengActorStateEditorWindow : EditorWindow
                         statesFold[states.ElementAt(i).Key] = false;
 
                         List<PengTrack> tracks1 = new List<PengTrack>();
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, this));
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this));
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, this, true));
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this, true));
+                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this, true));
                         statesTrack.Add(stateName, tracks1);
 
                         statesLength.Add(stateName, 55);
@@ -668,6 +682,8 @@ public class PengActorStateEditorWindow : EditorWindow
                         Rect sonEntryDelete = new Rect(sonEntry.x + sonEntry.width - 15, sonEntry.y + 5, 15, 15);
                         Rect sonEntryLength = new Rect(sonEntry.x + sonEntry.width - 50, sonEntry.y, 30, 15);
                         Rect sonEntryLoop = new Rect(sonEntry.x + sonEntry.width - 75, sonEntry.y, 25, 15);
+
+                        EditorGUIUtility.AddCursorRect(sonEntry, MouseCursor.Link);
 
                         if (sonEntry.y + sonEntry.height > header.y + header.height)
                         {
@@ -781,6 +797,10 @@ public class PengActorStateEditorWindow : EditorWindow
             }
             GUI.changed = true;
         }
+
+        EditorGUIUtility.AddCursorRect(addState, MouseCursor.Link);
+        EditorGUIUtility.AddCursorRect(unfoldAll, MouseCursor.Link);
+        EditorGUIUtility.AddCursorRect(foldAll, MouseCursor.Link);
     }
 
     public void DrawActorInfo(Rect rectangle)
@@ -928,7 +948,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
 
-        if(currentStateName!= "")
+        if(currentStateName!= "" && currentStateName != null)
         {
             if (GUILayout.Button("创建轨道", GUILayout.Width(100)))
             {
@@ -945,7 +965,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         }
                     }
                 }
-                statesTrack[currentStateName].Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
+                statesTrack[currentStateName].Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this, true));
             }
 
             GUILayout.Space(10);
@@ -1099,7 +1119,8 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         int id = 1;
         bool idSame = true;
-        while(idSame)
+        PengTrack track = tracks[currentSelectedTrack];
+        while (idSame)
         {
             idSame = false;
             for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
@@ -1114,9 +1135,13 @@ public class PengActorStateEditorWindow : EditorWindow
         switch (type)
         {
             case PengScript.PengScriptType.PlayAnimation:
-                tracks[currentSelectedTrack].nodes.Add(new PlayAnimation(mousePos, this, tracks[currentSelectedTrack], id, "Idle", true, 0, 0, 0));
+                track.nodes.Add(new PlayAnimation(mousePos, this, ref track, id, 
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)), 
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)), 
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5))));
                 break;
         }
+        tracks[currentSelectedTrack] = track;
     }
 
     private void DrawNodes()
@@ -1230,8 +1255,11 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].inPoint == node.inPoint || lines[i].outPoint == node.outPoint)
-                {  toRemove.Add(lines[i]); }
+                for(int j = 0; j < node.outPoints.Length; j++)
+                {
+                    if ((lines[i].inPoint == node.inPoint || lines[i].outPoint == node.outPoints[j]) && !toRemove.Contains(lines[i]))
+                    { toRemove.Add(lines[i]); }
+                }
             }
 
             for(int i = 0; i < toRemove.Count;i++)
@@ -1281,7 +1309,7 @@ public class PengActorStateEditorWindow : EditorWindow
     }
 
     public void UpdateCurrentStateInfo() 
-    {
+    {/*
         List<string> stateGroup1 = new List<string>();
         List<string> stateGroup2 = new List<string>();
         stateGroup1.Add("StopL");
@@ -1295,6 +1323,7 @@ public class PengActorStateEditorWindow : EditorWindow
         states.Add("Move", stateGroup2);
         statesFold.Add("Idle", true);
         statesFold.Add("Move", true);
+        
         if (states.Count > 0)
         {
             for (int i = 0; i < states.Count; i++)
@@ -1309,7 +1338,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this));
                         tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
                         statesTrack.Add(states.ElementAt(i).Value[j], tracks1);
-
+                        
                         statesLength.Add(states.ElementAt(i).Value[j], 55);
                         statesLoop.Add(states.ElementAt(i).Value[j], false);
                     }
@@ -1325,7 +1354,8 @@ public class PengActorStateEditorWindow : EditorWindow
         timelineScrollPos = Vector2.zero;
         timelineLength = currentFrameLength * 10f;
         currentStateLoop = false;
-        currentStateName = "";
+        currentStateName = "";*/
+        ReadActorData(100425);
     }
 
     public void OnCurrentSelectedTrackChanged()
@@ -1436,6 +1466,11 @@ public class PengActorStateEditorWindow : EditorWindow
                                         node.SetAttribute("NodeType", pengNode.type.ToString());
                                         node.SetAttribute("NodePos", PengNode.ParseVector2ToString(pengNode.pos));
                                         node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
+                                        node.SetAttribute("Position", PengNode.ParseVector2ToString(pengNode.pos));
+                                        node.SetAttribute("ParaNum", pengNode.paraNum.ToString());
+                                        node.SetAttribute("OutID", PengNode.ParseDictionaryIntIntToString(pengNode.outID));
+                                        node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(pengNode.varOutID));
+                                        node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.varInID));
                                         List<string> paraName = pengNode.GetParaName();
                                         List<string> paraValue = pengNode.GetParaValue();
                                         if (paraName.Count > 0 && paraName.Count == paraValue.Count) 
@@ -1450,8 +1485,6 @@ public class PengActorStateEditorWindow : EditorWindow
                                             Debug.LogError("节点的参数名与参数值数量对不上，请检查是不是节点脚本写错了。");
                                             return;
                                         }
-
-                                        //记录脚本流
                                         track.AppendChild(node);
                                     }
                                 }
@@ -1469,8 +1502,13 @@ public class PengActorStateEditorWindow : EditorWindow
         root.AppendChild(states);
         doc.AppendChild(root);
 
+        if(!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + actorID.ToString()))
+        {
+            Directory.CreateDirectory(Application.dataPath + "/Resources/ActorData/" + actorID.ToString());
+        }
         doc.Save(Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
         Debug.Log("保存成功，保存于" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+        AssetDatabase.Refresh();
     }
 
     public void ReadActorData(int actorID)
@@ -1553,22 +1591,39 @@ public class PengActorStateEditorWindow : EditorWindow
                 List<PengTrack> pengTracks = new List<PengTrack>();
                 foreach(XmlElement trackEle in ele2.ChildNodes)
                 {
-                    //读取Track
                     PengTrack track = new PengTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), trackEle.GetAttribute("ExecTime")),
-                        trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")), int.Parse(trackEle.GetAttribute("End")), this);
+                        trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")), int.Parse(trackEle.GetAttribute("End")), this, false);
                     foreach(XmlElement nodeEle in trackEle.ChildNodes)
                     {
-                        //读取Node，没写完
-                        PengNode node = ReadPengNode(nodeEle);
+                        PengNode node = ReadPengNode(nodeEle, ref track);
                         track.nodes.Add(node);
                     }
 
-                    //读取Line，没写完
                     if (track.nodes.Count > 0)
                     {
                         for(int i = 0;  i < track.nodes.Count; i++)
                         {
-
+                            if (track.nodes[i].outID.Count > 0)
+                            {
+                                for(int j = 0; j < track.nodes[i].outID.Count; j++)
+                                {
+                                    if(track.nodes[i].outID.ElementAt(j).Value > 0)
+                                    {
+                                        track.lines.Add(new PengNodeConnectionLine(GetPengNodeByID(track.nodes[i].outID.ElementAt(j).Value, track.nodes).inPoint, track.nodes[i].outPoints[track.nodes[i].outID.ElementAt(j).Key]));
+                                    }
+                                }
+                            }
+                            if (track.nodes[i].varInID.Count > 0)
+                            {
+                                for(int j = 0; j < track.nodes[i].varInID.Count; j++)
+                                {
+                                    if (track.nodes[i].varInID.ElementAt(j).Value.nodeID > 0)
+                                    {
+                                        track.lines.Add(new PengNodeConnectionLine(GetPengVarByVarID(track.nodes[i], j, ConnectionPointType.In).point,
+                                           GetPengVarByVarID(GetPengNodeByID(track.nodes[i].varInID.ElementAt(j).Value.nodeID, track.nodes), track.nodes[i].varInID.ElementAt(j).Value.connectionID, ConnectionPointType.Out).point));
+                                    }
+                                }
+                            }
                         }
                     }
                     pengTracks.Add(track);
@@ -1589,14 +1644,49 @@ public class PengActorStateEditorWindow : EditorWindow
         timelineScrollPos = Vector2.zero;
     }
 
-    public static PengNode ReadPengNode(XmlElement ele)
+    public PengNode ReadPengNode(XmlElement ele, ref PengTrack track)
     {
-        PengNode.NodeType nodeType = (PengNode.NodeType)Enum.Parse(typeof(PengNode.NodeType), ele.GetAttribute("ScriptType"));
-        switch (nodeType)
+        PengScript.PengScriptType type = (PengScript.PengScriptType)Enum.Parse(typeof(PengScript.PengScriptType), ele.GetAttribute("ScriptType"));
+        switch (type)
         {
             default:
                 return null;
-            //没写完
+            case PengScript.PengScriptType.OnExecute:
+                return new OnExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), this, ref track, int.Parse(ele.GetAttribute("ScriptID")), ele.GetAttribute("OutID"), ele.GetAttribute("VarOutID"), ele.GetAttribute("VarInID"));
+            case PengScript.PengScriptType.PlayAnimation:
+                return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), this, ref track, int.Parse(ele.GetAttribute("ScriptID")), ele.GetAttribute("OutID"), ele.GetAttribute("VarOutID"), ele.GetAttribute("VarInID"));
         }
+    }
+
+    public static PengNode GetPengNodeByID(int id, List<PengNode> nodes)
+    {
+        PengNode node = null;
+        if (nodes.Count > 0)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].nodeID == id)
+                {
+                    node = nodes[i];
+                    break;
+                }
+            }
+        }
+        return node;
+    }
+    
+    public static PengVariables.PengVar GetPengVarByVarID(PengNode node, int id, ConnectionPointType type)
+    {
+        PengVariables.PengVar result = null;
+        switch (type)
+        {
+            case ConnectionPointType.In:
+                result = node.inVars[id];
+                break;
+            case ConnectionPointType.Out:
+                result = node.outVars[id];
+                break;
+        }
+        return result;
     }
 }

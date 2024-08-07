@@ -7,9 +7,20 @@ using System.ComponentModel;
 using System.Reflection;
 using PengVariables;
 using static UnityEditor.PlayerSettings;
+using System.Linq;
 
 public class PengNode
 {
+    //Node描述文件
+    //nodeName 名字
+    //scriptType 脚本类型
+    //pos 节点图上的位置
+    //paraNum 参数数量
+    //nodeID 脚本ID
+    //varOutID 参数出信息
+    //varInID 参数入信息
+    //outID 脚本流出信息
+    //参数信息
     public string nodeName = "默认";
     public PengScript.PengScriptType scriptType;
     public Vector2 pos;
@@ -36,8 +47,27 @@ public class PengNode
         set { m_isSelected = value; OnSelectedChange(value); }
     }
 
+    public struct NodeIDConnectionID
+    {
+        public int nodeID;
+        public int connectionID;
+    }
+
     public PengNodeConnection inPoint;
-    public PengNodeConnection outPoint;
+    public PengNodeConnection[] outPoints;
+    public PengVar[] inVars;
+    public PengVar[] outVars;
+
+    //第x个FlowOut连接点，链接到哪个节点的FlowIn节点。因为所有节点只有一个FlowIn，所以只需要记载节点ID
+    //Value取值为-1时表示该点没有链接
+    public Dictionary<int, int> outID = new Dictionary<int, int>();
+    //第x个VarOut连接点，链接到哪些节点的哪一VarIn连接点。因为VarOut可以链接多个点，所以用List
+    //List.Count为0时表示没有链接
+    public Dictionary<int, List<NodeIDConnectionID>> varOutID = new Dictionary<int, List<NodeIDConnectionID>>();
+    //第x个VarIn连接点，从哪个节点的哪一VarOut取值。键值对：<节点ID，连接点ID>
+    //Value的Key取值为-1时表示该点没有链接
+    public Dictionary<int, NodeIDConnectionID> varInID = new Dictionary<int, NodeIDConnectionID>();                     
+    
     public PengActorStateEditorWindow master;
     public PengTrack trackMaster;
     public int nodeID;
@@ -65,19 +95,37 @@ public class PengNode
             case NodeType.Event:
                 GUIStyle style = new GUIStyle("flow node 6" + (isSelected ? " on" : ""));
                 GUI.Box(rect, nodeName, style);
-                outPoint.Draw(rect);
+                if(outPoints.Length > 0)
+                {
+                    for(int i = 0; i < outPoints.Length; i++)
+                    {
+                        outPoints[i].Draw(rect);
+                    }
+                }
                 break;
             case NodeType.Action:
                 GUIStyle style1 = new GUIStyle("flow node 1" + (isSelected ? " on" : ""));
                 GUI.Box(rect, nodeName, style1);
                 inPoint.Draw(rect);
-                outPoint.Draw(rect);
+                if (outPoints.Length > 0)
+                {
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        outPoints[i].Draw(rect);
+                    }
+                }
                 break;
             case NodeType.Branch:
                 GUIStyle style2 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
                 GUI.Box(rect, nodeName, style2);
                 inPoint.Draw(rect);
-                outPoint.Draw(rect);
+                if (outPoints.Length > 0)
+                {
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        outPoints[i].Draw(rect);
+                    }
+                }
                 break;
         }
     }
@@ -174,8 +222,6 @@ public class PengNode
         rect = new Rect(pos.x, pos.y, 240, 26);
         rectSmall = new Rect(pos.x, pos.y + 26, 240, 5 + 23 * paraNum);
         this.master = master;
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, this, null);
-        outPoint = new PengNodeConnection(ConnectionPointType.FlowOut, this, null);
     }
 
     public static string GetDescription(Enum value)
@@ -254,30 +300,246 @@ public class PengNode
             return Vector2.zero;
         }
     }
+
+    public static List<NodeIDConnectionID> DefaultNodeIDConnectionIDList()
+    {
+        List<NodeIDConnectionID> list = new List<NodeIDConnectionID>();
+        list.Add(DefaultNodeIDConnectionID());
+        return list;
+    }
+
+    public static NodeIDConnectionID DefaultNodeIDConnectionID()
+    {
+        NodeIDConnectionID nici = new NodeIDConnectionID();
+        nici.nodeID = -1;
+        nici.connectionID = -1;
+        return nici;
+    }
+
+    public static string ParseNodeIDConnectionIDListToString(List<NodeIDConnectionID> list)
+    {
+        string result = "";
+        if (list.Count > 0)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                result += list[i].nodeID.ToString() + ":" + list[i].connectionID.ToString();
+                if (i != list.Count - 1)
+                {
+                    result += ",";
+                }
+            }
+        }
+        return result;
+    }
+
+    public static List<NodeIDConnectionID> ParseStringToNodeIDConnectionIDList(string s)
+    {
+        List<NodeIDConnectionID> result = new List<NodeIDConnectionID>();
+        if (s == "")
+            return result;
+        string[] str = s.Split(',');
+        
+        for (int i = 0; i < str.Length; i++)
+        {
+            string[] str2 = str[i].Split(":");
+            NodeIDConnectionID ele = new NodeIDConnectionID();
+            ele.nodeID = int.Parse(str2[0]);
+            ele.connectionID = int.Parse(str2[1]);
+            result.Add(ele);
+        }
+        return result;
+    }
+
+    public static string ParseDictionaryIntIntToString(Dictionary<int, int> dic)
+    {
+        string result = "";
+        if (dic.Count > 0)
+        {
+            for (int i = 0; i < dic.Count; i++)
+            {
+                result += dic.ElementAt(i).Key.ToString() + ":" + dic.ElementAt(i).Value.ToString();
+                if(i != dic.Count - 1)
+                {
+                    result += ",";
+                }
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, int> ParseStringToDictionaryIntInt(string str)
+    {
+        Dictionary<int, int> result = new Dictionary<int, int>();
+        if (str == "")
+            return result;
+        string[] strings = str.Split(",");
+        if (strings.Length > 0)
+        {
+            for (int i = 0; i < strings.Length; i++)
+            {
+                string[] s = strings[i].Split(":");
+                result.Add(int.Parse(s[0]), int.Parse(s[1]));
+            }
+        }
+        return result;
+    }
+
+    public static string ParseDictionaryIntListNodeIDConnectionIDToString(Dictionary<int, List<NodeIDConnectionID>> dic)
+    {
+        string result = "";
+        if (dic.Count > 0)
+        {
+            for (int i = 0; i < dic.Count; i++)
+            {
+                result += dic.ElementAt(i).Key.ToString() + "|" + ParseNodeIDConnectionIDListToString(dic.ElementAt(i).Value);
+                if (i != dic.Count - 1)
+                {
+                    result += ";";
+                }
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, List<NodeIDConnectionID>> ParseStringToDictionaryIntListNodeIDConnectionID(string str)
+    {
+        Dictionary<int, List<NodeIDConnectionID>> result = new Dictionary<int, List<NodeIDConnectionID>>();
+        if (str == "")
+            return result;
+        string[] elements = str.Split(";");
+        if (elements.Length > 0)
+        {
+            for (int i = 0; i < elements.Length; i++)
+            {
+                string[] eles2 = elements[i].Split("|");
+                result.Add(int.Parse(eles2[0]), ParseStringToNodeIDConnectionIDList(eles2[1]));
+            }
+        }
+        return result;
+    }
+
+    public static string ParseDictionaryIntNodeIDConnectionIDToString(Dictionary<int, NodeIDConnectionID> dic)
+    {
+        string result = "";
+        if (dic.Count > 0)
+        {
+            for (int i = 0; i < dic.Count; i++)
+            {
+                result += dic.ElementAt(i).Key.ToString() + "|" + dic.ElementAt(i).Value.nodeID.ToString() + ":" + dic.ElementAt(i).Value.connectionID.ToString();
+                if(i != dic.Count - 1)
+                {
+                    result += ";";
+                }
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, NodeIDConnectionID> ParseStringToDictionaryIntNodeIDConnectionID(string str)
+    {
+        Dictionary<int, NodeIDConnectionID> result = new Dictionary<int, NodeIDConnectionID> ();
+        if(str == "")
+            return result;
+        string[] strings = str.Split(";");
+        if (strings.Length > 0)
+        {
+            for (int i = 0; i < strings.Length; i++)
+            {
+                string[] s1 = strings[i].Split("|");
+                string[] s2 = s1[1].Split(":");
+                NodeIDConnectionID nici = new NodeIDConnectionID();
+                nici.nodeID = int.Parse(s2[0]);
+                nici.connectionID = int.Parse(s2[1]);
+                result.Add(int.Parse(s1[0]), nici);
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, int> DefaultDictionaryIntInt(int flowOutNum)
+    {
+        Dictionary<int, int> result = new Dictionary<int, int>();
+        if (flowOutNum > 0)
+        {
+            for (int i = 0; i < flowOutNum; i++)
+            {
+                result.Add(i, -1);
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, List<NodeIDConnectionID>> DefaultDictionaryIntListNodeIDConnectionID(int varOutNum)
+    {
+        Dictionary<int, List<NodeIDConnectionID>> result = new Dictionary<int, List<NodeIDConnectionID>>();
+        if (varOutNum > 0)
+        {
+            for (int i = 0; i < varOutNum; i++)
+            {
+                result.Add(i, DefaultNodeIDConnectionIDList());
+            }
+        }
+        return result;
+    }
+
+    public static Dictionary<int, NodeIDConnectionID> DefaultDictionaryIntNodeIDConnectionID(int varInNum)
+    {
+        Dictionary<int, NodeIDConnectionID> result = new Dictionary<int, NodeIDConnectionID>();
+        if (varInNum > 0)
+        {
+            for (int i = 0; i < varInNum; i++)
+            {
+                result.Add(i, DefaultNodeIDConnectionID());
+            }
+        }
+        return result;
+    }
 }
 
 public class OnExecute : PengNode
 {
-    public int trackExecuteFrame;
-    public int stateExecuteFrame;
-
+    //Node描述文件
+    //nodeName 名字
+    //scriptType 脚本类型
+    //pos 节点图上的位置
+    //paraNum 参数数量
+    //nodeID 脚本ID
+    //varOutID 参数出信息
+    //varInID 参数入信息
+    //outID 脚本流出信息
+    //参数信息
     public PengInt pengTrackExecuteFrame;
     public PengInt pengStateExecuteFrame;
 
-    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster, int nodeID) 
+    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID) 
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        this.type = NodeType.Event;
-        this.scriptType = PengScript.PengScriptType.OnExecute;
-        this.nodeName = GetDescription(scriptType);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengVar[0];
+        outVars = new PengVar[2];
+        pengTrackExecuteFrame = new PengInt(this, "当前轨道帧", 0, ConnectionPointType.Out);
+        pengStateExecuteFrame = new PengInt(this, "当前状态帧", 1, ConnectionPointType.Out);
+        outVars[0] = pengTrackExecuteFrame;
+        outVars[1] = pengStateExecuteFrame;
+
+        type = NodeType.Event;
+        scriptType = PengScript.PengScriptType.OnExecute;
+        nodeName = GetDescription(scriptType);
+
 
         paraNum = 2;
 
-        pengTrackExecuteFrame = new PengInt(this, "当前轨道帧", 0, trackExecuteFrame, ConnectionPointType.Out);
-        pengStateExecuteFrame = new PengInt(this, "当前状态帧", 1, stateExecuteFrame, ConnectionPointType.Out);
+        
     }
 
     public override void Draw()
@@ -287,46 +549,56 @@ public class OnExecute : PengNode
         pengTrackExecuteFrame.DrawVar();
         pengStateExecuteFrame.DrawVar();
     }
-}
 
+    public override List<string> GetParaName()
+    {
+        List<string> result = new List<string>();
+        return result;
+    }
+
+    public override List<string> GetParaValue()
+    {
+        List<string> result = new List<string>();
+        return result;
+    }
+}
 
 public class PlayAnimation : PengNode
 {
-    public string animationName;
-    public bool hardCut;
-    public float transitionNormalizedTime;
-    public float startAtNormalizedTime;
-    public int animatorLayer;
-
     public PengString pengAnimationName;
     public PengBool pengHardCut;
     public PengFloat pengTransitionNormalizedTime;
     public PengFloat pengStartAtNormalizedTime;
     public PengInt pengAnimationLayer;
-
-
-    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, PengTrack trackMaster, int nodeID, string animationName, bool hardCut, float transitionNormalizedTime, float startAtNormalizedTime, int animatorLayer)
+    
+    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        this.type = NodeType.Action;
-        this.scriptType = PengScript.PengScriptType.PlayAnimation;
-        this.nodeName = GetDescription(scriptType);
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengVar[5];
+        outVars = new PengVar[0];
+        pengAnimationName = new PengString(this, "动画名称", 0, ConnectionPointType.In);
+        pengHardCut = new PengBool(this, "是否硬切", 1, ConnectionPointType.In);
+        pengTransitionNormalizedTime = new PengFloat(this, "过渡时间", 2, ConnectionPointType.In);
+        pengStartAtNormalizedTime = new PengFloat(this, "开始时间", 3, ConnectionPointType.In);
+        pengAnimationLayer = new PengInt(this, "动画层", 4, ConnectionPointType.In);
+        inVars[0] = pengAnimationName;
+        inVars[1] = pengHardCut;
+        inVars[2] = pengTransitionNormalizedTime;
+        inVars[3] = pengStartAtNormalizedTime;
+        inVars[4] = pengAnimationLayer;
 
-
-        this.animationName = animationName;
-        this.hardCut = hardCut;
-        this.transitionNormalizedTime = transitionNormalizedTime;
-        this.startAtNormalizedTime = startAtNormalizedTime;
-        this.animatorLayer = animatorLayer;
-
-        pengAnimationName = new PengString(this, "动画名称", 0, animationName, ConnectionPointType.In);
-        pengHardCut = new PengBool(this, "是否硬切", 1, hardCut, ConnectionPointType.In);
-        pengTransitionNormalizedTime = new PengFloat(this, "过渡时间", 2, transitionNormalizedTime, ConnectionPointType.In);
-        pengStartAtNormalizedTime = new PengFloat(this, "开始时间", 3, startAtNormalizedTime, ConnectionPointType.In);
-        pengAnimationLayer = new PengInt(this, "动画层", animatorLayer, 4, ConnectionPointType.In);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.PlayAnimation;
+        nodeName = GetDescription(scriptType);
 
         paraNum = 5;
     }

@@ -22,16 +22,23 @@ public class PengTrack
 
     public List<BaseScript> scripts = new List<BaseScript>();
     
-    public PengTrack(ExecTime time, string name, int start, int end, PengActorStateEditorWindow master)
+    public PengTrack(ExecTime time, string name, int start, int end, PengActorStateEditorWindow master, bool isNew)
     {
         this.name = name;
         this.execTime = time;
         this.start = start;
         this.end = end;
         this.master = master;
-        nodes.Add(new OnExecute(Vector2.zero, master, this, 1));
+        PengTrack track = this;
+        if(isNew)
+        {
+            nodes.Add(new OnExecute(Vector2.zero, master, ref track, 1,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(2)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0))));
 
-        nodes[0].ProcessDrag(new Vector2(300f, 415f));
+            nodes[0].ProcessDrag(new Vector2(300f, 415f));
+        }  
     }
 
     public void ExecuteOnce()
@@ -42,25 +49,4 @@ public class PengTrack
             scripts[0].ScriptFlowNext();
         }
     }
-/*
-#if UNITY_EDITOR
-    public void ProcessEvent(Event e)
-    {
-        switch (e.type)
-        {
-            case EventType.MouseDown:
-                if (e.button == 1)
-                {
-
-                }
-                break;
-        }
-    }
-
-    public void RightButtonMenu()
-    {
-
-    }
-
-#endif*/
 }

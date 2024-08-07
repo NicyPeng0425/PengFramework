@@ -48,15 +48,14 @@ namespace PengVariables
     {
         public float value;
 
-        public PengFloat(PengNode node, string name, int index, float value, ConnectionPointType pointType) 
+        public PengFloat(PengNode node, string name, int index, ConnectionPointType pointType) 
         {
             this.node = node;
             this.name = name;
             this.index = index;
             connectionType = pointType;
             type = PengVarType.Float;
-            this.value = value;
-            point = new PengNodeConnection(pointType, node, this);
+            point = new PengNodeConnection(pointType, index, node, this);
         }
     }
 
@@ -64,15 +63,14 @@ namespace PengVariables
     {
         public int value;
 
-        public PengInt(PengNode node, string name, int index, int value, ConnectionPointType pointType)
+        public PengInt(PengNode node, string name, int index, ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
             this.index = index;
             connectionType = pointType;
             type = PengVarType.Int;
-            this.value = value;
-            point = new PengNodeConnection(pointType, node, this);
+            point = new PengNodeConnection(pointType, index, node, this);
         }
     }
 
@@ -80,15 +78,14 @@ namespace PengVariables
     {
         public string value;
 
-        public PengString(PengNode node, string name, int index, string value, ConnectionPointType pointType)
+        public PengString(PengNode node, string name, int index, ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
             this.index = index;
             connectionType = pointType;
             type = PengVarType.String;
-            this.value = value;
-            point = new PengNodeConnection(pointType, node, this);
+            point = new PengNodeConnection(pointType, index, node, this);
         }
 
     }
@@ -97,15 +94,14 @@ namespace PengVariables
     {
         public bool value;
 
-        public PengBool(PengNode node, string name, int index, bool value, ConnectionPointType pointType)
+        public PengBool(PengNode node, string name, int index, ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
             this.index = index;
             connectionType = pointType;
             type = PengVarType.Bool;
-            this.value = value;
-            point = new PengNodeConnection(pointType, node, this);
+            point = new PengNodeConnection(pointType, index, node, this);
         }
     }
 

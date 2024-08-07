@@ -29,6 +29,25 @@ public class PengNodeConnectionLine
             inPoint.node.trackMaster.lines.Remove(this);
             inPoint.lineNum--;
             outPoint.lineNum--;
+
+            if(inPoint.type == ConnectionPointType.In)
+            {
+                for(int i = outPoint.node.varOutID[outPoint.index].Count - 1; i >= 0; i--)
+                {
+                    PengNode.NodeIDConnectionID nici = outPoint.node.varOutID[outPoint.index][i];
+                    if(nici.nodeID == inPoint.node.nodeID && nici.connectionID == inPoint.index)
+                    {
+                        outPoint.node.varOutID[outPoint.index].RemoveAt(i);
+                    }
+                }
+
+                inPoint.node.varInID[inPoint.index] = PengNode.DefaultNodeIDConnectionID();
+            }
+
+            if (inPoint.type == ConnectionPointType.FlowIn)
+            {
+                outPoint.node.outID[outPoint.index] = -1;
+            }
         }
     }
 }
