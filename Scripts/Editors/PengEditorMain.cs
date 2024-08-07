@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System.Xml;
+using System.Linq;
 
 public class PengEditorMain : EditorWindow
 {
@@ -103,6 +104,11 @@ public class PengEditorMain : EditorWindow
             CreateResourcesDirectory("/Animations");
             CreateResourcesDirectory("/GlobalConfiguration");
             CreateResourcesDirectory("/ActorData");
+
+            AddTag("PengGameManager");
+            AddTag("PengActor");
+            AddLayer("PengActor", 30);
+
             AssetDatabase.Refresh();
         }
     }
@@ -260,5 +266,56 @@ public class PengEditorMain : EditorWindow
         EditorGUILayout.EndVertical();
 
         return result;
+    }
+
+    public static void AddTag(string tagname)
+    {
+        UnityEngine.Object[] asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+        if ((asset != null) && (asset.Length > 0))
+        {
+            SerializedObject so = new SerializedObject(asset[0]);
+            SerializedProperty tags = so.FindProperty("tags");
+
+            for (int i = 0; i < tags.arraySize; ++i)
+            {
+                if (tags.GetArrayElementAtIndex(i).stringValue == tagname)
+                {
+                    return;
+                }
+            }
+            tags.InsertArrayElementAtIndex(0);
+            tags.GetArrayElementAtIndex(0).stringValue = tagname;
+            so.ApplyModifiedProperties();
+            so.Update();
+        }
+    }
+
+    void AddLayer(string layerName, int index)
+    {
+        int[] builtInIndex = { 0, 1, 2, 4, 5 };
+        if (builtInIndex.Contains(index))
+        {
+            Debug.Log("can't use built-in layer index:" + index);
+            return;
+        }
+        UnityEngine.Object[] asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+        if ((asset != null) && (asset.Length > 0))
+        {
+            SerializedObject so = new SerializedObject(asset[0]);
+            SerializedProperty tags = so.FindProperty("layers");
+
+            for (int i = 0; i < tags.arraySize; ++i)
+            {
+                if (tags.GetArrayElementAtIndex(i).stringValue == layerName)
+                {
+                    return;
+                }
+            }
+
+            tags.InsertArrayElementAtIndex(index);
+            tags.GetArrayElementAtIndex(index).stringValue = layerName;
+            so.ApplyModifiedProperties();
+            so.Update();
+        }
     }
 }

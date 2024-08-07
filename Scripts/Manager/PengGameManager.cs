@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using UnityEditor;
 using UnityEngine;
 
 public class PengGameManager : MonoBehaviour
@@ -12,6 +13,7 @@ public class PengGameManager : MonoBehaviour
     private void Awake()
     {
         ReadGlobalFrameRate();
+        this.tag = "PengGameManager";
     }
     // Start is called before the first frame update
     void Start()
@@ -58,4 +60,6 @@ public class PengGameManager : MonoBehaviour
 #endif
         }
     }
+
+    
 }

@@ -60,7 +60,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public List<PengTrack> tracks = new List<PengTrack>();
     public int currentActorID = 100425;
     public int currentActorCamp = 1;
-
+    public string currentActorName = "";
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //状态组是否折叠
@@ -84,19 +84,28 @@ public class PengActorStateEditorWindow : EditorWindow
     }
 
     private void OnEnable()
-    {
-        UpdateCurrentStateInfo();/*
+    {/*
+        UpdateCurrentStateInfo();
         gridOffset = new Vector2(300f, 415f);
         DragAllNodes(new Vector2(300f, 415f));*/
     }
 
     private void OnGUI()
-    {/*
+    {
         if (Selection.activeGameObject == null)
+        {
+            EditorGUILayout.HelpBox("请选择对象", MessageType.Info);
             return;
+        }
+            
         if (Selection.activeGameObject.GetComponent<PengActor>() == null)
-            return;*/
-
+        {
+            EditorGUILayout.HelpBox("所选对象不含PengActor组件", MessageType.Warning);
+            return;
+        }
+            
+        if (Selection.activeGameObject.GetComponent<PengActor>().actorID != currentActorID)
+            ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
         
 
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
@@ -141,7 +150,7 @@ public class PengActorStateEditorWindow : EditorWindow
         Rect save = new Rect(sideBarWidth - 45, 5, 40, 40);
         if (GUI.Button(save, "保存\n数据", styleSave))
         {
-            SaveActorData(currentActorID, currentActorCamp, states, statesTrack, statesLength, statesLoop);
+            SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop);
         }
         EditorGUIUtility.AddCursorRect(save, MouseCursor.Link);
 
@@ -149,30 +158,6 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             Repaint();
         }
-    }
-
-    public static void CreateStateXML(string id, string stateName, int length)
-    {
-        XmlDocument xml = new XmlDocument();
-        XmlElement data = xml.CreateElement("Data");
-        XmlElement info = xml.CreateElement("Info");
-        XmlElement scripts = xml.CreateElement("Script");
-
-        info.SetAttribute("Name", stateName);
-        info.SetAttribute("Loop", stateName == "Idle" ? "1" : "0");
-        info.SetAttribute("Length", length.ToString());
-
-        //存一个播放动画的脚本
-
-        data.AppendChild(info);
-        data.AppendChild(scripts);
-        xml.AppendChild(data);
-        xml.Save(Application.dataPath + "Resources/ActorData/" + id + "/" + id + "@" + stateName + ".xml");
-    }
-
-    public static void SaveStateXML(string id, string stateName)
-    {
-
     }
 
     public void DrawTimeLine()
@@ -1309,52 +1294,7 @@ public class PengActorStateEditorWindow : EditorWindow
     }
 
     public void UpdateCurrentStateInfo() 
-    {/*
-        List<string> stateGroup1 = new List<string>();
-        List<string> stateGroup2 = new List<string>();
-        stateGroup1.Add("StopL");
-        stateGroup1.Add("StopR");
-        stateGroup1.Add("Idle");
-        stateGroup1.Add("Intro");
-        stateGroup2.Add("Move");
-        stateGroup2.Add("Dash");
-        stateGroup2.Add("Boost");
-        states.Add("Idle", stateGroup1);
-        states.Add("Move", stateGroup2);
-        statesFold.Add("Idle", true);
-        statesFold.Add("Move", true);
-        
-        if (states.Count > 0)
-        {
-            for (int i = 0; i < states.Count; i++)
-            {
-                if (states.ElementAt(i).Value.Count > 0)
-                {
-                    for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
-                    {
-                        List<PengTrack> tracks1 = new List<PengTrack>();
-                        
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, this));
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, this));
-                        tracks1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, this));
-                        statesTrack.Add(states.ElementAt(i).Value[j], tracks1);
-                        
-                        statesLength.Add(states.ElementAt(i).Value[j], 55);
-                        statesLoop.Add(states.ElementAt(i).Value[j], false);
-                    }
-                }
-            }
-        }
-
-        currentFrameLength = 60;
-        currentSelectedFrame = 0;
-        currentSelectedTrack = 2;
-        dragTrackIndex = 0;
-        currentTrackLength = 0;
-        timelineScrollPos = Vector2.zero;
-        timelineLength = currentFrameLength * 10f;
-        currentStateLoop = false;
-        currentStateName = "";*/
+    {
         ReadActorData(100425);
     }
 
@@ -1382,7 +1322,7 @@ public class PengActorStateEditorWindow : EditorWindow
         return ele;
     }
 
-    public static void SaveActorData(int actorID, int actorCamp, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop)
+    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop)
     {
         //Actor数据结构：
         //<Actor>
@@ -1425,8 +1365,12 @@ public class PengActorStateEditorWindow : EditorWindow
         ID.SetAttribute("ActorID", actorID.ToString());
         XmlElement camp = doc.CreateElement("Camp");
         camp.SetAttribute("Camp", actorCamp.ToString());
+        XmlElement name = doc.CreateElement("ActorName");
+        name.SetAttribute("ActorName", actorName.ToString());
+
         info.AppendChild(ID);
         info.AppendChild(camp);
+        info.AppendChild(name);
 
         //states下的三级结构
         //死亡迭代
@@ -1571,6 +1515,10 @@ public class PengActorStateEditorWindow : EditorWindow
             if(ele.Name == "Camp")
             {
                 currentActorCamp = int.Parse(ele.GetAttribute("Camp"));
+            }
+            if(ele.Name == "ActorName")
+            {
+                currentActorName = ele.GetAttribute("ActorName");
             }
         }
 
