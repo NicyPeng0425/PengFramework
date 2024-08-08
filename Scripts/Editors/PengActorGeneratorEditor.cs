@@ -9,6 +9,7 @@ using UnityEngine;
 using System.IO;
 using static UnityEditor.VersionControl.Asset;
 using System.ComponentModel;
+using UnityEditor.Experimental.GraphView;
 
 public class PengActorGeneratorEditor : EditorWindow
 {
@@ -275,7 +276,7 @@ public class PengActorGeneratorEditor : EditorWindow
                     if(statesLength.ElementAt(i).Key != "Idle")
                     {
                         AnimatorState state = states.AddState(statesLength.ElementAt(i).Key, new Vector3(states.entryPosition.x + 200, states.entryPosition.y + 50 * (j + 1), 0));
-                        AnimationClip clip = Resources.Load("Animations/" + actorID.ToString() + "/" + actorID + "@" + statesLength.ElementAt(i).Key) as AnimationClip;
+                        AnimationClip clip = Resources.Load("Animations/" + actorID.ToString() + "/" + copyID.ToString() + "@" + statesLength.ElementAt(i).Key) as AnimationClip;
 
                         List<PengTrack> track1 = new List<PengTrack>();
                         PengTrack enterTrack = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
@@ -317,6 +318,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 bool success = false;
                 PrefabUtility.SaveAsPrefabAsset(actorNew, Application.dataPath + "/Resources/Actors/" + actorID.ToString() + "/Actor" + actorID.ToString() +".prefab", out success);
                 Debug.Log(string.Format("Actor" + actorID.ToString() + "保存[{0}]", success ? "成功":"失败"));
+                DestroyImmediate(actorNew);
                 AssetDatabase.Refresh();
             }
             else
@@ -529,7 +531,7 @@ public class PengActorGeneratorEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("目标对象阵营：");
-        pasteID = EditorGUILayout.IntField(pasteCamp);
+        pasteCamp = EditorGUILayout.IntField(pasteCamp);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -551,40 +553,88 @@ public class PengActorGeneratorEditor : EditorWindow
                 XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
                 doc.LoadXml(textAsset.text);
                 XmlElement root = doc.DocumentElement;
+                XmlElement info = null;
+                XmlElement states = null;
                 foreach (XmlElement node in root.ChildNodes)
                 {
                     if(node.Name == "ActorInfo")
                     {
-                        foreach(XmlElement ele in node.ChildNodes)
-                        {
-                            if(ele.Name == "ActorID")
-                            {
-                                ele.SetAttribute("ActorID", pasteID.ToString());
-                                continue;
-                            }
-                            if (ele.Name == "Camp")
-                            {
-                                ele.SetAttribute("Camp", pasteCamp.ToString());
-                                continue;
-                            }
-                            if (ele.Name == "ActorName")
-                            {
-                                ele.SetAttribute("ActorName", pasteName);
-                                continue;
-                            }
-                        }
-                        break;
+                        info = node;
+                    }
+                    if (node.Name == "ActorState")
+                    {
+                        states = node;
                     }
                 }
-                if(!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString()))
+                foreach (XmlElement ele in info.ChildNodes)
+                {
+                    if (ele.Name == "ActorID")
+                    {
+                        ele.SetAttribute("ActorID", pasteID.ToString());
+                        continue;
+                    }
+                    if (ele.Name == "Camp")
+                    {
+                        ele.SetAttribute("Camp", pasteCamp.ToString());
+                        continue;
+                    }
+                    if (ele.Name == "ActorName")
+                    {
+                        ele.SetAttribute("ActorName", pasteName);
+                        continue;
+                    }
+                }
+
+                if (!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString()))
                 {
                     Directory.CreateDirectory(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString());
                 }
                 doc.Save(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString() + "/" + pasteID.ToString() + ".xml");
 
                 //复制：物体（改ID）；物体上的PengActor组件；Animator；所有的动画片段
-                GameObject actorNew = GameObject.Instantiate(Resources.Load("Actors/" + copyID.ToString() + "/" + copyID.ToString()) as GameObject);
-                
+                GameObject actorOld = Resources.Load("Actors/" + copyID.ToString() + "/Actor" + copyID.ToString()) as GameObject;
+                GameObject actorNew = GameObject.Instantiate(actorOld);
+
+                if (!Directory.Exists(Application.dataPath + "/Resources/Animators/" + pasteID.ToString()))
+                {
+                    Directory.CreateDirectory(Application.dataPath + "/Resources/Animators/" + pasteID.ToString());
+                }
+                AnimatorController animNew = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPath("Assets/Resources/Animators/" + pasteID.ToString() + "/Animator" + pasteID.ToString() + ".controller");
+                AnimatorController animOld = Resources.Load("Animators/" + copyID.ToString() + "/Animator" + copyID.ToString()) as AnimatorController;
+
+                for (int i = 0; i < animOld.layers.Length; i++)
+                {
+                    if(i >= animNew.layers.Length)
+                    {
+                        animNew.AddLayer(animOld.layers[i].name);
+                    }
+                    for (int j = 0; j < animOld.layers[i].stateMachine.states.Length; j++)
+                    {
+                        AnimatorState state = animOld.layers[i].stateMachine.states[j].state;
+                        if ((File.Exists(Application.dataPath + "/Resources" + "Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name + ".anim")))
+                        {
+                            AnimationClip clip = Resources.Load("Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name) as AnimationClip;
+                            AssetDatabase.CreateAsset(clip, "Assets/" + "Animators/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name);
+                            AnimationClip clip1 = Resources.Load("Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name) as AnimationClip;
+                            state.motion = clip;
+
+                        }
+                        animNew.layers[i].stateMachine.AddState(state, animOld.layers[i].stateMachine.states[j].position);
+                    }
+                }
+
+                actorNew.name = "Actor" + pasteID.ToString();
+                actorNew.GetComponent<PengActor>().actorID = pasteID;
+                actorNew.GetComponent<Animator>().runtimeAnimatorController = animNew;
+
+                if (!Directory.Exists(Application.dataPath + "/Resources/Actors/" + pasteID.ToString()))
+                {
+                    Directory.CreateDirectory(Application.dataPath + "/Resources/Actors/" + pasteID.ToString());
+                }
+                bool success = false;
+                PrefabUtility.SaveAsPrefabAsset(actorNew, Application.dataPath + "/Resources/Actors/" + pasteID.ToString() + "/Actor" + pasteID.ToString() + ".prefab", out success);
+                DestroyImmediate(actorNew);
+                AssetDatabase.Refresh();
             }
         }
 

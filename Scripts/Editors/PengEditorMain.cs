@@ -110,6 +110,7 @@ public class PengEditorMain : EditorWindow
             AddLayer("PengActor", 30);
 
             GameObject gameManager = new GameObject();
+            gameManager.name = "Game";
             gameManager.tag = "PengGameManager";
             gameManager.AddComponent<PengGameManager>();
             if (!Directory.Exists(Application.dataPath + "/Resources/Managers/GameManager"))
@@ -118,7 +119,7 @@ public class PengEditorMain : EditorWindow
             }
             bool success = false;
             PrefabUtility.SaveAsPrefabAsset(gameManager, Application.dataPath + "/Resources/Managers/GameManager/Game.prefab", out success);
-
+            DestroyImmediate(gameManager);
             AssetDatabase.Refresh();
         }
     }

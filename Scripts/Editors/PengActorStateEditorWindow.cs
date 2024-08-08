@@ -62,6 +62,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public List<PengTrack> tracks = new List<PengTrack>();
     public int currentActorID = 100425;
     public int currentActorCamp = 1;
+    public string currentActorCampString = "1";
     public string currentActorName = "";
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
@@ -827,7 +828,18 @@ public class PengActorStateEditorWindow : EditorWindow
         GUI.Box(actorName, currentActorID.ToString(), style2);
 
         GUI.Box(actorCampLabel, "角色阵营：", style2);
-        GUI.Box(actorCamp, currentActorCamp.ToString(), style2);
+        currentActorCampString = GUI.TextField(actorCamp, currentActorCamp.ToString(), style2);
+
+        if(int.TryParse(currentActorCampString, out currentActorCamp))
+        {
+
+        }
+        else
+        {
+            currentActorCampString = currentActorCamp.ToString();
+            EditorUtility.DisplayDialog("警告", "阵营必须以整型数字来标识！", "ok");
+        }
+
     }
 
     public void DrawTimeLineTitle()
