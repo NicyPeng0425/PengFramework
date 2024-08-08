@@ -16,7 +16,22 @@ public class PengTrack
 
     public int start;
     public int end;
-    PengActorStateEditorWindow master;
+    PengActorStateEditorWindow m_master;
+    public PengActorStateEditorWindow master
+    {
+        get { return m_master; }
+        set 
+        { 
+            m_master = value;
+            if (nodes.Count > 0)
+            {
+                foreach(PengNode node in nodes)
+                {
+                    node.master = m_master;
+                }
+            }
+        }
+    }
     public List<PengNode> nodes = new List<PengNode>();
     public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
 

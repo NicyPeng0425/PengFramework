@@ -8,6 +8,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using System.IO;
 using static UnityEditor.VersionControl.Asset;
+using System.ComponentModel;
 
 public class PengActorGeneratorEditor : EditorWindow
 {
@@ -29,7 +30,22 @@ public class PengActorGeneratorEditor : EditorWindow
     float globalFrameRate;
     XmlDocument globalConfiguration = null;
 
-    [MenuItem("PengFramework/Actor Generator")]
+    public enum GenerateMode
+    {
+        [Description("创建新角色")]
+        New,
+        [Description("复制已有角色")]
+        Copy,
+    }
+
+    public GenerateMode generateMode = GenerateMode.New;
+    public int copyID;
+    public int pasteID;
+    public int pasteCamp;
+    public string pasteName;
+
+
+    [MenuItem("PengFramework/角色生成器")]
     static void Init()
     {
         PengActorGeneratorEditor window = (PengActorGeneratorEditor)EditorWindow.GetWindow(typeof(PengActorGeneratorEditor));
@@ -103,9 +119,19 @@ public class PengActorGeneratorEditor : EditorWindow
 
         GUILayout.Space(10);
 
-        if(WhetherHaveGlobalConfiguration())
+        generateMode = (GenerateMode)EditorGUILayout.EnumPopup(generateMode);
+
+        switch (generateMode)
         {
-            PengActorGenerator();
+            case GenerateMode.New:
+                if (WhetherHaveGlobalConfiguration())
+                {
+                    PengActorGenerator();
+                }
+                break;
+            case GenerateMode.Copy:
+                CopyActor();
+                break;
         }
 
         EditorGUILayout.EndVertical();
@@ -282,7 +308,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 actorNew.name = "Actor" + actorID.ToString();
 
 
-                PengActorStateEditorWindow.SaveActorData(actorID, actorCamp, actorName, stateGroup, stateTrack, statesLength, statesLoop);
+                PengActorStateEditorWindow.SaveActorData(actorID, actorCamp, actorName, stateGroup, stateTrack, statesLength, statesLoop, true);
 
                 if(!Directory.Exists(Application.dataPath + "/Resources/Actors/" + actorID.ToString()))
                 {
@@ -485,5 +511,83 @@ public class PengActorGeneratorEditor : EditorWindow
             return true;
         }
         return false;
+    }
+
+    public void CopyActor()
+    {
+        EditorGUILayout.BeginVertical();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("原有对象ID：");
+        copyID = EditorGUILayout.IntField(copyID);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("目标对象ID：");
+        pasteID = EditorGUILayout.IntField(pasteID);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("目标对象阵营：");
+        pasteID = EditorGUILayout.IntField(pasteCamp);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("目标对象名称：");
+        pasteName = EditorGUILayout.TextField(pasteName);
+        EditorGUILayout.EndHorizontal();
+
+        if (GUILayout.Button("一键复制"))
+        {
+            if(File.Exists(Application.dataPath+"/Resources/ActorData/" + copyID.ToString() + "/" + copyID.ToString() + ".xml"))
+            {
+                TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + copyID.ToString() + "/" + copyID.ToString());
+                if (textAsset == null)
+                {
+                    Debug.LogError(copyID.ToString() + "的数据读取失败！怎么回事呢？");
+                    return;
+                }
+                XmlDocument doc = new XmlDocument();
+                XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
+                doc.LoadXml(textAsset.text);
+                XmlElement root = doc.DocumentElement;
+                foreach (XmlElement node in root.ChildNodes)
+                {
+                    if(node.Name == "ActorInfo")
+                    {
+                        foreach(XmlElement ele in node.ChildNodes)
+                        {
+                            if(ele.Name == "ActorID")
+                            {
+                                ele.SetAttribute("ActorID", pasteID.ToString());
+                                continue;
+                            }
+                            if (ele.Name == "Camp")
+                            {
+                                ele.SetAttribute("Camp", pasteCamp.ToString());
+                                continue;
+                            }
+                            if (ele.Name == "ActorName")
+                            {
+                                ele.SetAttribute("ActorName", pasteName);
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                }
+                if(!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString()))
+                {
+                    Directory.CreateDirectory(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString());
+                }
+                doc.Save(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString() + "/" + pasteID.ToString() + ".xml");
+
+                //复制：物体（改ID）；物体上的PengActor组件；Animator；所有的动画片段
+                GameObject actorNew = GameObject.Instantiate(Resources.Load("Actors/" + copyID.ToString() + "/" + copyID.ToString()) as GameObject);
+                
+            }
+        }
+
+        EditorGUILayout.EndVertical();
     }
 }

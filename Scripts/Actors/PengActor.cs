@@ -4,22 +4,29 @@ using UnityEngine;
 
 public class PengActor : MonoBehaviour
 {
-
+    [HideInInspector]
     public PengGameManager game;
 
     public int actorID;
 
+    [HideInInspector]
     public static string initalName = "Idle";
 
     //运行时动态数据
+    [HideInInspector]
     public string currentName;
+    [HideInInspector]
     public string lastName;
     public Dictionary<string, IPengActorState> actorStates;
     public IPengActorState current;
     public IPengActorState last;
+    [HideInInspector]
     public float pauseTime;
+    [HideInInspector]
     public bool alive = true;
+    [HideInInspector]
     public Animator anim;
+    [HideInInspector]
     public CharacterController ctrl;
 
 

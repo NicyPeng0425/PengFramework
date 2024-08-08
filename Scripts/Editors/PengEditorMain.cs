@@ -13,7 +13,7 @@ public class PengEditorMain : EditorWindow
     /// 常用的UI绘制方法也放在这儿
     /// </summary>
     XmlDocument globalConfiguration;
-    [MenuItem("PengFramework/Starter")]
+    [MenuItem("PengFramework/启动器")]
     static void Init()
     {
         PengEditorMain window = (PengEditorMain)EditorWindow.GetWindow(typeof(PengEditorMain));
@@ -108,6 +108,16 @@ public class PengEditorMain : EditorWindow
             AddTag("PengGameManager");
             AddTag("PengActor");
             AddLayer("PengActor", 30);
+
+            GameObject gameManager = new GameObject();
+            gameManager.tag = "PengGameManager";
+            gameManager.AddComponent<PengGameManager>();
+            if (!Directory.Exists(Application.dataPath + "/Resources/Managers/GameManager"))
+            {
+                Directory.CreateDirectory(Application.dataPath + "/Resources/Managers/GameManager");
+            }
+            bool success = false;
+            PrefabUtility.SaveAsPrefabAsset(gameManager, Application.dataPath + "/Resources/Managers/GameManager/Game.prefab", out success);
 
             AssetDatabase.Refresh();
         }
