@@ -61,7 +61,30 @@ public class PengTrack
         if (scripts.Count > 0)
         {
             scripts[0].Execute();
-            scripts[0].ScriptFlowNext();
         }
+    }
+
+    public BaseScript GetScriptByScriptID(int id)
+    {
+        if (scripts.Count > 0)
+        {
+            for (int i = 0; i < scripts.Count; i++)
+            {
+                if (scripts[i].ID == id)
+                {
+                    return scripts[i];
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
+    public PengVariables.PengVar GetOutPengVarByScriptIDPengVarID(int scriptID, int varOutID)
+    {
+        if (GetScriptByScriptID(scripts[scriptID].ID) == null)
+        { return null; }
+        else
+        { return GetScriptByScriptID(scriptID).outVars[varOutID]; }
     }
 }

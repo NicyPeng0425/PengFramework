@@ -1,3 +1,5 @@
+using PengScript;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
@@ -11,7 +13,17 @@ public class PengActorState : IPengActorState
     public bool isLoop;
     public List<PengTrack> tracks;
 
-    public int currentFrameNum;
+    public int m_currentFrameNum;
+    public int currentFrameNum
+    { 
+        get {return m_currentFrameNum;}
+        set
+        {
+            m_currentFrameNum = value;
+            if (actor != null)
+            { actor.currentStateFrame = value; }
+        }
+    }
     public float frameCnt = 0f;
     public List<bool> executedTags = new List<bool>();
 
@@ -25,6 +37,7 @@ public class PengActorState : IPengActorState
         currentFrameNum = 0;
         frameCnt = 0f;
         executedTags = InitialBoolList(length, false);
+        actor.currentStateLength = length;
 
         if (tracks.Count > 0)
         {
@@ -36,7 +49,7 @@ public class PengActorState : IPengActorState
                 }
             }
         }
-
+        
     }
 
     public void OnUpdate()
@@ -114,5 +127,44 @@ public class PengActorState : IPengActorState
             result.Add(value);
         }
         return result;
+    }
+
+    public static List<PengTrack> ReadActorTracks(XmlElement stateEle)
+    {
+        List<PengTrack> result = new List<PengTrack>();
+        for (int i = 0; i < stateEle.ChildNodes.Count; i++)
+        {
+            XmlElement trackEle = stateEle.ChildNodes[i] as XmlElement;
+            PengTrack track = new PengTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), trackEle.GetAttribute("ExecTime")), trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")),
+                int.Parse(trackEle.GetAttribute("End")), null, false);
+            
+            for(int j = 0; j < trackEle.ChildNodes.Count; j++)
+            {
+                XmlElement scriptEle = trackEle.ChildNodes[j] as XmlElement;
+                BaseScript script = ConstructRunTimePengScript(scriptEle);
+                if(script != null)
+                {
+                    track.scripts.Add(script);
+                }
+            }
+            result.Add(track);
+        }
+        return result;
+    }
+
+    public static PengScript.BaseScript ConstructRunTimePengScript(XmlElement scriptEle)
+    {
+        PengScriptType scriptType = (PengScriptType)Enum.Parse(typeof(PengScriptType), scriptEle.GetAttribute("ScriptType"));
+        switch (scriptType)
+        {
+            default:
+                return null;
+            case PengScriptType.OnExecute:
+                return null;
+            case PengScriptType.DebugLogText:
+                return null;
+            case PengScriptType.PlayAnimation:
+                return null;
+        }
     }
 }

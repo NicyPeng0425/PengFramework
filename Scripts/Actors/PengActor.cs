@@ -28,6 +28,10 @@ public class PengActor : MonoBehaviour
     public Animator anim;
     [HideInInspector]
     public CharacterController ctrl;
+    [HideInInspector]
+    public int currentStateFrame = 0;
+    [HideInInspector]
+    public int currentStateLength = 0;
 
 
     private void Awake()

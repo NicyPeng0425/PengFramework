@@ -42,6 +42,35 @@ namespace PengVariables
             GUI.Box(varRect, " " + name + "(" + type.ToString() + ")", style);
             point.Draw(varRect);
         }
+
+        public static void SetValue(ref PengVar toBeSet, ref PengVar toBeGet)
+        {
+            System.Type type = toBeSet.GetType();
+            switch (type.FullName)
+            {
+                case "PengFloat":
+                    PengFloat pfs = toBeSet as PengFloat;
+                    PengFloat pfg = toBeGet as PengFloat;
+                    if (pfs != null) { pfs.value = pfg.value; }
+                    break;
+                case "PengInt":
+                    PengInt pis = toBeSet as PengInt;
+                    PengInt pig = toBeGet as PengInt;
+                    if (pis != null) { pis.value = pig.value; }
+                    break;
+                case "PengString":
+                    PengString pss = toBeSet as PengString;
+                    PengString psg = toBeGet as PengString;
+                    if (pss != null) { pss.value = psg.value; }
+                    break;
+                case "PengBool":
+                    PengBool pbs = toBeSet as PengBool;
+                    PengBool pbg = toBeGet as PengBool;
+                    if (pbs != null) { pbs.value = pbg.value; }
+                    break;
+            }
+        }
+
     }
 
     public class PengFloat: PengVar
@@ -57,6 +86,7 @@ namespace PengVariables
             type = PengVarType.Float;
             point = new PengNodeConnection(pointType, index, node, this);
         }
+
     }
 
     public class PengInt : PengVar
