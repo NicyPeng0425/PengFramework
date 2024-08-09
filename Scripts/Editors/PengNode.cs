@@ -8,6 +8,7 @@ using System.Reflection;
 using PengVariables;
 using static UnityEditor.PlayerSettings;
 using System.Linq;
+using static UnityEngine.Rendering.VolumeComponent;
 
 public class PengNode
 {
@@ -87,7 +88,7 @@ public class PengNode
     public virtual void Draw()
     {
         rect = new Rect(rect.x, rect.y , rect.width, 26 * outPoints.Length);
-        rectSmall.y += 26 * (outPoints.Length - 1);
+        rectSmall.y = rect.y + rect.height;
         rectSmall.height = 2 + 23 * paraNum;
         GUIStyle style3 = new GUIStyle("flow node 0" + (isSelected ? " on" : ""));
         GUI.Box(rectSmall, "", style3);
@@ -96,6 +97,7 @@ public class PengNode
         {
             case NodeType.Event:
                 GUIStyle style = new GUIStyle("flow node 6" + (isSelected ? " on" : ""));
+                style.fontStyle = FontStyle.Bold;
                 GUI.Box(rect, nodeName, style);
                 if(outPoints.Length > 0)
                 {
@@ -108,26 +110,56 @@ public class PengNode
                 break;
             case NodeType.Action:
                 GUIStyle style1 = new GUIStyle("flow node 1" + (isSelected ? " on" : ""));
+                style1.fontStyle = FontStyle.Bold;
                 GUI.Box(rect, nodeName, style1);
                 inPoint.Draw(rect);
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, rect.height + 52 * i);
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
                 break;
             case NodeType.Branch:
                 GUIStyle style2 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
+                style2.fontStyle = FontStyle.Bold;
                 GUI.Box(rect, nodeName, style2);
                 inPoint.Draw(rect);
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, rect.height + 52 * i);
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        outPoints[i].Draw(rectMulti);
+                    }
+                }
+                break;
+            case NodeType.Iterator:
+                GUIStyle style5 = new GUIStyle("flow node 4" + (isSelected ? " on" : ""));
+                style5.fontStyle = FontStyle.Bold;
+                GUI.Box(rect, nodeName, style5);
+                inPoint.Draw(rect);
+                if (outPoints.Length > 0)
+                {
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        outPoints[i].Draw(rectMulti);
+                    }
+                }
+                break;
+            case NodeType.Value:
+                GUIStyle style4 = new GUIStyle("flow node 3" + (isSelected ? " on" : ""));
+                style4.fontStyle = FontStyle.Bold;
+                GUI.Box(rect, nodeName, style4);
+                inPoint.Draw(rect);
+                if (outPoints.Length > 0)
+                {
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
@@ -614,7 +646,6 @@ public class IfElse: PengNode
         Else
     }
 
-    public List<PengBool> conditions = new List<PengBool>();
     public List<IfElseIfElse> conditionTypes = new List<IfElseIfElse>();
 
     public IfElse(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
@@ -627,39 +658,86 @@ public class IfElse: PengNode
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
         this.ReadSpecialParaDescription(specialInfo);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
-        outPoints = new PengNodeConnection[1];
-        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengVar[1];
-        outVars = new PengVar[0];
 
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[this.outID.Count];
+        inVars = new PengVar[this.varInID.Count];
+        paraNum = this.varInID.Count;
+        for (int i = 0; i < this.outID.Count; i++)
+        {
+            outPoints[i] = new PengNodeConnection(ConnectionPointType.FlowOut, i, this, null);
+            PengBool ifInVar = new PengBool(this, "条件"+(i+1).ToString(), i, ConnectionPointType.In);
+            inVars[i] = ifInVar;
+        }
+
+        outVars = new PengVar[0];
         type = NodeType.Branch;
         scriptType = PengScript.PengScriptType.IfElse;
         nodeName = GetDescription(scriptType);
-
-        paraNum = 1;
+        
     }
 
     public override void Draw()
     {
         base.Draw();
-        if (conditions.Count > 0)
+        if (inVars.Length > 0)
         {
-            for (int i = 0; i < conditions.Count; i++)
+            for (int i = 0; i < inVars.Length; i++)
             {
-                conditions[i].DrawVar();
+                inVars[i].DrawVar();
+                Rect re = new Rect(inVars[i].varRect.x + 100, inVars[i].varRect.y, 60, 18);
+                if(i == 0)
+                {
+                    GUI.Box(re, "If");
+                }
+                else 
+                {
+                    if (i == inVars.Length - 1)
+                    {
+                        GUI.Box(re, conditionTypes[conditionTypes.Count - 1].ToString());
+                    } 
+                    else
+                    {
+                        GUI.Box(re, "ElseIf");
+                    }
+                }
+                
+
             }
+            Rect add = new Rect(inVars[inVars.Length - 1].varRect.x, inVars[inVars.Length - 1].varRect.y + 20, 60, 20);
+            if (GUI.Button(add, "添加"))
+            {
+                this.AddConditions();
+            }
+            if (inVars.Length > 1)
+            {
+                Rect remove = new Rect(add.x + 70, add.y, 60, 20);
+                if (GUI.Button(remove, "移除"))
+                {
+                    this.RemoveConditions();
+                }
+                Rect change = new Rect(add.x + 140, add.y, 60, 20);
+                if (GUI.Button(change, "更改"))
+                {
+                    this.ChangeCondition(inVars.Length - 1);
+                }
+            }
+            
         }
     }
 
     public override string SpecialParaDescription()
     {
         string result = "";
-        if(conditions.Count > 0)
+        if(conditionTypes.Count > 0)
         {
-            for (int i = 0; i < conditions.Count; i++)
+            for (int i = 0; i < conditionTypes.Count; i++)
             {
-                //result += 
+                result += conditionTypes[i].ToString();
+                if(i !=  conditionTypes.Count - 1)
+                {
+                    result += ",";
+                }
             }
         }
         return result;
@@ -669,83 +747,92 @@ public class IfElse: PengNode
     {
         if(info != "")
         {
-
+            string[] str = info.Split(",");
+            for (int i = 0; i < str.Length; i++)
+            {
+                conditionTypes.Add((IfElseIfElse)Enum.Parse(typeof(IfElseIfElse), str[i]));
+            }
+        }
+        else
+        {
+            conditionTypes.Add(IfElseIfElse.If);
         }
     }
 
     public void AddConditions()
     {
-        conditions.Add(new PengBool(this, "条件" + (conditions.Count + 1).ToString(), conditions.Count, ConnectionPointType.In));
-        conditionTypes.Add(IfElseIfElse.ElseIf);
-        PengVar[] newInVars = new PengVar[conditions.Count];
-        for (int i = 0; i < conditions.Count - 1; i++)
+        PengBool newVar = new PengBool(this, "条件" + (inVars.Length + 1).ToString(), inVars.Length, ConnectionPointType.In);
+        PengVar[] newInVars = new PengVar[inVars.Length + 1];
+        for(int i = 0;i < inVars.Length;i++)
         {
             newInVars[i] = inVars[i];
         }
-        newInVars[conditions.Count - 1] = conditions[conditions.Count - 1];
+        newInVars[newInVars.Length - 1] = newVar;
         inVars = newInVars;
-        PengNodeConnection[] newOutPoints = new PengNodeConnection[conditions.Count];
-        for (int i = 0; i < conditions.Count - 1; i++)
+
+        conditionTypes.Add(IfElseIfElse.ElseIf);
+
+        PengNodeConnection[] newOutPoints = new PengNodeConnection[inVars.Length];
+        for (int i = 0; i < outPoints.Length; i++)
         {
             newOutPoints[i] = outPoints[i];
         }
-        newOutPoints[conditions.Count - 1] = new PengNodeConnection(ConnectionPointType.FlowOut, conditions.Count - 1, this, null);
+        newOutPoints[newOutPoints.Length - 1] = new PengNodeConnection(ConnectionPointType.FlowOut, inVars.Length - 1, this, null);
         outPoints = newOutPoints;
+
+        outID.Add(newInVars.Length - 1, -1);
+        varInID.Add(newInVars.Length - 1, DefaultNodeIDConnectionID());
         paraNum++;
+        
     }
     
-    public void RemoveConditions(int index)
+    public void RemoveConditions()
     {
-        if (conditions.Count > 1 && index > 0)
+        if (inVars.Length > 1)
         {
             List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
 
-            PengVar[] newInVars = new PengVar[conditions.Count - 1];
-            int j = 0;
-            for (int i = 0; i < inVars.Length; i++)
+            PengVar[] newInVars = new PengVar[inVars.Length - 1];
+            PengNodeConnection[] newOutPoints = new PengNodeConnection[inVars.Length - 1];
+            for (int i = 0; i < newInVars.Length; i++)
             {
-                if(i != index)
-                {
-                    newInVars[j] = inVars[i];
-                    j++;
-                }
+                newInVars[i] = inVars[i];
+                newOutPoints[i] = outPoints[i];
             }
             for(int i = 0; i < trackMaster.lines.Count; i ++)
             {
-                if(trackMaster.lines[i].inPoint == inVars[index].point && !lines.Contains(trackMaster.lines[i]))
+                if(trackMaster.lines[i].inPoint == inVars[inVars.Length - 1].point && !lines.Contains(trackMaster.lines[i]))
                 {
                     lines.Add(trackMaster.lines[i]);
                 }
-            }
-            inVars = newInVars;
-
-            PengNodeConnection[] newOutPoints = new PengNodeConnection[conditions.Count - 1];
-            int k = 0;
-            for (int i = 0; i < outPoints.Length; i++)
-            {
-                if(i != index)
-                {
-                    newOutPoints[k] = outPoints[i];
-                    k++;
-                }
-            }
-            for (int i = 0; i < trackMaster.lines.Count; i++)
-            {
-                if (trackMaster.lines[i].outPoint == outPoints[index] && !lines.Contains(trackMaster.lines[i]))
+                if (trackMaster.lines[i].outPoint == outPoints[inVars.Length - 1] && !lines.Contains(trackMaster.lines[i]))
                 {
                     lines.Add(trackMaster.lines[i]);
                 }
             }
             outPoints = newOutPoints;
-
+            inVars = newInVars;
             for(int i = 0; i < lines.Count; i++)
             {
                 trackMaster.lines.Remove(lines[i]);
             }
 
             paraNum--;
-            conditions.RemoveAt(index);
-            conditionTypes.RemoveAt(index);
+            conditionTypes.RemoveAt(inVars.Length);
+            outID.Remove(inVars.Length);
+            varInID.Remove(inVars.Length);
+        }
+    }
+
+    public void ChangeCondition (int index)
+    {
+        if (conditionTypes[index] == IfElseIfElse.ElseIf)
+        {
+            conditionTypes[index] = IfElseIfElse.Else;
+        }
+        else if(conditionTypes[index] == IfElseIfElse.Else)
+        {
+            conditionTypes[index] = IfElseIfElse.ElseIf;
         }
     }
 }

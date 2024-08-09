@@ -276,7 +276,7 @@ public class PengActorGeneratorEditor : EditorWindow
                     if(statesLength.ElementAt(i).Key != "Idle")
                     {
                         AnimatorState state = states.AddState(statesLength.ElementAt(i).Key, new Vector3(states.entryPosition.x + 200, states.entryPosition.y + 50 * (j + 1), 0));
-                        AnimationClip clip = Resources.Load("Animations/" + actorID.ToString() + "/" + copyID.ToString() + "@" + statesLength.ElementAt(i).Key) as AnimationClip;
+                        AnimationClip clip = Resources.Load("Animations/" + actorID.ToString() + "/" + actorID.ToString() + "@" + statesLength.ElementAt(i).Key) as AnimationClip;
 
                         List<PengTrack> track1 = new List<PengTrack>();
                         PengTrack enterTrack = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);

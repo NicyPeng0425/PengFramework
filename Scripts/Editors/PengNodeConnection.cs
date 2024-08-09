@@ -18,7 +18,17 @@ public class PengNodeConnection
     public ConnectionPointType type;
     public PengVariables.PengVar pengVar;
     public PengNode node;
-    public int lineNum = 0;
+    public int m_lineNum = 0;
+    public int lineNum
+    {
+        get { return m_lineNum; }
+        set
+        {
+            m_lineNum = value;
+            if (m_lineNum <= 0)
+            { m_lineNum = 0; }
+        }
+    }
     public int index;
 
     public PengNodeConnection(ConnectionPointType type, int index, PengNode node, PengVariables.PengVar pengVar)

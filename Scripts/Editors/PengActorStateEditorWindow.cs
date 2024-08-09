@@ -1097,7 +1097,6 @@ public class PengActorStateEditorWindow : EditorWindow
         DrawGrid(20 * nodeMapScale, 0.2f, Color.gray);
         DrawGrid(100 * nodeMapScale, 0.4f, Color.gray);
         DrawNodes();
-        DrawConnectionLines();
     }
 
     private void ProcessEvents(Event e)
@@ -1146,6 +1145,8 @@ public class PengActorStateEditorWindow : EditorWindow
         menu.AddItem(new GUIContent("添加节点/按功能类型/角色表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/B/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
 
+        menu.AddItem(new GUIContent("添加节点/按功能类型/分歧/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/T/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
 
         menu.ShowAsContext();
     }
@@ -1175,6 +1176,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)), 
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
                 break;
+            case PengScript.PengScriptType.IfElse:
+                track.nodes.Add(new IfElse(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
         }
         tracks[currentSelectedTrack] = track;
     }
@@ -1190,6 +1197,8 @@ public class PengActorStateEditorWindow : EditorWindow
                     tracks[currentSelectedTrack].nodes[i].Draw();
                 } 
             }
+
+            DrawConnectionLines();
 
             GUIStyle style = new GUIStyle("AnimLeftPaneSeparator");
             style.alignment = TextAnchor.MiddleLeft;
@@ -1301,10 +1310,45 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             for (int i = 0; i < lines.Count; i++)
             {
-                for(int j = 0; j < node.outPoints.Length; j++)
+                if (lines[i].inPoint == node.inPoint && !toRemove.Contains(lines[i]))
                 {
-                    if ((lines[i].inPoint == node.inPoint || lines[i].outPoint == node.outPoints[j]) && !toRemove.Contains(lines[i]))
-                    { toRemove.Add(lines[i]); }
+                    toRemove.Add(lines[i]);
+                    lines[i].outPoint.lineNum--;
+                    if (lines[i].inPoint.type == ConnectionPointType.FlowIn)
+                    {
+                        for (int j = 0; j < lines[i].outPoint.node.outPoints.Length; j++)
+                        {
+                            if (lines[i].outPoint == lines[i].outPoint.node.outPoints[j])
+                            {
+                                lines[i].outPoint.node.outID[j] = -1;
+                            }
+                        }
+                    }
+                    else if (lines[i].inPoint.type == ConnectionPointType.In)
+                    {
+                        int varID = lines[i].inPoint.pengVar.index;
+                        int removeID = -1;
+                        for(int j = 0; j < lines[i].outPoint.node.varOutID[lines[i].inPoint.pengVar.node.varInID[varID].connectionID].Count; j ++)
+                        {
+                            if (lines[i].outPoint.node.varOutID[lines[i].inPoint.pengVar.node.varInID[varID].connectionID][j].nodeID == node.nodeID)
+                            {
+                                removeID = j;
+                            }
+                        }
+                        if(removeID >= 0)
+                        {
+                            lines[i].outPoint.node.varOutID[lines[i].inPoint.pengVar.node.varInID[varID].connectionID].RemoveAt(removeID);
+                        }
+                    }
+                }
+                if(node.outPoints.Contains(lines[i].outPoint) && !toRemove.Contains(lines[i]))
+                {
+                    toRemove.Add(lines[i]);
+                    lines[i].inPoint.lineNum--;
+                    if (lines[i].outPoint.type == ConnectionPointType.Out)
+                    {
+                        lines[i].inPoint.pengVar.node.varInID[lines[i].inPoint.pengVar.index] = PengNode.DefaultNodeIDConnectionID();
+                    }
                 }
             }
 
@@ -1608,6 +1652,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new OnExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayAnimation:
                 return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.IfElse:
+                return new IfElse(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
