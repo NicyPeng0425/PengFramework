@@ -12,6 +12,13 @@ namespace PengScript
 {
     /// <summary>
     /// 伟大的彭脚本！
+    /// 
+    /// 添加新脚本的关注点：
+    /// 1. PengScriptType
+    /// 2. 构造函数及具体方法
+    /// 3. PengActorState.ConstructRunTimePengScript()
+    /// 4. PengNode.cs
+    /// 5. PengActorStateEditorWindow.RightMouseMenu()
     /// </summary>
     /// 
 
@@ -20,10 +27,68 @@ namespace PengScript
     {
         [Description("轨道执行")]
         OnExecute,
-        [Description("输出文本")]
-        DebugLogText,
+        [Description("输出对象")]
+        DebugLog,
         [Description("播放动画")]
         PlayAnimation,
+        [Description("切换状态")]
+        TransState,
+        [Description("范围获取目标")]
+        GetTargetsByRange,
+        [Description("全局时间变速")]
+        GlobalTimeScale,
+        [Description("播放音频")]
+        PlayAudio,
+        [Description("播放特效")]
+        PlayEffects,
+        [Description("清空目标")]
+        ClearTargets,
+        [Description("尝试索敌")]
+        TryGetEnemy,
+        [Description("允许转向")]
+        AllowChangeDirection,
+        [Description("设置显隐")]
+        SetVisibility,
+        [Description("伤害流程")]
+        AttackDamage,
+        [Description("设置黑板变量")]
+        SetBlackBoardVariables,
+        [Description("获取黑板变量")]
+        GetBlackBoardVariables,
+        [Description("输入分歧")]
+        GetInput,
+        [Description("条件分歧")]
+        IfElse,
+        [Description("枚举分歧")]
+        SwitchEnum,
+        [Description("整型分歧")]
+        SwitchInt,
+        [Description("For迭代")]
+        ForIterator,
+        [Description("Foreach迭代")]
+        ForeachIterator,
+        [Description("屏幕震动")]
+        CameraImpulse,
+        [Description("后处理")]
+        PostProcess,
+        [Description("镜头偏移")]
+        CameraOffset,
+        [Description("镜头Fov")]
+        CameraFOV,
+        [Description("加")]
+        MathPlus,
+        [Description("减")]
+        MathMinus,
+        [Description("乘")]
+        MathTime,
+        [Description("除")]
+        MathDivide,
+        [Description("平方")]
+        MathSquare,
+        [Description("比较")]
+        MathCompare,
+        [Description("布尔")]
+        MathBool,
     }
 
     public struct ScriptIDVarID
@@ -78,6 +143,7 @@ namespace PengScript
                     if (varInID.ElementAt(i).Value.scriptID > 0)
                     {
                         PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
                         PengVar.SetValue(ref inVars[varInID.ElementAt(i).Key], ref vari);
                     }
                 }
@@ -110,6 +176,29 @@ namespace PengScript
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public virtual void GetValue()
+        {
+
+        }
+
+        public void InitialPengVars()
+        {
+            if (inVars.Length > 0)
+            {
+                for (int i = 0; i < inVars.Length ; i++)
+                {
+                    inVars[i].script = this;
+                }
+            }
+            if (outVars.Length > 0)
+            {
+                for (int i = 0; i < outVars.Length; i++)
+                {
+                    outVars[i].script = this;
                 }
             }
         }
@@ -194,10 +283,6 @@ namespace PengScript
             return result;
         }
 
-        public static void SetPengFloat(ref PengFloat toBeSet, ref PengFloat toBeGet)
-        {
-
-        }
     }
 
     public class OnTrackExecute: BaseScript
@@ -217,6 +302,7 @@ namespace PengScript
             outVars = new PengVar[2];
             outVars[0] = pengTrackExecuteFrame;
             outVars[1] = pengStateExecuteFrame;
+            InitialPengVars();
         }
 
         public override void Initial()
@@ -249,6 +335,7 @@ namespace PengScript
             inVars[2] = pengTransitionNormalizedTime;
             inVars[3] = pengStartAtNormalizedTime;
             inVars[4] = pengAnimationLayer;
+            InitialPengVars();
         }
 
         public override void Initial()
@@ -272,6 +359,48 @@ namespace PengScript
             else
             {
                 actor.anim.CrossFade(pengAnimationName.value, pengTransitionNormalizedTime.value, pengAnimationLayer.value, pengStartAtNormalizedTime.value);
+            }
+        }
+    }
+
+    public class IfElse : BaseScript
+    {
+        PengBool[] conditions;
+        public IfElse(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo)
+        {
+            type = PengScriptType.IfElse;
+
+            this.actor = actor;
+            trackMaster = track;
+            scriptName = GetDescription(type);
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+
+            inVars = new PengVar[5];
+            outVars = new PengVar[0];
+
+
+            InitialPengVars();
+        }
+
+        public override void Initial()
+        {
+            base.Initial();
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            if (conditions.Length > 0)
+            {
+                for (int i = 0; i < conditions.Length; i++)
+                {
+                    if (conditions[i].value)
+                    {
+                        //?
+                    }
+                }
             }
         }
     }

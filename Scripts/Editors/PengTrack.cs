@@ -50,7 +50,7 @@ public class PengTrack
             nodes.Add(new OnExecute(Vector2.zero, master, ref track, 1,
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(2)),
-                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0))));
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
 
             nodes[0].ProcessDrag(new Vector2(300f, 415f));
         }  

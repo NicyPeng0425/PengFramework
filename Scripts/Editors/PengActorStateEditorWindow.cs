@@ -1145,6 +1145,8 @@ public class PengActorStateEditorWindow : EditorWindow
         GenericMenu menu = new GenericMenu();
         menu.AddItem(new GUIContent("添加节点/按功能类型/角色表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/B/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
+
+
         menu.ShowAsContext();
     }
 
@@ -1171,7 +1173,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 track.nodes.Add(new PlayAnimation(mousePos, this, ref track, id, 
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)), 
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)), 
-                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5))));
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
                 break;
         }
         tracks[currentSelectedTrack] = track;
@@ -1593,14 +1595,19 @@ public class PengActorStateEditorWindow : EditorWindow
     public static PengNode ReadPengNode(XmlElement ele, ref PengTrack track)
     {
         PengScript.PengScriptType type = (PengScript.PengScriptType)Enum.Parse(typeof(PengScript.PengScriptType), ele.GetAttribute("ScriptType"));
+        int ID = int.Parse(ele.GetAttribute("ScriptID"));
+        string outID = ele.GetAttribute("OutID");
+        string varOutID = ele.GetAttribute("VarOutID");
+        string varInID = ele.GetAttribute("VarInID");
+        string specialInfo = ele.GetAttribute("SpecialInfo");
         switch (type)
         {
             default:
                 return null;
             case PengScript.PengScriptType.OnExecute:
-                return new OnExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, int.Parse(ele.GetAttribute("ScriptID")), ele.GetAttribute("OutID"), ele.GetAttribute("VarOutID"), ele.GetAttribute("VarInID"));
+                return new OnExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayAnimation:
-                return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, int.Parse(ele.GetAttribute("ScriptID")), ele.GetAttribute("OutID"), ele.GetAttribute("VarOutID"), ele.GetAttribute("VarInID"));
+                return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -1699,20 +1706,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 node.SetAttribute("OutID", PengNode.ParseDictionaryIntIntToString(pengNode.outID));
                 node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(pengNode.varOutID));
                 node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.varInID));
-                List<string> paraName = pengNode.GetParaName();
-                List<string> paraValue = pengNode.GetParaValue();
-                if (paraName.Count > 0 && paraName.Count == paraValue.Count)
-                {
-                    for (int m = 0; m < paraName.Count; m++)
-                    {
-                        node.SetAttribute(paraName[m], paraValue[m]);
-                    }
-                }
-                else if (paraValue.Count != paraName.Count)
-                {
-                    Debug.LogError("节点的参数名与参数值数量对不上，请检查是不是节点脚本写错了。");
-                    return null;
-                }
+                node.SetAttribute("SpecialInfo", pengNode.SpecialParaDescription());
+
                 track.AppendChild(node);
             }
         }

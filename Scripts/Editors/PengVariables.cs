@@ -17,6 +17,7 @@ namespace PengVariables
 
     public class PengVar
     {
+        public PengScript.BaseScript script;
         public PengNode node;
         public string name;
         public PengVarType type;

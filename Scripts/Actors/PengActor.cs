@@ -32,6 +32,8 @@ public class PengActor : MonoBehaviour
     public int currentStateFrame = 0;
     [HideInInspector]
     public int currentStateLength = 0;
+    [HideInInspector]
+    public List<PengActor> targets = new List<PengActor>();
 
 
     private void Awake()

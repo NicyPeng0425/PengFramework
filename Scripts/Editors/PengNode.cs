@@ -86,10 +86,12 @@ public class PengNode
 
     public virtual void Draw()
     {
+        rect = new Rect(rect.x, rect.y , rect.width, 26 * outPoints.Length);
+        rectSmall.y += 26 * (outPoints.Length - 1);
         rectSmall.height = 2 + 23 * paraNum;
         GUIStyle style3 = new GUIStyle("flow node 0" + (isSelected ? " on" : ""));
         GUI.Box(rectSmall, "", style3);
-
+        Rect rectMulti = new Rect(rect.x, rect.y, rect.width,rect.height);  
         switch (type)
         {
             case NodeType.Event:
@@ -99,7 +101,8 @@ public class PengNode
                 {
                     for(int i = 0; i < outPoints.Length; i++)
                     {
-                        outPoints[i].Draw(rect);
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        outPoints[i].Draw(rectMulti);
                     }
                 }
                 break;
@@ -111,7 +114,8 @@ public class PengNode
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        outPoints[i].Draw(rect);
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, rect.height + 52 * i);
+                        outPoints[i].Draw(rectMulti);
                     }
                 }
                 break;
@@ -123,7 +127,8 @@ public class PengNode
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        outPoints[i].Draw(rect);
+                        rectMulti = new Rect(rect.x, rect.y, rect.width, rect.height + 52 * i);
+                        outPoints[i].Draw(rectMulti);
                     }
                 }
                 break;
@@ -243,16 +248,13 @@ public class PengNode
         return null;
     }
 
-    public virtual List<string> GetParaName()
+    public virtual string SpecialParaDescription()
     {
-        List<string> list = new List<string>();
-        return list;
+        return "";
     }
 
-    public virtual List<string> GetParaValue()
+    public virtual void ReadSpecialParaDescription(string info)
     {
-        List<string> list = new List<string>();
-        return list;
     }
 
     public static string ParseRectToString(Rect rect)
@@ -512,7 +514,7 @@ public class OnExecute : PengNode
     public PengInt pengTrackExecuteFrame;
     public PengInt pengStateExecuteFrame;
 
-    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID) 
+    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -549,18 +551,6 @@ public class OnExecute : PengNode
         pengTrackExecuteFrame.DrawVar();
         pengStateExecuteFrame.DrawVar();
     }
-
-    public override List<string> GetParaName()
-    {
-        List<string> result = new List<string>();
-        return result;
-    }
-
-    public override List<string> GetParaValue()
-    {
-        List<string> result = new List<string>();
-        return result;
-    }
 }
 
 public class PlayAnimation : PengNode
@@ -571,7 +561,7 @@ public class PlayAnimation : PengNode
     public PengFloat pengStartAtNormalizedTime;
     public PengInt pengAnimationLayer;
     
-    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID)
+    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -615,3 +605,147 @@ public class PlayAnimation : PengNode
     }
 }
 
+public class IfElse: PengNode
+{
+    public enum IfElseIfElse
+    {
+        If,
+        ElseIf,
+        Else
+    }
+
+    public List<PengBool> conditions = new List<PengBool>();
+    public List<IfElseIfElse> conditionTypes = new List<IfElseIfElse>();
+
+    public IfElse(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.ReadSpecialParaDescription(specialInfo);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengVar[1];
+        outVars = new PengVar[0];
+
+        type = NodeType.Branch;
+        scriptType = PengScript.PengScriptType.IfElse;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        if (conditions.Count > 0)
+        {
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                conditions[i].DrawVar();
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        string result = "";
+        if(conditions.Count > 0)
+        {
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                //result += 
+            }
+        }
+        return result;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if(info != "")
+        {
+
+        }
+    }
+
+    public void AddConditions()
+    {
+        conditions.Add(new PengBool(this, "Ìõ¼þ" + (conditions.Count + 1).ToString(), conditions.Count, ConnectionPointType.In));
+        conditionTypes.Add(IfElseIfElse.ElseIf);
+        PengVar[] newInVars = new PengVar[conditions.Count];
+        for (int i = 0; i < conditions.Count - 1; i++)
+        {
+            newInVars[i] = inVars[i];
+        }
+        newInVars[conditions.Count - 1] = conditions[conditions.Count - 1];
+        inVars = newInVars;
+        PengNodeConnection[] newOutPoints = new PengNodeConnection[conditions.Count];
+        for (int i = 0; i < conditions.Count - 1; i++)
+        {
+            newOutPoints[i] = outPoints[i];
+        }
+        newOutPoints[conditions.Count - 1] = new PengNodeConnection(ConnectionPointType.FlowOut, conditions.Count - 1, this, null);
+        outPoints = newOutPoints;
+        paraNum++;
+    }
+    
+    public void RemoveConditions(int index)
+    {
+        if (conditions.Count > 1 && index > 0)
+        {
+            List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
+
+            PengVar[] newInVars = new PengVar[conditions.Count - 1];
+            int j = 0;
+            for (int i = 0; i < inVars.Length; i++)
+            {
+                if(i != index)
+                {
+                    newInVars[j] = inVars[i];
+                    j++;
+                }
+            }
+            for(int i = 0; i < trackMaster.lines.Count; i ++)
+            {
+                if(trackMaster.lines[i].inPoint == inVars[index].point && !lines.Contains(trackMaster.lines[i]))
+                {
+                    lines.Add(trackMaster.lines[i]);
+                }
+            }
+            inVars = newInVars;
+
+            PengNodeConnection[] newOutPoints = new PengNodeConnection[conditions.Count - 1];
+            int k = 0;
+            for (int i = 0; i < outPoints.Length; i++)
+            {
+                if(i != index)
+                {
+                    newOutPoints[k] = outPoints[i];
+                    k++;
+                }
+            }
+            for (int i = 0; i < trackMaster.lines.Count; i++)
+            {
+                if (trackMaster.lines[i].outPoint == outPoints[index] && !lines.Contains(trackMaster.lines[i]))
+                {
+                    lines.Add(trackMaster.lines[i]);
+                }
+            }
+            outPoints = newOutPoints;
+
+            for(int i = 0; i < lines.Count; i++)
+            {
+                trackMaster.lines.Remove(lines[i]);
+            }
+
+            paraNum--;
+            conditions.RemoveAt(index);
+            conditionTypes.RemoveAt(index);
+        }
+    }
+}

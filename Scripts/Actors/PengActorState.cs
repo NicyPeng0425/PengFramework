@@ -27,10 +27,10 @@ public class PengActorState : IPengActorState
     public float frameCnt = 0f;
     public List<bool> executedTags = new List<bool>();
 
-    public PengActorState(PengActor actor, XmlDocument stateInfo)
+    public PengActorState(PengActor actor, XmlElement stateInfo)
     {
         this.actor = actor;
-        ConstructActorState();
+        this.tracks = ReadActorTracks(stateInfo);
     }
     public void OnEnter()
     {
@@ -114,11 +114,6 @@ public class PengActorState : IPengActorState
         }
     }
 
-    public void ConstructActorState()
-    {
-        
-    }
-
     public static List<bool> InitialBoolList(int num, bool value)
     {
         List<bool> result = new List<bool>();
@@ -129,7 +124,7 @@ public class PengActorState : IPengActorState
         return result;
     }
 
-    public static List<PengTrack> ReadActorTracks(XmlElement stateEle)
+    public List<PengTrack> ReadActorTracks(XmlElement stateEle)
     {
         List<PengTrack> result = new List<PengTrack>();
         for (int i = 0; i < stateEle.ChildNodes.Count; i++)
@@ -141,7 +136,7 @@ public class PengActorState : IPengActorState
             for(int j = 0; j < trackEle.ChildNodes.Count; j++)
             {
                 XmlElement scriptEle = trackEle.ChildNodes[j] as XmlElement;
-                BaseScript script = ConstructRunTimePengScript(scriptEle);
+                BaseScript script = this.ConstructRunTimePengScript(scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"));
                 if(script != null)
                 {
                     track.scripts.Add(script);
@@ -152,7 +147,7 @@ public class PengActorState : IPengActorState
         return result;
     }
 
-    public static PengScript.BaseScript ConstructRunTimePengScript(XmlElement scriptEle)
+    public BaseScript ConstructRunTimePengScript(XmlElement scriptEle, ref PengTrack track, int ID, string flowOutInfo, string varInInfo)
     {
         PengScriptType scriptType = (PengScriptType)Enum.Parse(typeof(PengScriptType), scriptEle.GetAttribute("ScriptType"));
         switch (scriptType)
@@ -160,11 +155,11 @@ public class PengActorState : IPengActorState
             default:
                 return null;
             case PengScriptType.OnExecute:
-                return null;
-            case PengScriptType.DebugLogText:
+                return new OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo);
+            case PengScriptType.DebugLog:
                 return null;
             case PengScriptType.PlayAnimation:
-                return null;
+                return new PengScript.PlayAnimation(actor, track, ID, flowOutInfo, varInInfo);
         }
     }
 }
