@@ -10,6 +10,7 @@ using UnityEditor.Experimental.GraphView;
 using System.Security.Cryptography.X509Certificates;
 using Unity.VisualScripting;
 using System.Threading.Tasks;
+using UnityEditor.Animations;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -31,6 +32,8 @@ public class PengActorStateEditorWindow : EditorWindow
     float sideBarWidth = 250f;
     float timelineHeight = 350f;
     float timelineLength = 10f;
+
+    public float globalFrameRate;
 
 
     //当前编辑状态的信息缓存
@@ -68,6 +71,14 @@ public class PengActorStateEditorWindow : EditorWindow
     public float currentScale = 1;
     public bool debug = false;
     public bool editorPlaying = false;
+    private bool m_runTimeEdit = false;
+    public bool runTimeEdit
+    {
+        get { return m_runTimeEdit; }
+        set { m_runTimeEdit = value;
+            if (!m_runTimeEdit) { PauseEditingActor(); }
+        }
+    }
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //状态组是否折叠
@@ -79,6 +90,7 @@ public class PengActorStateEditorWindow : EditorWindow
     //所有状态及其对应的是否循环
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
     public string currentStateName;
+    public PengActor runTimeSelectionPauseActor = null;
 
     public XmlElement copyInfo = null;
     XmlDocument copyInternalDoc = null;
@@ -100,17 +112,9 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        if (EditorApplication.isPlaying)
+        if(!LoadGlobalConfiguration())
         {
-            if (!editorPlaying)
-            {
-                editorPlaying = true;
-                Selection.activeGameObject = null;
-            }
-        }
-        else
-        {
-            editorPlaying = false;
+            return;
         }
 
         if (Selection.activeGameObject == null)
@@ -128,6 +132,75 @@ public class PengActorStateEditorWindow : EditorWindow
         if (Selection.activeGameObject.GetComponent<PengActor>().actorID != currentActorID)
         {
             ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
+        }
+
+        if (EditorApplication.isPlaying)
+        {
+            if (!editorPlaying)
+            {
+                editorPlaying = true;
+                Selection.activeGameObject = null;
+                runTimeEdit = false;
+            }
+
+            if (runTimeEdit)
+            {
+                if (Selection.activeTransform != null && Selection.activeTransform.GetComponent<PengActor>() != null)
+                {
+                    if (runTimeSelectionPauseActor == null)
+                    {
+                        runTimeSelectionPauseActor = Selection.activeTransform.GetComponent<PengActor>();
+                    }
+                    else
+                    {
+                        if (runTimeSelectionPauseActor != Selection.activeTransform.GetComponent<PengActor>())
+                        {
+                            runTimeSelectionPauseActor = Selection.activeTransform.GetComponent<PengActor>();
+                        }
+                    }
+                }
+
+                if (runTimeSelectionPauseActor != null)
+                {
+                    Vector3 pos = runTimeSelectionPauseActor.transform.position;
+                    runTimeSelectionPauseActor.pauseTime = 100f;
+                    runTimeSelectionPauseActor.ctrl.enabled = false;
+
+                    //非常傻逼的采样方法，有没有人能救救
+                    runTimeSelectionPauseActor.anim.Play(currentStateName, 0, 0);
+                    runTimeSelectionPauseActor.anim.Update(0);
+                    runTimeSelectionPauseActor.anim.Update(((float)currentSelectedFrame / globalFrameRate));
+
+                    runTimeSelectionPauseActor.transform.position = pos;
+                }
+            }
+            else
+            {
+                if(runTimeSelectionPauseActor != null)
+                {
+                    runTimeSelectionPauseActor.TransState("Idle");
+                }
+                runTimeSelectionPauseActor = null;
+            }
+        }
+        else
+        {
+            editorPlaying = false;
+            runTimeSelectionPauseActor = null;
+            if (Selection.activeTransform != null && Selection.activeTransform.GetComponent<PengActor>() != null)
+            {
+                Vector3 pos = Selection.activeTransform.position;
+                AnimationClip[] clips = Selection.activeTransform.GetComponent<Animator>().runtimeAnimatorController.animationClips;
+                for (int i = 0; i < clips.Length; i++)
+                {
+                    if (clips[i].name == Selection.activeTransform.GetComponent<PengActor>().actorID.ToString() + "@" + currentStateName)
+                    {
+                        clips[i].SampleAnimation(Selection.activeTransform.gameObject, (float)currentSelectedFrame / globalFrameRate);
+                        break;
+                    }
+                }
+                Selection.activeTransform.position = pos;
+            }
         }
 
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
@@ -838,6 +911,12 @@ public class PengActorStateEditorWindow : EditorWindow
         GUI.Box(header, "", style1);
         GUI.Box(headerTitle, "角色基本信息", style1);
 
+        if(EditorApplication.isPlaying)
+        {
+            Rect runTimeEditRect = new Rect(headerTitle.x + 100, headerTitle.y, 100, headerTitle.height);
+            runTimeEdit = GUI.Toggle(runTimeEditRect, runTimeEdit, "运行时编辑");
+        }
+
         GUI.Box(actorNameLabel, "角色ID：", style2);
         GUI.Box(actorName, currentActorID.ToString(), style2);
 
@@ -854,6 +933,16 @@ public class PengActorStateEditorWindow : EditorWindow
             EditorUtility.DisplayDialog("警告", "阵营必须以整型数字来标识！", "ok");
         }
 
+    }
+
+    public void PauseEditingActor()
+    {
+        foreach (PengActor actor in GameObject.FindWithTag("PengGameManager").GetComponent<PengGameManager>().actors)
+        {
+            actor.pauseTime = 0f;
+            actor.anim.speed = 1f;
+            actor.ctrl.enabled = true;
+        }
     }
 
     public void DrawTimeLineTitle()
@@ -1096,7 +1185,13 @@ public class PengActorStateEditorWindow : EditorWindow
             }
             catch
             {
-                ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
+                if(Selection.activeGameObject != null)
+                {
+                    if (Selection.activeGameObject.GetComponent<PengActor>() != null)
+                    {
+                        ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
+                    }
+                }
             }
             GUILayout.Space(10);
             GUILayout.Label("状态长度：", GUILayout.Width(65));
@@ -1892,5 +1987,24 @@ public class PengActorStateEditorWindow : EditorWindow
         currentStateName = "";
         copyInfo = null;
         copyInternalDoc = null;
+    }
+
+    public bool LoadGlobalConfiguration()
+    {
+        if (File.Exists(Application.dataPath + "/Resources/GlobalConfiguration/GlobalSetting.xml"))
+        {
+            TextAsset textAsset = null;
+            textAsset = (TextAsset)Resources.Load("GlobalConfiguration/GlobalSetting");
+            XmlDocument xml = new XmlDocument();
+            xml.LoadXml(textAsset.text);
+            XmlElement frameSettingElement = (XmlElement)xml.SelectSingleNode("FrameSetting");
+            globalFrameRate = float.Parse(frameSettingElement.GetAttribute("ActionFrameRate"));
+            return true;
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("没有全局配置，请使用启动器修复！", MessageType.Warning);
+            return false;
+        }
     }
 }

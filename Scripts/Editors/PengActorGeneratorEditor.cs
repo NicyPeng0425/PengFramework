@@ -121,20 +121,18 @@ public class PengActorGeneratorEditor : EditorWindow
         GUILayout.Space(10);
 
         generateMode = (GenerateMode)EditorGUILayout.EnumPopup(generateMode);
-
-        switch (generateMode)
+        if (WhetherHaveGlobalConfiguration())
         {
-            case GenerateMode.New:
-                if (WhetherHaveGlobalConfiguration())
-                {
+            switch (generateMode)
+            {
+                case GenerateMode.New:
                     PengActorGenerator();
-                }
                 break;
             case GenerateMode.Copy:
                 CopyActor();
                 break;
+            }
         }
-
         EditorGUILayout.EndVertical();
     }
 
