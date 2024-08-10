@@ -33,8 +33,6 @@ public class PengTrack
         }
     }
     public List<PengNode> nodes = new List<PengNode>();
-    public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
-
     public List<BaseScript> scripts = new List<BaseScript>();
     
     public PengTrack(ExecTime time, string name, int start, int end, PengActorStateEditorWindow master, bool isNew)

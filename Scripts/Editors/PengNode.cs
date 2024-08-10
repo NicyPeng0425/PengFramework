@@ -9,6 +9,7 @@ using PengVariables;
 using static UnityEditor.PlayerSettings;
 using System.Linq;
 using static UnityEngine.Rendering.VolumeComponent;
+using PengScript;
 
 public class PengNode
 {
@@ -167,6 +168,61 @@ public class PengNode
         }
     }
 
+    public void DrawLines()
+    {
+        if (outID.Count > 0)
+        {
+            for (int i = 0; i < outID.Count; i++)
+            {
+                if (outID.ElementAt(i).Value > 0)
+                {
+                    Handles.DrawBezier(GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center, outPoints[i].rect.center, GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center + Vector2.left * 40f, outPoints[i].rect.center - Vector2.left * 40f, Color.white, null, 6f);
+                    
+                    Vector2 buttonSize = new Vector2(20, 20);
+                    Vector2 lineCenter = (GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center + outPoints[i].rect.center) * 0.5f;
+
+                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "¡Á"))
+                    {
+                        outID[i] = -1;
+                    }
+                }
+            }
+        }
+
+        if(varInID.Count > 0)
+        {
+            for(int i = 0;i < varInID.Count;i++)
+            {
+                if(varInID.ElementAt(i).Value.nodeID > 0)
+                {
+                    Handles.DrawBezier(inVars[i].point.rect.center, GetPengVarByNodeIDPengVarOutID(varInID.ElementAt(i).Value.nodeID,
+                        varInID.ElementAt(i).Value.connectionID).point.rect.center,
+                        inVars[i].point.rect.center + Vector2.left * 40f,
+                        GetPengVarByNodeIDPengVarOutID(varInID.ElementAt(i).Value.nodeID, varInID.ElementAt(i).Value.connectionID).point.rect.center - Vector2.left * 40f, Color.white, null, 3f);
+
+                    Vector2 buttonSize = new Vector2(20, 20);
+                    Vector2 lineCenter = (inVars[i].point.rect.center + GetPengVarByNodeIDPengVarOutID(varInID.ElementAt(i).Value.nodeID, varInID.ElementAt(i).Value.connectionID).point.rect.center) * 0.5f;
+
+                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "¡Á"))
+                    {
+                        for(int j = GetNodeByNodeID(varInID[i].nodeID).varOutID[varInID[i].connectionID].Count - 1; j >= 0; j--)
+                        {
+                            if (GetNodeByNodeID(varInID[i].nodeID).varOutID[varInID[i].connectionID][j].nodeID == nodeID)
+                            {
+                                GetNodeByNodeID(varInID[i].nodeID).varOutID[varInID[i].connectionID].RemoveAt(j);
+                                break;
+                            }
+                        }
+                        
+                        varInID[i] = DefaultNodeIDConnectionID();
+                    }
+                }
+            }
+        }
+
+
+    }
+
     public void ProcessDrag(Vector2 change)
     {
         rect = new Rect(rect.x + change.x, rect.y +  change.y, rect.width, rect.height);
@@ -287,6 +343,27 @@ public class PengNode
 
     public virtual void ReadSpecialParaDescription(string info)
     {
+    }
+
+    public PengNode GetNodeByNodeID(int id)
+    {
+        if (trackMaster.nodes.Count > 0)
+        {
+            for (int i = 0; i < trackMaster.nodes.Count; i++)
+            {
+                if (trackMaster.nodes[i].nodeID == id)
+                {
+                    return trackMaster.nodes[i];
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
+    public PengVar GetPengVarByNodeIDPengVarOutID(int nodeID, int VarID)
+    {
+        return GetNodeByNodeID(nodeID).outVars[VarID];
     }
 
     public static string ParseRectToString(Rect rect)
@@ -790,8 +867,17 @@ public class IfElse: PengNode
     {
         if (inVars.Length > 1)
         {
-            List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
-
+            if (GetNodeByNodeID(varInID[varInID.Count - 1].nodeID).varOutID[varInID[varInID.Count - 1].connectionID].Count > 0)
+            {
+                for (int j = GetNodeByNodeID(varInID[varInID.Count - 1].nodeID).varOutID[varInID[varInID.Count - 1].connectionID].Count - 1; j >= 0; j--)
+                {
+                    if (GetNodeByNodeID(varInID[varInID.Count - 1].nodeID).varOutID[varInID[varInID.Count - 1].connectionID][j].nodeID == nodeID)
+                    {
+                        GetNodeByNodeID(varInID[varInID.Count - 1].nodeID).varOutID[varInID[varInID.Count - 1].connectionID].RemoveAt(j);
+                        break;
+                    }
+                }
+            }
             PengVar[] newInVars = new PengVar[inVars.Length - 1];
             PengNodeConnection[] newOutPoints = new PengNodeConnection[inVars.Length - 1];
             for (int i = 0; i < newInVars.Length; i++)
@@ -799,23 +885,8 @@ public class IfElse: PengNode
                 newInVars[i] = inVars[i];
                 newOutPoints[i] = outPoints[i];
             }
-            for(int i = 0; i < trackMaster.lines.Count; i ++)
-            {
-                if(trackMaster.lines[i].inPoint == inVars[inVars.Length - 1].point && !lines.Contains(trackMaster.lines[i]))
-                {
-                    lines.Add(trackMaster.lines[i]);
-                }
-                if (trackMaster.lines[i].outPoint == outPoints[inVars.Length - 1] && !lines.Contains(trackMaster.lines[i]))
-                {
-                    lines.Add(trackMaster.lines[i]);
-                }
-            }
             outPoints = newOutPoints;
             inVars = newInVars;
-            for(int i = 0; i < lines.Count; i++)
-            {
-                trackMaster.lines.Remove(lines[i]);
-            }
 
             paraNum--;
             conditionTypes.RemoveAt(inVars.Length);

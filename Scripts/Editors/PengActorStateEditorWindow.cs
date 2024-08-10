@@ -1278,11 +1278,11 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            if (tracks[currentSelectedTrack].lines.Count > 0)
+            if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
-                for (int i = 0; i < tracks[currentSelectedTrack].lines.Count; i++)
+                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
                 {
-                    tracks[currentSelectedTrack].lines[i].Draw();
+                    tracks[currentSelectedTrack].nodes[i].DrawLines();
                 }
             }
         }
@@ -1698,7 +1698,7 @@ public class PengActorStateEditorWindow : EditorWindow
             PengNode node = ReadPengNode(nodeEle, ref track);
             track.nodes.Add(node);
         }
-
+        /*
         if (track.nodes.Count > 0)
         {
             for (int i = 0; i < track.nodes.Count; i++)
@@ -1725,7 +1725,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     }
                 }
             }
-        }
+        }*/
         return track;
     }
 
