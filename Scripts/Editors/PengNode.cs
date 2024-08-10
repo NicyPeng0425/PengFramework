@@ -249,7 +249,16 @@ public class PengNode
 
     public void ProcessDrag(Vector2 change)
     {
-        pos += change / master.currentScale;
+        if(master != null)
+        {
+            pos += change / master.currentScale;
+        }
+        else
+        {
+            pos += change;
+
+        }
+        
         rect = new Rect(pos.x, pos.y, rect.width, rect.height);
         rectSmall = new Rect(rect.x, rect.y + rect.height, rect.width, rect.height);
     }

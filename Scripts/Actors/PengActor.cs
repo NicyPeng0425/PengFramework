@@ -45,15 +45,6 @@ public class PengActor : MonoBehaviour
         anim = this.GetComponent<Animator>();
         ctrl = this.GetComponent<CharacterController>();
         LoadActorState();
-
-        if (actorStates.ContainsKey("Intro"))
-        {
-            TransState("Intro");
-        }
-        else
-        {
-            TransState(initalName);
-        }
     }
     // Start is called before the first frame update
     void Start()
@@ -65,7 +56,10 @@ public class PengActor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        current.OnUpdate();
+        if (actorStates.Count > 0)
+        {
+            current.OnUpdate();
+        }
     }
 
     public void TransState(string name)
@@ -138,10 +132,14 @@ public class PengActor : MonoBehaviour
             Debug.Log("Actor" + actorID.ToString() + "的Actor数据读取失败！");
             this.gameObject.SetActive(false);
         }
-        /*
-        for (int i = 0; i < actorStates.Count; i++)
+
+        if (actorStates.ContainsKey("Intro"))
         {
-            Debug.Log(actorStates.ElementAt(i).Key);
-        }*/
+            TransState("Intro");
+        }
+        else
+        {
+            TransState(initalName);
+        }
     }
 }

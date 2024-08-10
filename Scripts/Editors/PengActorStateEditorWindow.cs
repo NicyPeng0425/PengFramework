@@ -9,6 +9,7 @@ using System.IO;
 using UnityEditor.Experimental.GraphView;
 using System.Security.Cryptography.X509Certificates;
 using Unity.VisualScripting;
+using System.Threading.Tasks;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -44,7 +45,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public int currentSelectedFrame;
     int m_currentSelectedTrack;
     public int currentSelectedTrack
-    { 
+    {
         get { return m_currentSelectedTrack; }
         set { m_currentSelectedTrack = value; OnCurrentSelectedTrackChanged(); }
     }
@@ -66,6 +67,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public string currentActorName = "";
     public float currentScale = 1;
     public bool debug = false;
+    public bool editorPlaying = false;
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //状态组是否折叠
@@ -92,20 +94,31 @@ public class PengActorStateEditorWindow : EditorWindow
     }
 
     private void OnEnable()
-    {/*
-        UpdateCurrentStateInfo();
-        gridOffset = new Vector2(300f, 415f);
-        DragAllNodes(new Vector2(300f, 415f));*/
+    {
+        editorPlaying = EditorApplication.isPlaying;
     }
 
     private void OnGUI()
     {
+        if (EditorApplication.isPlaying)
+        {
+            if (!editorPlaying)
+            {
+                editorPlaying = true;
+                Selection.activeGameObject = null;
+            }
+        }
+        else
+        {
+            editorPlaying = false;
+        }
+
         if (Selection.activeGameObject == null)
         {
             EditorGUILayout.HelpBox("请选择对象", MessageType.Info);
             return;
         }
-            
+
         if (Selection.activeGameObject.GetComponent<PengActor>() == null)
         {
             EditorGUILayout.HelpBox("所选对象不含PengActor组件", MessageType.Warning);
@@ -114,7 +127,6 @@ public class PengActorStateEditorWindow : EditorWindow
 
         if (Selection.activeGameObject.GetComponent<PengActor>().actorID != currentActorID)
         {
-            Save(false);
             ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
         }
 
@@ -179,7 +191,7 @@ public class PengActorStateEditorWindow : EditorWindow
         DrawTimeLineTitle();
 
         EditorGUILayout.EndVertical();
-        
+
         EditorGUILayout.EndVertical();
     }
 
@@ -225,13 +237,13 @@ public class PengActorStateEditorWindow : EditorWindow
             for (int i = 0; i < tracks.Count; i++)
             {
                 if (tracks[i].execTime == PengTrack.ExecTime.Update)
-                { 
+                {
                     Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, timelineLength, 14);
                     Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 71 + 27 * (i - 2) - timelineScrollPos.y, 90, 18);
                     Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
                     Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
                     Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
-                
+
                     Rect rectTrackCursor = new Rect(rectTrack.x + 3, rectTrack.y, rectTrack.width - 6, rectTrack.height);
                     Rect rectLeftCursor = new Rect(rectLeft.x - 3, rectLeft.y, rectLeft.width + 6, rectLeft.height);
                     Rect rectRightCursor = new Rect(rectRight.x - 3, rectRight.y, rectRight.width + 6, rectRight.height);
@@ -413,12 +425,12 @@ public class PengActorStateEditorWindow : EditorWindow
                             GUI.changed = true;
                         }
 
-                        
+
                     }
                 }
                 if (tracks[i].execTime == PengTrack.ExecTime.Enter || tracks[i].execTime == PengTrack.ExecTime.Exit)
                 {
-                    if(tracks[i].execTime == PengTrack.ExecTime.Exit)
+                    if (tracks[i].execTime == PengTrack.ExecTime.Exit)
                     {
                         onExit = new Rect(rect.x + rect.width + 5, rect.y + 3, 90, 18);
                         exitIndex = i;
@@ -446,7 +458,7 @@ public class PengActorStateEditorWindow : EditorWindow
             }
             GUI.changed = true;
         }
-        
+
         GUI.Box(rect, "", style);
 
         if (currentFrameLength == 0)
@@ -488,13 +500,13 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void DeleteTrack()
     {
-        if(currentDeleteTrack == tracks.Count - 1)
+        if (currentDeleteTrack == tracks.Count - 1)
         {
-            if(currentSelectedTrack == tracks.Count - 1)
+            if (currentSelectedTrack == tracks.Count - 1)
             {
                 currentSelectedTrack--;
             }
-            if(dragTrackIndex == tracks.Count - 1)
+            if (dragTrackIndex == tracks.Count - 1)
             {
                 dragTrackIndex--;
             }
@@ -504,7 +516,7 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             if (currentDeleteTrack < currentSelectedTrack)
             {
-                currentSelectedTrack --;
+                currentSelectedTrack--;
             }
             tracks.RemoveAt(currentDeleteTrack);
         }
@@ -550,14 +562,14 @@ public class PengActorStateEditorWindow : EditorWindow
             for (int i = 0; i < states.Count; i++)
             {
                 showRow++;
-                if(states.ElementAt(i).Value.Count > 0 && !statesFold[states.ElementAt(i).Key])
+                if (states.ElementAt(i).Value.Count > 0 && !statesFold[states.ElementAt(i).Key])
                 {
                     showRow += states.ElementAt(i).Value.Count;
                 }
             }
 
             bool hasScroll = false;
-            if(showRow * 20 + 6 >= rectangle.height - 36)
+            if (showRow * 20 + 6 >= rectangle.height - 36)
             {
                 GUIStyle styleBG = new GUIStyle("LODBlackBox");
                 GUIStyle styleHandle = new GUIStyle("Button");
@@ -620,7 +632,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     GUI.Box(entry, states.ElementAt(i).Key, style2);
                     GUI.Box(entryAdd, "", style5);
                     GUI.Box(entryDelete, "", style4);
-                    if(Event.current.type == EventType.MouseDown &&  Event.current.button == 0 && entryFold.Contains(Event.current.mousePosition))
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryFold.Contains(Event.current.mousePosition))
                     {
                         statesFold[states.ElementAt(i).Key] = !statesFold[states.ElementAt(i).Key];
                         GUI.changed = true;
@@ -634,11 +646,11 @@ public class PengActorStateEditorWindow : EditorWindow
                         while (sameName)
                         {
                             sameName = false;
-                            if(statesTrack.Count > 0)
+                            if (statesTrack.Count > 0)
                             {
-                                for(int k = 0; k < statesTrack.Count; k ++)
+                                for (int k = 0; k < statesTrack.Count; k++)
                                 {
-                                    if(stateName == statesTrack.ElementAt(k).Key)
+                                    if (stateName == statesTrack.ElementAt(k).Key)
                                     {
                                         sameName = true;
                                         stateName = "NewState" + index.ToString();
@@ -667,7 +679,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     }
                 }
 
-                if (states.ElementAt(i).Value.Count > 0 && ! statesFold[states.ElementAt(i).Key])
+                if (states.ElementAt(i).Value.Count > 0 && !statesFold[states.ElementAt(i).Key])
                 {
                     for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
                     {
@@ -726,14 +738,14 @@ public class PengActorStateEditorWindow : EditorWindow
                 }
                 row++;
             }
-            if(deleteStateGroup)
+            if (deleteStateGroup)
             {
                 string key = states.ElementAt(deleteStateGroupAt).Key;
                 states.Remove(key);
                 statesFold.Remove(key);
                 GUI.changed = true;
             }
-            if(deleteState)
+            if (deleteState)
             {
                 string deleteStateName = states.ElementAt(deleteStateGroupAt).Value[deleteStateAt];
                 if (deleteStateName == currentStateName)
@@ -832,7 +844,7 @@ public class PengActorStateEditorWindow : EditorWindow
         GUI.Box(actorCampLabel, "角色阵营：", style2);
         currentActorCampString = GUI.TextField(actorCamp, currentActorCamp.ToString(), style2);
 
-        if(int.TryParse(currentActorCampString, out currentActorCamp))
+        if (int.TryParse(currentActorCampString, out currentActorCamp))
         {
 
         }
@@ -852,11 +864,11 @@ public class PengActorStateEditorWindow : EditorWindow
 
         Rect border1 = new Rect(sideBarWidth + 4, 65, position.width - sideBarWidth - 8, 281);
         Rect border2 = new Rect(sideBarWidth + 1, 40, position.width - sideBarWidth - 1, 310);
-        
-        if(currentFrameLength * 10f + 200 >= position.width - sideBarWidth)
+
+        if (currentFrameLength * 10f + 200 >= position.width - sideBarWidth)
         {
             border1.height -= 16;
-            Rect scrollHorizontal = new Rect(sideBarWidth+2, border1.y + border1.height+2, position.width - sideBarWidth - 4, 15);
+            Rect scrollHorizontal = new Rect(sideBarWidth + 2, border1.y + border1.height + 2, position.width - sideBarWidth - 4, 15);
 
             float ratio = (position.width - sideBarWidth) / (currentFrameLength * 10f + 200);
             Rect scrollHorizontalHandle = new Rect((timelineScrollPos.x / (currentFrameLength * 10f + 200)) * (scrollHorizontal.width - 2) + sideBarWidth + 4, scrollHorizontal.y + 2, (scrollHorizontal.width - 2) * ratio, 11);
@@ -900,13 +912,13 @@ public class PengActorStateEditorWindow : EditorWindow
             timelineScrollPos.x = 0;
         }
 
-        if(27 * (tracks.Count - 2) + 20 >= timelineHeight - border1.y - 20)
+        if (27 * (tracks.Count - 2) + 20 >= timelineHeight - border1.y - 20)
         {
             //border1.height -= 16;
             Rect scrollVertical = new Rect(position.width - 19, border1.y + 3, 15, timelineHeight - border1.y - 20);
 
             float ratio = (timelineHeight - border1.y - 20) / (27 * (tracks.Count - 2) + 20);
-            Rect scrollVerticalHandle = new Rect(scrollVertical.x + 2, (timelineScrollPos.y / (27 * (tracks.Count - 2) + 20)) * (scrollVertical.height - 2) + border1.y + 5,  11, (scrollVertical.height - 2) * ratio);
+            Rect scrollVerticalHandle = new Rect(scrollVertical.x + 2, (timelineScrollPos.y / (27 * (tracks.Count - 2) + 20)) * (scrollVertical.height - 2) + border1.y + 5, 11, (scrollVertical.height - 2) * ratio);
 
             EditorGUIUtility.AddCursorRect(scrollVerticalHandle, MouseCursor.Link);
 
@@ -958,7 +970,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
 
-        if(currentStateName!= "" && currentStateName != null)
+        if (currentStateName != "" && currentStateName != null)
         {
             if (GUILayout.Button("创建轨道", GUILayout.Width(100)))
             {
@@ -1013,15 +1025,15 @@ public class PengActorStateEditorWindow : EditorWindow
             stateName = EditorGUILayout.TextField(stateName, GUILayout.Width(100));
             if (stateName != currentStateName)
             {
-                if(states.Count > 0)
+                if (states.Count > 0)
                 {
                     int index1 = 0;
                     int index2 = 0;
-                    for (int i = 0;i < states.Count;i++)
+                    for (int i = 0; i < states.Count; i++)
                     {
-                        if (states.ElementAt(i).Value.Count  > 0)
+                        if (states.ElementAt(i).Value.Count > 0)
                         {
-                            for(int j = 0; j < states.ElementAt(i).Value.Count;j++)
+                            for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
                             {
                                 if (states.ElementAt(i).Value[j] == currentStateName)
                                 {
@@ -1039,7 +1051,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 {
                     for (int i = 0; i < statesTrack.Count; i++)
                     {
-                        if(statesTrack.ElementAt(i).Key == currentStateName)
+                        if (statesTrack.ElementAt(i).Key == currentStateName)
                         {
                             statesTrack.Add(stateName, statesTrack.ElementAt(i).Value);
                             statesTrack.Remove(currentStateName);
@@ -1078,21 +1090,34 @@ public class PengActorStateEditorWindow : EditorWindow
             GUILayout.Space(10);
             GUILayout.Label("是否循环：", GUILayout.Width(65));
             GUILayout.Space(5);
-            statesLoop[currentStateName] = EditorGUILayout.Toggle(statesLoop[currentStateName], GUILayout.Width(25));
-
+            try
+            {
+                statesLoop[currentStateName] = EditorGUILayout.Toggle(statesLoop[currentStateName], GUILayout.Width(25));
+            }
+            catch
+            {
+                ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
+            }
             GUILayout.Space(10);
             GUILayout.Label("状态长度：", GUILayout.Width(65));
             GUILayout.Space(5);
 
-            statesLength[currentStateName] = EditorGUILayout.IntField(statesLength[currentStateName], GUILayout.Width(65));
-            currentFrameLength = statesLength[currentStateName];
+            try
+            {
+                statesLength[currentStateName] = EditorGUILayout.IntField(statesLength[currentStateName], GUILayout.Width(65));
+                currentFrameLength = statesLength[currentStateName];
+            }
+            catch
+            {
+
+            }
 
         }
 
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.EndVertical();
 
-    }    
+    }
 
     public void DrawNodeGraph()
     {
@@ -1191,7 +1216,7 @@ public class PengActorStateEditorWindow : EditorWindow
             idSame = false;
             for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
             {
-                if(id == tracks[currentSelectedTrack].nodes[i].nodeID)
+                if (id == tracks[currentSelectedTrack].nodes[i].nodeID)
                 {
                     idSame = true;
                     id++;
@@ -1201,9 +1226,9 @@ public class PengActorStateEditorWindow : EditorWindow
         switch (type)
         {
             case PengScript.PengScriptType.PlayAnimation:
-                track.nodes.Add(new PlayAnimation(mousePos, this, ref track, id, 
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)), 
-                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)), 
+                track.nodes.Add(new PlayAnimation(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
                 break;
             case PengScript.PengScriptType.IfElse:
@@ -1244,12 +1269,12 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            if (tracks[currentSelectedTrack].nodes.Count > 0) 
+            if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
                 for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
                 {
                     tracks[currentSelectedTrack].nodes[i].Draw();
-                } 
+                }
             }
 
             DrawConnectionLines();
@@ -1269,7 +1294,7 @@ public class PengActorStateEditorWindow : EditorWindow
             Rect box = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, 30);
             Rect label1 = new Rect(box.x + 8, box.y + 3, 80, 20);
             Rect text1 = new Rect(box.x + 88, box.y + 3, 120, 20);
-            
+
 
             GUI.Box(box, "", style);
             GUI.Box(label1, "轨道名称：", style);
@@ -1300,7 +1325,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 GUI.Box(text1, tracks[currentSelectedTrack].name, style2);
             }
 
-            if(tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
+            if (tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
             {
                 Rect copy = new Rect(box.x + 520, box.y + 3, 80, 20);
                 if (GUI.Button(copy, "复制轨道"))
@@ -1327,7 +1352,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
             {
-                if(text1.Contains(Event.current.mousePosition))
+                if (text1.Contains(Event.current.mousePosition))
                 {
                     trackNameEditing = true;
                     GUI.changed = true;
@@ -1362,7 +1387,7 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             Vector3 start = (selectingPoint.type == ConnectionPointType.In) ? selectingPoint.rect.center : e.mousePosition;
             Vector3 end = (selectingPoint.type == ConnectionPointType.In) ? e.mousePosition : selectingPoint.rect.center;
-            
+
             if (selectingPoint.type == ConnectionPointType.In || selectingPoint.type == ConnectionPointType.Out) { Handles.DrawBezier(start, end, start + Vector3.left * 40f, end - Vector3.left * 40f, Color.white, null, 3f); }
             else if (selectingPoint.type == ConnectionPointType.FlowIn || selectingPoint.type == ConnectionPointType.FlowOut) { Handles.DrawBezier(start, end, start + Vector3.left * 40f, end - Vector3.left * 40f, Color.white, null, 6f); }
 
@@ -1379,16 +1404,16 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 if (tracks[currentSelectedTrack].nodes[i].outID.Count > 0)
                 {
-                    for(int j = 0; j < tracks[currentSelectedTrack].nodes[i].outID.Count; j++)
+                    for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].outID.Count; j++)
                     {
-                        if(tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                        if (tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value == node.nodeID)
                         {
                             tracks[currentSelectedTrack].nodes[i].outID[j] = -1;
                         }
                     }
                 }
 
-                if(tracks[currentSelectedTrack].nodes[i].varInID.Count > 0)
+                if (tracks[currentSelectedTrack].nodes[i].varInID.Count > 0)
                 {
                     for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].varInID.Count; j++)
                     {
@@ -1407,7 +1432,7 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
         {
-            if(tracks[currentSelectedTrack].nodes.Count > 0) 
+            if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
                 for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
                 {
@@ -1416,7 +1441,7 @@ public class PengActorStateEditorWindow : EditorWindow
             }
         }
     }
-    
+
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
     {
         int widthDiv = Mathf.CeilToInt(position.width / gridSpacing);
@@ -1429,7 +1454,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
             for (int i = 0; i < widthDiv; i++)
             {
-                Handles.DrawLine(new Vector3(gridSpacing * i, - gridSpacing, 0) + go, new Vector3(gridSpacing * i, position.height + gridSpacing, 0f) + go);
+                Handles.DrawLine(new Vector3(gridSpacing * i, -gridSpacing, 0) + go, new Vector3(gridSpacing * i, position.height + gridSpacing, 0f) + go);
             }
             for (int i = 0; i < widthDiv; i++)
             {
@@ -1440,14 +1465,14 @@ public class PengActorStateEditorWindow : EditorWindow
         Handles.EndGUI();
     }
 
-    public void UpdateCurrentStateInfo() 
+    public void UpdateCurrentStateInfo()
     {
         ReadActorData(100425);
     }
 
     public void OnCurrentSelectedTrackChanged()
     {
-        
+
     }
 
     public static XmlElement ConstructNewTrackXML(ref XmlDocument doc, PengTrack.ExecTime execTime, int start, int end)
@@ -1532,9 +1557,9 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 XmlElement group = doc.CreateElement("StateGroup");
                 group.SetAttribute("Name", stateGroup.ElementAt(i).Key);
-                if(stateGroup.ElementAt(i).Value.Count > 0)
+                if (stateGroup.ElementAt(i).Value.Count > 0)
                 {
-                    for(int j = 0; j < stateGroup.ElementAt(i).Value.Count; j++)
+                    for (int j = 0; j < stateGroup.ElementAt(i).Value.Count; j++)
                     {
                         XmlElement state = doc.CreateElement("State");
                         string stateName = stateGroup.ElementAt(i).Value[j];
@@ -1543,7 +1568,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         state.SetAttribute("Length", statesLength[stateName].ToString());
                         if (stateTrack[stateName].Count > 0)
                         {
-                            for(int k = 0;  k < stateTrack[stateName].Count; k++)
+                            for (int k = 0; k < stateTrack[stateName].Count; k++)
                             {
                                 PengTrack track = stateTrack[stateName][k];
                                 state.AppendChild(GenerateTrackInfo(ref doc, track));
@@ -1551,7 +1576,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         }
                         group.AppendChild(state);
                     }
-                }  
+                }
                 states.AppendChild(group);
             }
         }
@@ -1560,7 +1585,7 @@ public class PengActorStateEditorWindow : EditorWindow
         root.AppendChild(states);
         doc.AppendChild(root);
 
-        if(!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + actorID.ToString()))
+        if (!Directory.Exists(Application.dataPath + "/Resources/ActorData/" + actorID.ToString()))
         {
             Directory.CreateDirectory(Application.dataPath + "/Resources/ActorData/" + actorID.ToString());
         }
@@ -1569,9 +1594,23 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             Debug.Log("保存成功，保存于" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
         }
-        
         AssetDatabase.Refresh();
+
+        if (EditorApplication.isPlaying)
+        {
+            foreach (PengActor actor in GameObject.FindWithTag("PengGameManager").GetComponent<PengGameManager>().actors)
+            {
+                if (actor.actorID == actorID)
+                {
+                    Debug.Log(1);
+                    actor.actorStates = new Dictionary<string, IPengActorState>();
+                    actor.LoadActorState();
+                }
+            }
+        }
     }
+
+    
 
     public void ReadActorData(int actorID)
     {
@@ -1685,6 +1724,8 @@ public class PengActorStateEditorWindow : EditorWindow
             DragAllNodes(targetPos);
         }
     }
+
+
 
     public static PengNode ReadPengNode(XmlElement ele, ref PengTrack track)
     {
@@ -1816,5 +1857,40 @@ public class PengActorStateEditorWindow : EditorWindow
             }
         }
         return track;
+    }
+
+    public void ClearAllInfo()
+    {
+        timelineScrollPos = Vector2.zero;
+        currentTrackLength = 0;
+        currentSelectedFrame = 0;
+        currentSelectedTrack = 0;
+        currentDeleteTrack = 0;
+        mouseXDelta = 0;
+        isDragging = false;
+        dragObject = -1;
+        dragTrackIndex = -1;
+        isHorizontalBarDragging = false;
+        isVerticalBarDragging = false;
+        sideScrollOffset = 0;
+        isSideScrollBarDragging = false;
+        trackNameEditing = false;
+        currentStateLoop = false;
+        tracks = new List<PengTrack>();
+        currentActorID = 100425;
+        currentActorCamp = 1;
+        currentActorCampString = "1";
+        currentActorName = "";
+        currentScale = 1;
+        debug = false;
+        editorPlaying = false;
+        states = new Dictionary<string, List<string>>();
+        statesFold = new Dictionary<string, bool>();
+        statesTrack = new Dictionary<string, List<PengTrack>>();
+        statesLength = new Dictionary<string, int>();
+        statesLoop = new Dictionary<string, bool>();
+        currentStateName = "";
+        copyInfo = null;
+        copyInternalDoc = null;
     }
 }
