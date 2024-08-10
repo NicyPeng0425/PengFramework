@@ -88,23 +88,33 @@ public class PengNode
 
     public virtual void Draw()
     {
-        rect = new Rect(rect.x, rect.y , rect.width, 26 * outPoints.Length);
-        rectSmall.y = rect.y + rect.height;
-        rectSmall.height = 2 + 23 * paraNum;
+        Rect rectScale = new Rect();
+        if (type != NodeType.Value)
+        {
+            rect = new Rect(rect.x, rect.y, rect.width, 26 * outPoints.Length);
+            rectScale = new Rect(rect.x, rect.y, rect.width * master.currentScale, rect.height * master.currentScale);
+        }
+        else
+        {
+            rect = new Rect(rect.x, rect.y, rect.width, 26);
+            rectScale = new Rect(rect.x, rect.y, rect.width * master.currentScale, rect.height * master.currentScale);
+        }
+        Rect rectSmallScale = new Rect(rectSmall.x, rectSmall.y, rectSmall.width * master.currentScale, (2 + 23 * paraNum) * master.currentScale);
+        rectSmallScale.y = rectScale.y + rectScale.height;
         GUIStyle style3 = new GUIStyle("flow node 0" + (isSelected ? " on" : ""));
-        GUI.Box(rectSmall, "", style3);
-        Rect rectMulti = new Rect(rect.x, rect.y, rect.width,rect.height);  
+        GUI.Box(rectSmallScale, "", style3);
+        Rect rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, rectScale.height);  
         switch (type)
         {
             case NodeType.Event:
                 GUIStyle style = new GUIStyle("flow node 6" + (isSelected ? " on" : ""));
                 style.fontStyle = FontStyle.Bold;
-                GUI.Box(rect, nodeName, style);
+                GUI.Box(rectScale, nodeName, style);
                 if(outPoints.Length > 0)
                 {
                     for(int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
@@ -112,13 +122,13 @@ public class PengNode
             case NodeType.Action:
                 GUIStyle style1 = new GUIStyle("flow node 1" + (isSelected ? " on" : ""));
                 style1.fontStyle = FontStyle.Bold;
-                GUI.Box(rect, nodeName, style1);
-                inPoint.Draw(rect);
+                GUI.Box(rectScale, nodeName, style1);
+                inPoint.Draw(rectScale);
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
@@ -126,13 +136,13 @@ public class PengNode
             case NodeType.Branch:
                 GUIStyle style2 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
                 style2.fontStyle = FontStyle.Bold;
-                GUI.Box(rect, nodeName, style2);
-                inPoint.Draw(rect);
+                GUI.Box(rectScale, nodeName, style2);
+                inPoint.Draw(rectScale);
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
@@ -140,13 +150,13 @@ public class PengNode
             case NodeType.Iterator:
                 GUIStyle style5 = new GUIStyle("flow node 4" + (isSelected ? " on" : ""));
                 style5.fontStyle = FontStyle.Bold;
-                GUI.Box(rect, nodeName, style5);
-                inPoint.Draw(rect);
+                GUI.Box(rectScale, nodeName, style5);
+                inPoint.Draw(rectScale);
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
                     {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
                         outPoints[i].Draw(rectMulti);
                     }
                 }
@@ -154,17 +164,23 @@ public class PengNode
             case NodeType.Value:
                 GUIStyle style4 = new GUIStyle("flow node 3" + (isSelected ? " on" : ""));
                 style4.fontStyle = FontStyle.Bold;
-                GUI.Box(rect, nodeName, style4);
-                inPoint.Draw(rect);
-                if (outPoints.Length > 0)
-                {
-                    for (int i = 0; i < outPoints.Length; i++)
-                    {
-                        rectMulti = new Rect(rect.x, rect.y, rect.width, 26 + 52 * i);
-                        outPoints[i].Draw(rectMulti);
-                    }
-                }
+                GUI.Box(rectScale, nodeName, style4);
                 break;
+        }
+
+        if (inVars.Length > 0)
+        {
+            for (int i = 0; i < inVars.Length; i++)
+            {
+                inVars[i].DrawVar();
+            }
+        }
+        if (outVars.Length > 0)
+        {
+            for (int i = 0; i < outVars.Length; i++)
+            {
+                outVars[i].DrawVar();
+            }
         }
     }
 
@@ -225,8 +241,9 @@ public class PengNode
 
     public void ProcessDrag(Vector2 change)
     {
-        rect = new Rect(rect.x + change.x, rect.y +  change.y, rect.width, rect.height);
-        rectSmall.position += change;
+        pos += change / master.currentScale;
+        rect = new Rect(pos.x, pos.y, rect.width, rect.height);
+        rectSmall = new Rect(rect.x, rect.y + rect.height, rect.width, rect.height);
     }
 
     public bool ProcessEvents(Event e) 
@@ -313,7 +330,7 @@ public class PengNode
     public void InitialDraw(Vector2 pos, PengActorStateEditorWindow master)
     {
         rect = new Rect(pos.x, pos.y, 240, 26);
-        rectSmall = new Rect(pos.x, pos.y + 26, 240, 5 + 23 * paraNum);
+        rectSmall = new Rect(pos.x, (pos.y + 26), 240, (5 + 23 * paraNum));
         this.master = master;
     }
 
@@ -656,9 +673,6 @@ public class OnExecute : PengNode
     public override void Draw()
     {
         base.Draw();
-
-        pengTrackExecuteFrame.DrawVar();
-        pengStateExecuteFrame.DrawVar();
     }
 }
 
@@ -705,12 +719,6 @@ public class PlayAnimation : PengNode
     public override void Draw()
     {
         base.Draw();
-
-        pengAnimationName.DrawVar();
-        pengHardCut.DrawVar();
-        pengTransitionNormalizedTime.DrawVar();
-        pengStartAtNormalizedTime.DrawVar();
-        pengAnimationLayer.DrawVar();
     }
 }
 
@@ -761,7 +769,6 @@ public class IfElse: PengNode
         {
             for (int i = 0; i < inVars.Length; i++)
             {
-                inVars[i].DrawVar();
                 Rect re = new Rect(inVars[i].varRect.x + 100, inVars[i].varRect.y, 60, 18);
                 if(i == 0)
                 {
@@ -904,6 +911,71 @@ public class IfElse: PengNode
         else if(conditionTypes[index] == IfElseIfElse.Else)
         {
             conditionTypes[index] = IfElseIfElse.ElseIf;
+        }
+    }
+}
+
+public class ValuePengInt : PengNode
+{
+    public PengInt pengInt;
+
+    public ValuePengInt(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //outPoints = new PengNodeConnection[1];
+        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
+        inVars = new PengVar[0];
+        outVars = new PengVar[1];
+        pengInt = new PengInt(this, "ֵ", 0, ConnectionPointType.Out);
+        outVars[0] = pengInt;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValuePengInt;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect intField = new Rect(pengInt.varRect.x + 45, pengInt.varRect.y, 65, 18);
+        string text = pengInt.value.ToString();
+        text = GUI.TextField(intField, text);
+        if(text != pengInt.value.ToString())
+        {
+            if(int.TryParse(text, out pengInt.value))
+            {
+
+            }
+            else
+            {
+                text = pengInt.value.ToString();
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengInt.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if(info != "")
+        {
+            pengInt.value = int.Parse(info);
+        }
+        else
+        {
+            pengInt.value = 0;
         }
     }
 }

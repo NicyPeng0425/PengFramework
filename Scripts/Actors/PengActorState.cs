@@ -136,7 +136,7 @@ public class PengActorState : IPengActorState
             for(int j = 0; j < trackEle.ChildNodes.Count; j++)
             {
                 XmlElement scriptEle = trackEle.ChildNodes[j] as XmlElement;
-                BaseScript script = this.ConstructRunTimePengScript(scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"));
+                BaseScript script = this.ConstructRunTimePengScript(scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"), scriptEle.GetAttribute("SpecialInfo"));
                 if(script != null)
                 {
                     track.scripts.Add(script);
@@ -147,7 +147,7 @@ public class PengActorState : IPengActorState
         return result;
     }
 
-    public BaseScript ConstructRunTimePengScript(XmlElement scriptEle, ref PengTrack track, int ID, string flowOutInfo, string varInInfo)
+    public BaseScript ConstructRunTimePengScript(XmlElement scriptEle, ref PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
     {
         PengScriptType scriptType = (PengScriptType)Enum.Parse(typeof(PengScriptType), scriptEle.GetAttribute("ScriptType"));
         switch (scriptType)
@@ -155,11 +155,15 @@ public class PengActorState : IPengActorState
             default:
                 return null;
             case PengScriptType.OnExecute:
-                return new OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo);
+                return new OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.DebugLog:
                 return null;
             case PengScriptType.PlayAnimation:
-                return new PengScript.PlayAnimation(actor, track, ID, flowOutInfo, varInInfo);
+                return new PengScript.PlayAnimation(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.IfElse:
+                return new PengScript.IfElse(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValuePengInt:
+                return new PengScript.ValuePengInt(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

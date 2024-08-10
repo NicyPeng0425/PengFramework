@@ -7,6 +7,9 @@ using UnityEngine;
 using System.Reflection;
 using static PengNode;
 using System.Security.Cryptography.X509Certificates;
+using static IfElse;
+using System.Xml;
+using System;
 
 namespace PengScript
 {
@@ -15,11 +18,11 @@ namespace PengScript
     /// 
     /// 添加新脚本的关注点：
     /// 1. PengScriptType
-    /// 2. 构造函数及具体方法
-    /// 3. PengActorState.ConstructRunTimePengScript()
-    /// 4. PengNode.cs
-    /// 5. PengActorStateEditorWindow.RightMouseMenu()
-    /// 6. PengActorStateEditorWindow.ReadPengNode()
+    /// 2. 在PengNode.cs里添加新脚本的节点形式
+    /// 3. 在PengActorStateEditorWindow.cs的RightMouseMenu()里写添加新脚本的节点的方法
+    /// 4. 在PengActorStateEditorWindow.cs的ReadPengNode()里写读取新脚本的节点的方法
+    /// 5. 在PengScript.cs里添加新脚本的运行时形式，包括构造函数及具体方法
+    /// 6. 在PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法
     /// </summary>
     /// 
 
@@ -90,6 +93,8 @@ namespace PengScript
         MathCompare,
         [Description("布尔")]
         MathBool,
+        [Description("整型")]
+        ValuePengInt,
     }
 
     public struct ScriptIDVarID
@@ -125,6 +130,12 @@ namespace PengScript
         public int ID;
         public Dictionary<int, int> flowOutInfo = new Dictionary<int, int>();
         public Dictionary<int, ScriptIDVarID> varInID = new Dictionary<int, ScriptIDVarID>();
+
+
+        public virtual void Construct(string specialInfo)
+        {
+
+        }
 
         //执行一次
         public virtual void Execute()
@@ -288,22 +299,28 @@ namespace PengScript
 
     public class OnTrackExecute: BaseScript
     {
-        public PengInt pengTrackExecuteFrame;
-        public PengInt pengStateExecuteFrame;
-        public OnTrackExecute(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo)
+        public PengInt pengTrackExecuteFrame = new PengInt(null, "轨道执行帧", 0, ConnectionPointType.Out);
+        public PengInt pengStateExecuteFrame = new PengInt(null, "状态执行帧", 0, ConnectionPointType.Out);
+        public OnTrackExecute(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
             this.trackMaster = track;
-            this.scriptName = "轨道执行";
-            this.type = PengScriptType.OnExecute;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
-            inVars = new PengVar[0];
-            outVars = new PengVar[2];
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[this.flowOutInfo.Count];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.OnExecute;
+            scriptName = GetDescription(type);
+
             outVars[0] = pengTrackExecuteFrame;
             outVars[1] = pengStateExecuteFrame;
-            InitialPengVars();
         }
 
         public override void Initial()
@@ -315,28 +332,35 @@ namespace PengScript
 
     public class PlayAnimation : BaseScript
     {
-        public PengString pengAnimationName;
-        public PengBool pengHardCut;
-        public PengFloat pengTransitionNormalizedTime;
-        public PengFloat pengStartAtNormalizedTime;
-        public PengInt pengAnimationLayer;
-        public PlayAnimation(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo)
+        public PengString pengAnimationName = new PengString(null, "动画名称", 0, ConnectionPointType.In);
+        public PengBool pengHardCut = new PengBool(null, "是否硬切", 1, ConnectionPointType.In);
+        public PengFloat pengTransitionNormalizedTime = new PengFloat(null, "过度时间", 2, ConnectionPointType.In);
+        public PengFloat pengStartAtNormalizedTime = new PengFloat(null, "开始时间", 3, ConnectionPointType.In);
+        public PengInt pengAnimationLayer = new PengInt(null, "动画层", 4, ConnectionPointType.Out);
+        public PlayAnimation(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
             this.trackMaster = track;
-            this.scriptName = "播放动画";
-            this.type = PengScriptType.OnExecute;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
-            inVars = new PengVar[5];
-            outVars = new PengVar[0];
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[this.flowOutInfo.Count];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.OnExecute;
+            scriptName = GetDescription(type);
             inVars[0] = pengAnimationName;
             inVars[1] = pengHardCut;
             inVars[2] = pengTransitionNormalizedTime;
             inVars[3] = pengStartAtNormalizedTime;
             inVars[4] = pengAnimationLayer;
-            InitialPengVars();
         }
 
         public override void Initial()
@@ -366,44 +390,133 @@ namespace PengScript
 
     public class IfElse : BaseScript
     {
-        PengBool[] conditions;
-        public IfElse(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo)
+        public List<IfElseIfElse> conditionTypes = new List<IfElseIfElse>();
+        public int executeNum = -1;
+        public IfElse(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
-            type = PengScriptType.IfElse;
-
             this.actor = actor;
             trackMaster = track;
-            scriptName = GetDescription(type);
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
             varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
-
-            inVars = new PengVar[5];
-            outVars = new PengVar[0];
-
-
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[this.flowOutInfo.Count];
+            Construct(specialInfo);
             InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            type = PengScriptType.IfElse;
+            scriptName = GetDescription(type);
+            for (int i = 0; i < inVars.Length; i++)
+            {
+                inVars[i] = new PengBool(null, "条件", i, ConnectionPointType.In);
+            }
+
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                for (int i = 0; i < str.Length; i++)
+                {
+                    conditionTypes.Add((IfElseIfElse)Enum.Parse(typeof(IfElseIfElse), str[i]));
+                }
+            }
+            else
+            {
+                conditionTypes.Add(IfElseIfElse.If);
+            }
         }
 
         public override void Initial()
         {
             base.Initial();
+            executeNum = -1;
         }
 
         public override void Function()
         {
             base.Function();
-            if (conditions.Length > 0)
+            if (inVars.Length > 0)
             {
-                for (int i = 0; i < conditions.Length; i++)
+                if (conditionTypes[conditionTypes.Count - 1] != IfElseIfElse.Else)
                 {
-                    if (conditions[i].value)
+                    for (int i = 0; i < inVars.Length; i++)
                     {
-                        //?
+                        PengBool boolV = inVars[i] as PengBool;
+                        if (boolV.value)
+                        {
+                            executeNum = i;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < inVars.Length; i++)
+                    {
+                        PengBool boolV = inVars[i] as PengBool;
+                        if (i != inVars.Length - 1)
+                        {
+                            if (boolV.value)
+                            {
+                                executeNum = i;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (executeNum < 0)
+                            {
+                                executeNum = i;
+                            }
+                        }
                     }
                 }
             }
         }
+
+        public override void ScriptFlowNext()
+        {
+            if (executeNum >= 0)
+            {
+                if (flowOutInfo.Count > 0)
+                {
+                    if (flowOutInfo[executeNum] >= 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value) != null)
+                    {
+                        trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value).Execute();
+                    }
+                }
+            }
+        }
+    }
+
+    public class ValuePengInt : BaseScript
+    {
+        public PengInt pengInt = new PengInt(null, "值", 0, ConnectionPointType.Out);
+        public ValuePengInt(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[this.flowOutInfo.Count];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.ValuePengInt;
+            scriptName = GetDescription(type);
+
+            outVars[0] = pengInt;
+            pengInt.value = int.Parse(specialInfo);
+        }
+
     }
 }
 

@@ -33,12 +33,12 @@ namespace PengVariables
             if (connectionType == ConnectionPointType.In)
             {
                 style.alignment = TextAnchor.MiddleLeft;
-                varRect = new Rect(node.rectSmall.x + 5f, node.rectSmall.y + 5 + 23 * index, 110, 18);
+                varRect = new Rect(node.rectSmall.x + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
             }
             else if(connectionType == ConnectionPointType.Out)
             {
                 style.alignment = TextAnchor.MiddleLeft;
-                varRect = new Rect(node.rectSmall.x + 0.5f * node.rectSmall.width + 5f, node.rectSmall.y + 5 + 23 * index, 110, 18);
+                varRect = new Rect(node.rectSmall.x + 0.5f * node.rectSmall.width + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
             }
             GUI.Box(varRect, " " + name + "(" + type.ToString() + ")", style);
             point.Draw(varRect);

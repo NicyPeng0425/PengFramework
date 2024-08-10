@@ -64,6 +64,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public int currentActorCamp = 1;
     public string currentActorCampString = "1";
     public string currentActorName = "";
+    public float currentScale = 1;
     //状态组
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
     //状态组是否折叠
@@ -1094,8 +1095,8 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void DrawNodeGraph()
     {
-        DrawGrid(20 * nodeMapScale, 0.2f, Color.gray);
-        DrawGrid(100 * nodeMapScale, 0.4f, Color.gray);
+        DrawGrid(20 * currentScale, 0.2f, Color.gray);
+        DrawGrid(100 * currentScale, 0.4f, Color.gray);
         DrawNodes();
     }
 
@@ -1134,6 +1135,22 @@ public class PengActorStateEditorWindow : EditorWindow
                             GUI.changed = true;
                         }
                         break;
+                    case EventType.ScrollWheel:/*
+                        if (nodeMapRect.Contains(e.mousePosition))
+                        {
+                            currentScale -= e.delta.y * 0.02f;
+                            if (currentScale <= 0.5f)
+                            {
+                                currentScale = 0.5f;
+                            }
+                            if (currentScale >= 1.5f)
+                            {
+                                currentScale = 1.5f;
+                            }
+                            GUI.changed = true;
+                        }*/
+                        break;
+
                 }
             }
         }
@@ -1147,6 +1164,9 @@ public class PengActorStateEditorWindow : EditorWindow
 
         menu.AddItem(new GUIContent("添加节点/按功能类型/分歧/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/T/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
+
+        menu.AddItem(new GUIContent("添加节点/按功能类型/值/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/Z/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
 
         menu.ShowAsContext();
     }
@@ -1181,6 +1201,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
+            case PengScript.PengScriptType.ValuePengInt:
+                track.nodes.Add(new ValuePengInt(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
         }
         tracks[currentSelectedTrack] = track;
@@ -1256,6 +1282,18 @@ public class PengActorStateEditorWindow : EditorWindow
                     copyInfo = GenerateTrackInfo(ref copyInternalDoc, tracks[currentSelectedTrack]);
                 }
             }
+
+            Rect recovery = new Rect(box.x + 620, box.y + 3, 80, 20);
+            if (GUI.Button(recovery, "回正"))
+            {
+                if (tracks[currentSelectedTrack].nodes.Count > 0)
+                {
+                    Vector2 currentPos = tracks[currentSelectedTrack].nodes[0].pos;
+                    Vector2 targetPos = new Vector2(300f, 415f) - currentPos;
+                    DragAllNodes(targetPos);
+                }
+            }
+
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
             {
@@ -1633,7 +1671,15 @@ public class PengActorStateEditorWindow : EditorWindow
         currentSelectedTrack = 2;
         currentSelectedFrame = 0;
         dragTrackIndex = 0;
+        currentScale = 1;
         timelineScrollPos = Vector2.zero;
+
+        if (tracks[currentSelectedTrack].nodes.Count > 0)
+        {
+            Vector2 currentPos = tracks[currentSelectedTrack].nodes[0].pos;
+            Vector2 targetPos = new Vector2(300f, 415f) - currentPos;
+            DragAllNodes(targetPos);
+        }
     }
 
     public static PengNode ReadPengNode(XmlElement ele, ref PengTrack track)
@@ -1654,6 +1700,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.IfElse:
                 return new IfElse(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.ValuePengInt:
+                return new ValuePengInt(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
