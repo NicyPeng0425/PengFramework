@@ -95,6 +95,8 @@ namespace PengScript
         MathBool,
         [Description("整型")]
         ValuePengInt,
+        [Description("浮点")]
+        ValuePengFloat,
     }
 
     public struct ScriptIDVarID
@@ -517,6 +519,32 @@ namespace PengScript
             pengInt.value = int.Parse(specialInfo);
         }
 
+    }
+
+    public class ValuePengFloat : BaseScript
+    {
+        public PengFloat pengFloat = new PengFloat(null, "值", 0, ConnectionPointType.Out);
+        public ValuePengFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[this.flowOutInfo.Count];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.ValuePengInt;
+            scriptName = GetDescription(type);
+
+            outVars[0] = pengFloat;
+            pengFloat.value = float.Parse(specialInfo);
+        }
     }
 }
 

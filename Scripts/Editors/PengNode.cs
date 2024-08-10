@@ -979,3 +979,68 @@ public class ValuePengInt : PengNode
         }
     }
 }
+
+public class ValuePengFloat : PengNode
+{
+    public PengFloat pengFloat;
+
+    public ValuePengFloat(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //outPoints = new PengNodeConnection[1];
+        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
+        inVars = new PengVar[0];
+        outVars = new PengVar[1];
+        pengFloat = new PengFloat(this, "ֵ", 0, ConnectionPointType.Out);
+        outVars[0] = pengFloat;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValuePengFloat;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect floatField = new Rect(pengFloat.varRect.x + 45, pengFloat.varRect.y, 65, 18);
+        string text = pengFloat.value.ToString();
+        text = GUI.TextField(floatField, text);
+        if (text != pengFloat.value.ToString())
+        {
+            if (float.TryParse(text, out pengFloat.value))
+            {
+
+            }
+            else
+            {
+                text = pengFloat.value.ToString();
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengFloat.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            pengFloat.value = float.Parse(info);
+        }
+        else
+        {
+            pengFloat.value = 0f;
+        }
+    }
+}

@@ -164,6 +164,8 @@ public class PengActorState : IPengActorState
                 return new PengScript.IfElse(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengInt:
                 return new PengScript.ValuePengInt(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValuePengFloat:
+                return new PengScript.ValuePengFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

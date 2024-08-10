@@ -1168,6 +1168,9 @@ public class PengActorStateEditorWindow : EditorWindow
         menu.AddItem(new GUIContent("添加节点/按功能类型/值/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/Z/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
 
+        menu.AddItem(new GUIContent("添加节点/按功能类型/值/浮点"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/F/浮点"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
+
         menu.ShowAsContext();
     }
 
@@ -1204,6 +1207,12 @@ public class PengActorStateEditorWindow : EditorWindow
                 break;
             case PengScript.PengScriptType.ValuePengInt:
                 track.nodes.Add(new ValuePengInt(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case PengScript.PengScriptType.ValuePengFloat:
+                track.nodes.Add(new ValuePengFloat(mousePos, this, ref track, id,
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
@@ -1702,6 +1711,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new IfElse(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengInt:
                 return new ValuePengInt(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.ValuePengFloat:
+                return new ValuePengFloat(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
