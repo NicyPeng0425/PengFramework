@@ -30,6 +30,8 @@ public class PengActorState : IPengActorState
     public PengActorState(PengActor actor, XmlElement stateInfo)
     {
         this.actor = actor;
+        this.length = int.Parse(stateInfo.GetAttribute("Length"));
+        this.isLoop = int.Parse(stateInfo.GetAttribute("IsLoop")) > 0;
         this.tracks = ReadActorTracks(stateInfo);
     }
     public void OnEnter()
@@ -61,7 +63,7 @@ public class PengActorState : IPengActorState
         else
         {
             frameCnt += Time.deltaTime;
-            if (frameCnt > length / actor.game.globalFrameRate)
+            if (frameCnt > ((float)length) / actor.game.globalFrameRate)
             {
                 if(isLoop)
                 {
@@ -73,6 +75,7 @@ public class PengActorState : IPengActorState
                 {
                     if(actor.alive)
                     {
+                        Debug.Log("Trans");
                         actor.TransState(PengActor.initalName);
                     }
                     return;
@@ -166,6 +169,10 @@ public class PengActorState : IPengActorState
                 return new PengScript.ValuePengInt(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengFloat:
                 return new PengScript.ValuePengFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValuePengString:
+                return new PengScript.ValuePengString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValuePengBool:
+                return new PengScript.ValuePengBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

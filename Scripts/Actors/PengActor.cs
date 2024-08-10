@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
 using UnityEngine;
 
 public class PengActor : MonoBehaviour
@@ -8,6 +10,8 @@ public class PengActor : MonoBehaviour
     public PengGameManager game;
 
     public int actorID;
+    public string actorName;
+    public int actorCamp;
 
     [HideInInspector]
     public static string initalName = "Idle";
@@ -17,7 +21,7 @@ public class PengActor : MonoBehaviour
     public string currentName;
     [HideInInspector]
     public string lastName;
-    public Dictionary<string, IPengActorState> actorStates;
+    public Dictionary<string, IPengActorState> actorStates = new Dictionary<string, IPengActorState>();
     public IPengActorState current;
     public IPengActorState last;
     [HideInInspector]
@@ -38,10 +42,18 @@ public class PengActor : MonoBehaviour
 
     private void Awake()
     {
-        
-
         anim = this.GetComponent<Animator>();
         ctrl = this.GetComponent<CharacterController>();
+        LoadActorState();
+
+        if (actorStates.ContainsKey("Intro"))
+        {
+            TransState("Intro");
+        }
+        else
+        {
+            TransState(initalName);
+        }
     }
     // Start is called before the first frame update
     void Start()
@@ -67,5 +79,69 @@ public class PengActor : MonoBehaviour
         currentName = name;
         current = actorStates[name];
         current.OnEnter();
+    }
+
+    public void LoadActorState()
+    {
+        TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + actorID.ToString() + "/" + actorID.ToString());
+        if(textAsset != null)
+        {
+            XmlDocument xml = new XmlDocument();
+            xml.LoadXml(textAsset.text);
+            XmlElement root = xml.DocumentElement;
+            foreach(XmlElement ele in root.ChildNodes)
+            {
+                if(ele.Name == "ActorInfo")
+                {
+                    foreach(XmlElement son in ele.ChildNodes)
+                    {
+                        if(son.Name == "ActorID")
+                        {
+                            if(int.Parse(son.GetAttribute("ActorID")) != actorID)
+                            {
+                                Debug.LogWarning("Actor" + actorID.ToString() + "的Actor数据中记载的ActorID与其本身的ID不符！");
+                                this.gameObject.SetActive(false);
+                                return;
+                            }    
+                        }
+                        
+                        if (son.Name == "ActorName")
+                        {
+                            actorName = son.GetAttribute("ActorName");
+                            continue;
+                        }
+
+                        if (son.Name == "Camp")
+                        {
+                            actorCamp = int.Parse(son.GetAttribute("Camp"));
+                            continue;
+                        }
+
+                    }
+                    continue;
+                }
+                if(ele.Name == "ActorState")
+                {
+                    foreach (XmlElement stateGroup in ele.ChildNodes)
+                    {
+                        foreach(XmlElement state in stateGroup.ChildNodes)
+                        {
+                            actorStates.Add(state.GetAttribute("Name"), new PengActorState(this, state));
+                        }
+                    }
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("Actor" + actorID.ToString() + "的Actor数据读取失败！");
+            this.gameObject.SetActive(false);
+        }
+        /*
+        for (int i = 0; i < actorStates.Count; i++)
+        {
+            Debug.Log(actorStates.ElementAt(i).Key);
+        }*/
     }
 }

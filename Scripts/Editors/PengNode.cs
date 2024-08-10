@@ -182,6 +182,14 @@ public class PengNode
                 outVars[i].DrawVar();
             }
         }
+
+        if(master.debug)
+        {
+            GUIStyle styleNum = new GUIStyle("dockHeader");
+            styleNum.fontStyle = FontStyle.Bold;
+            Rect num = new Rect(rectScale.x, rectScale.y - 20, 20, 20);
+            GUI.Box(num, nodeID.ToString(), styleNum);
+        }
     }
 
     public void DrawLines()
@@ -301,7 +309,7 @@ public class PengNode
                 }
                 break;
             case EventType.KeyDown:
-                if(e.keyCode == KeyCode.Delete && isSelected)
+                if(e.keyCode == KeyCode.Delete && isSelected && scriptType != PengScriptType.OnExecute)
                 {
                     master.ProcessRemoveNode(this);
                     e.Use();
@@ -1041,6 +1049,107 @@ public class ValuePengFloat : PengNode
         else
         {
             pengFloat.value = 0f;
+        }
+    }
+}
+
+public class ValuePengString : PengNode
+{
+    public PengString pengString;
+
+    public ValuePengString(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //outPoints = new PengNodeConnection[1];
+        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
+        inVars = new PengVar[0];
+        outVars = new PengVar[1];
+        pengString = new PengString(this, "ֵ", 0, ConnectionPointType.Out);
+        outVars[0] = pengString;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValuePengString;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect field = new Rect(pengString.varRect.x + 45, pengString.varRect.y, 65, 18);
+        pengString.value = GUI.TextField(field, pengString.value);
+
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengString.value;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        pengString.value = info;
+    }
+}
+
+public class ValuePengBool : PengNode
+{
+    public PengBool pengBool;
+
+    public ValuePengBool(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //outPoints = new PengNodeConnection[1];
+        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
+        inVars = new PengVar[0];
+        outVars = new PengVar[1];
+        pengBool = new PengBool(this, "ֵ", 0, ConnectionPointType.Out);
+        outVars[0] = pengBool;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValuePengBool;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect field = new Rect(pengBool.varRect.x + 45, pengBool.varRect.y, 65, 18);
+        pengBool.value = GUI.Toggle(field, pengBool.value, "");
+
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengBool.value? "1" : "0";
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if(info != "")
+        {
+            pengBool.value = int.Parse(info) > 0;
+        }
+        else
+        {
+            pengBool.value = false;
         }
     }
 }

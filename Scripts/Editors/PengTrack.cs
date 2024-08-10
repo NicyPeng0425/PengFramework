@@ -80,7 +80,7 @@ public class PengTrack
 
     public PengVariables.PengVar GetOutPengVarByScriptIDPengVarID(int scriptID, int varOutID)
     {
-        if (GetScriptByScriptID(scripts[scriptID].ID) == null)
+        if (GetScriptByScriptID(scriptID) == null)
         { return null; }
         else
         { return GetScriptByScriptID(scriptID).outVars[varOutID]; }
