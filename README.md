@@ -17,6 +17,12 @@ A framework for the development of action games.
 4. 打开启动器，进行全局配置后，开始使用。
 5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab
 
+# 后续开发计划
+1. 配套AI插件
+2. 黑板
+3. 更多事件
+4. 配套关卡编辑器
+
 # 联系我
 
 B站：@Nicy彭彭
