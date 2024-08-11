@@ -78,7 +78,7 @@ public class PengNodeConnection
                     switch(type)
                     {
                         case ConnectionPointType.In:
-                            if(node.master.selectingPoint.type == ConnectionPointType.Out && node.master.selectingPoint.pengVar.type == pengVar.type)
+                            if(node.master.selectingPoint.type == ConnectionPointType.Out && (node.master.selectingPoint.pengVar.type == pengVar.type || pengVar.type == PengVariables.PengVarType.T))
                             {
                                 PengNode.NodeIDConnectionID thisConnection = new PengNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;
@@ -93,7 +93,7 @@ public class PengNodeConnection
                             }
                             break;
                         case ConnectionPointType.Out:
-                            if (node.master.selectingPoint.type == ConnectionPointType.In && node.master.selectingPoint.pengVar.type == pengVar.type)
+                            if (node.master.selectingPoint.type == ConnectionPointType.In && (node.master.selectingPoint.pengVar.type == pengVar.type || node.master.selectingPoint.pengVar.type == PengVariables.PengVarType.T))
                             {
                                 PengNode.NodeIDConnectionID thisConnection = new PengNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;

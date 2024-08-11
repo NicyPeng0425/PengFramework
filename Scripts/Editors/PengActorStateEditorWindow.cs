@@ -1111,71 +1111,78 @@ public class PengActorStateEditorWindow : EditorWindow
 
             GUILayout.Space(5);
 
-            string stateName = currentStateName;
-            stateName = EditorGUILayout.TextField(stateName, GUILayout.Width(100));
-            if (stateName != currentStateName)
+            if (EditorApplication.isPlaying)
             {
-                if (states.Count > 0)
+                GUILayout.Label(currentStateName, GUILayout.Width(100));
+            }
+            else
+            {
+                string stateName = currentStateName;
+                stateName = EditorGUILayout.TextField(stateName, GUILayout.Width(100));
+                if (stateName != currentStateName)
                 {
-                    int index1 = 0;
-                    int index2 = 0;
-                    for (int i = 0; i < states.Count; i++)
+                    if (states.Count > 0)
                     {
-                        if (states.ElementAt(i).Value.Count > 0)
+                        int index1 = 0;
+                        int index2 = 0;
+                        for (int i = 0; i < states.Count; i++)
                         {
-                            for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
+                            if (states.ElementAt(i).Value.Count > 0)
                             {
-                                if (states.ElementAt(i).Value[j] == currentStateName)
+                                for (int j = 0; j < states.ElementAt(i).Value.Count; j++)
                                 {
-                                    index1 = i;
-                                    index2 = j;
-                                    break;
+                                    if (states.ElementAt(i).Value[j] == currentStateName)
+                                    {
+                                        index1 = i;
+                                        index2 = j;
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        states.ElementAt(index1).Value[index2] = stateName;
                     }
-                    states.ElementAt(index1).Value[index2] = stateName;
-                }
 
-                if (statesTrack.Count > 0)
-                {
-                    for (int i = 0; i < statesTrack.Count; i++)
+                    if (statesTrack.Count > 0)
                     {
-                        if (statesTrack.ElementAt(i).Key == currentStateName)
+                        for (int i = 0; i < statesTrack.Count; i++)
                         {
-                            statesTrack.Add(stateName, statesTrack.ElementAt(i).Value);
-                            statesTrack.Remove(currentStateName);
-                            break;
+                            if (statesTrack.ElementAt(i).Key == currentStateName)
+                            {
+                                statesTrack.Add(stateName, statesTrack.ElementAt(i).Value);
+                                statesTrack.Remove(currentStateName);
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (statesLength.Count > 0)
-                {
-                    for (int i = 0; i < statesLength.Count; i++)
+                    if (statesLength.Count > 0)
                     {
-                        if (statesLength.ElementAt(i).Key == currentStateName)
+                        for (int i = 0; i < statesLength.Count; i++)
                         {
-                            statesLength.Add(stateName, statesLength.ElementAt(i).Value);
-                            statesLength.Remove(currentStateName);
-                            break;
+                            if (statesLength.ElementAt(i).Key == currentStateName)
+                            {
+                                statesLength.Add(stateName, statesLength.ElementAt(i).Value);
+                                statesLength.Remove(currentStateName);
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (statesLoop.Count > 0)
-                {
-                    for (int i = 0; i < statesLoop.Count; i++)
+                    if (statesLoop.Count > 0)
                     {
-                        if (statesLoop.ElementAt(i).Key == currentStateName)
+                        for (int i = 0; i < statesLoop.Count; i++)
                         {
-                            statesLoop.Add(stateName, statesLoop.ElementAt(i).Value);
-                            statesLoop.Remove(currentStateName);
-                            break;
+                            if (statesLoop.ElementAt(i).Key == currentStateName)
+                            {
+                                statesLoop.Add(stateName, statesLoop.ElementAt(i).Value);
+                                statesLoop.Remove(currentStateName);
+                                break;
+                            }
                         }
                     }
+                    currentStateName = stateName;
                 }
-                currentStateName = stateName;
             }
             GUILayout.Space(10);
             GUILayout.Label("是否循环：", GUILayout.Width(65));
@@ -1725,7 +1732,6 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 if (actor.actorID == actorID)
                 {
-                    Debug.Log(1);
                     actor.actorStates = new Dictionary<string, IPengActorState>();
                     actor.LoadActorState();
                 }

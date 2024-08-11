@@ -32,7 +32,7 @@ namespace PengScript
     {
         [Description("1,轨道执行,事件,G,低封装")]
         OnTrackExecute,
-        [Description("1,输出文本,功能,S,低封装")]
+        [Description("1,输出对象,功能,S,低封装")]
         DebugLog,
         [Description("1,播放动画,表现,B,高封装")]
         PlayAnimation,
@@ -653,7 +653,7 @@ namespace PengScript
     public class GetTargetsByRange : BaseScript
     {
         public RangeType rangeType = RangeType.Cylinder;
-        public PengListPengActor result = new PengListPengActor(null, "获取到的目标", 0, ConnectionPointType.Out);
+        public PengList<PengActor> result = new PengList<PengActor>(null, "获取到的目标", 0, ConnectionPointType.Out);
 
         public PengInt typeNum = new PengInt(null, "范围类型", 0, ConnectionPointType.In);
         public PengInt pengCamp = new PengInt(null, "阵营", 1, ConnectionPointType.In);
@@ -940,7 +940,8 @@ namespace PengScript
 
     public class DebugLog : BaseScript
     {
-        public PengString pengString = new PengString(null, "文本", 0, ConnectionPointType.In);
+        public PengT pengT = new PengT(null, "对象", 0, ConnectionPointType.In);
+        public string str = "";
         public DebugLog(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -960,24 +961,87 @@ namespace PengScript
 
             type = PengScriptType.DebugLog;
             scriptName = GetDescription(type);
-            inVars[0] = pengString;
+            inVars[0] = pengT;
         }
 
         public override void SetValue(int inVarID, PengVar varSource)
         {
+            str = "";
             switch (inVarID)
             {
                 case 0:
-                    PengString ps = varSource as PengString;
-                    pengString.value = ps.value;
+                    switch(varSource.type)
+                    {
+                        case PengVarType.Float:
+                            PengFloat pf = varSource as PengFloat;
+                            str ="(float)" + pf.value.ToString();
+                            break;
+                        case PengVarType.Int:
+                            PengInt pi = varSource as PengInt;
+                            str = "(int)" + pi.value.ToString();
+                            break;
+                        case PengVarType.String:
+                            PengString ps = varSource as PengString;
+                            str = "(string)" + ps.value;
+                            break;
+                        case PengVarType.Bool:
+                            PengBool pb = varSource as PengBool;
+                            str = "(bool)" + (pb.value ? "true" : "false");
+                            break;
+                        case PengVarType.PengActor:
+                            PengPengActor ppa = varSource as PengPengActor;
+                            str = "(PengActor)" + "Actor" + ppa.value.actorID.ToString();
+                            break;
+                        case PengVarType.PengList:
+                            PengList<PengActor> plpa = varSource as PengList<PengActor>;
+                            str = "(List<PengActor>)";
+                            if (plpa.value.Count > 0)
+                            {
+                                for (int i = 0; i < plpa.value.Count; i ++)
+                                {
+                                    str += "Actor" + plpa.value[i].actorID.ToString();
+                                    if (i != plpa.value.Count - 1)
+                                    {
+                                        str += ",";
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                str = str + "Null";
+                            }    
+                            break;
+                        case PengVarType.Vector3:
+                            PengVector3 pv3 = varSource as PengVector3;
+                            str = pv3.value.ToString();
+                            break;
+                        case PengVarType.Vector2:
+                            PengVector2 pv2 = varSource as PengVector2;
+                            str = pv2.value.ToString();
+                            break;
+                        case PengVarType.T:
+                            str = "";
+                            break;
+                    }
                     break;
+            }
+            if (str != "")
+            {
+                str = "Actor" + actor.actorID.ToString() + "在" + actor.currentName + "状态的" + trackMaster.name + "轨道中调用了DebugLog，内容为：" + str;
             }
         }
 
         public override void Function()
         {
             base.Function();
-            Debug.Log(pengString.value);
+            if (str != "")
+            {
+                Debug.Log(str);
+            }
+            else
+            {
+                Debug.Log("Actor" + actor.actorID.ToString() + "在" + actor.currentName + "状态的" + trackMaster.name + "轨道中调用了DebugLog，但没有取得对象。");
+            }
         }
     }
 

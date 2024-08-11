@@ -1,20 +1,32 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace PengVariables
 {
     public enum PengVarType
     {
+        [Description("无")]
         None,
+        [Description("浮点")]
         Float,
+        [Description("整型")]
         Int,
+        [Description("字符串")]
         String,
+        [Description("布尔")]
         Bool,
+        [Description("PengActor")]
         PengActor,
-        ListPengActor,
+        [Description("列表")]
+        PengList,
+        [Description("向量3")]
         Vector3,
+        [Description("向量2")]
         Vector2,
+        [Description("泛型")]
+        T,
     }
 
     public class PengVar
@@ -48,8 +60,52 @@ namespace PengVariables
                 point.Draw(varRect);
             }
         }
-
     }
+    /*
+    public class PengTValue<T>
+    {
+        public T value;
+        public PengScript.BaseScript script;
+        public PengNode node;
+        public string name;
+        public PengVarType type;
+        public Rect varRect;
+        public PengNodeConnection point;
+        public int index;
+        public ConnectionPointType connectionType;
+
+
+        public PengTValue(PengNode node, string name, int index, ConnectionPointType pointType)
+        {
+            this.node = node;
+            this.name = name;
+            this.index = index;
+            connectionType = pointType;
+            type = PengVarType.Float;
+            point = new PengNodeConnection(pointType, index, node, this);
+        }
+
+        public virtual void DrawVar()
+        {
+            GUIStyle style = new GUIStyle("DD Background");
+            style.fontSize = 10;
+            if (connectionType == ConnectionPointType.In)
+            {
+                style.alignment = TextAnchor.MiddleLeft;
+                varRect = new Rect(node.rectSmall.x + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
+            }
+            else if (connectionType == ConnectionPointType.Out)
+            {
+                style.alignment = TextAnchor.MiddleLeft;
+                varRect = new Rect(node.rectSmall.x + 0.5f * node.rectSmall.width + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
+            }
+            GUI.Box(varRect, " " + name + "(" + type.ToString() + ")", style);
+            if (point != null)
+            {
+                point.Draw(varRect);
+            }
+        }
+    }*/
 
     public class PengFloat: PengVar
     {
@@ -126,16 +182,19 @@ namespace PengVariables
         }
     }
 
-    public class PengListPengActor : PengVar
+    public class PengList<T> : PengVar
     {
-        public List<PengActor> value = new List<PengActor>();
-        public PengListPengActor(PengNode node, string name, int index, ConnectionPointType pointType)
+        public List<T> value = new List<T>();
+
+        public PengList(){ }
+
+        public PengList(PengNode node, string name, int index, ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
             this.index = index;
             connectionType = pointType;
-            type = PengVarType.ListPengActor;
+            this.type = PengVarType.PengList;
             point = new PengNodeConnection(pointType, index, node, this);
         }
     }
@@ -166,5 +225,21 @@ namespace PengVariables
             type = PengVarType.Vector2;
             point = new PengNodeConnection(pointType, index, node, this);
         }
+    }
+
+    public class PengT : PengVar
+    {
+        public PengVar value;
+
+        public PengT(PengNode node, string name, int index, ConnectionPointType pointType)
+        {
+            this.node = node;
+            this.name = name;
+            this.index = index;
+            connectionType = pointType;
+            type = PengVarType.T;
+            point = new PengNodeConnection(pointType, index, node, this);
+        }
+
     }
 }

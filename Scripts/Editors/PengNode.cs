@@ -454,6 +454,25 @@ public class PengNode
         return null;
     }
 
+    public static string GetCNName(Enum value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    return attr.Description;
+                }
+            }
+        }
+        return null;
+    }
+
     public virtual string SpecialParaDescription()
     {
         return "";
@@ -1240,7 +1259,7 @@ public class GetTargetsByRange : PengNode
         Box,
     }
 
-    public PengListPengActor result;
+    public PengList<PengActor> result;
     public RangeType rangeType = RangeType.Cylinder;
     public PengInt typeNum;
     public PengInt pengCamp;
@@ -1265,7 +1284,7 @@ public class GetTargetsByRange : PengNode
 
         typeNum = new PengInt(this, "范围类型", 0, ConnectionPointType.In);
         typeNum.point = null;
-        result = new PengListPengActor(this, "获取到的目标", 0, ConnectionPointType.Out);
+        result = new PengList<PengActor>(this, "获取到的目标", 0, ConnectionPointType.Out);
         pengCamp = new PengInt(this, "阵营", 1, ConnectionPointType.In);
         pengPara = new PengVector3(this, "参数", 2, ConnectionPointType.In);
         pengOffset = new PengVector3(this, "偏移", 3, ConnectionPointType.In);
@@ -1458,7 +1477,7 @@ public class ValuePengVector3 : PengNode
 
 public class DebugLog : PengNode
 {
-    public PengString obj;
+    public PengT obj;
 
     public DebugLog(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
@@ -1473,7 +1492,7 @@ public class DebugLog : PengNode
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengVar[1];
-        obj = new PengString(this, "文本", 0, ConnectionPointType.In);
+        obj = new PengT(this, "对象", 0, ConnectionPointType.In);
         inVars[0] = obj;
         outVars = new PengVar[0];
 
