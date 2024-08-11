@@ -41,13 +41,19 @@ public class PengActor : MonoBehaviour
     public List<PengActor> targets = new List<PengActor>();
     [HideInInspector]
     public PengActorControl input;
-
+    [HideInInspector]
+    public PengBlackBoard<PengActor> bb;
+    [HideInInspector]
+    public PengBuffManager<PengActor> buff;
 
     private void Awake()
     {
         anim = this.GetComponent<Animator>();
         ctrl = this.GetComponent<CharacterController>();
         this.AddComponent<PengActorControl>();
+        bb = new PengBlackBoard<PengActor>(this);
+        buff = this.AddComponent<PengBuffManager<PengActor>>();
+        buff.owner = this;
         LoadActorState();
     }
     // Start is called before the first frame update
@@ -66,17 +72,30 @@ public class PengActor : MonoBehaviour
         }
     }
 
-    public void TransState(string name)
+    public void TransState(string name, bool actively)
     {
         if (current != null)
         {
             lastName = currentName;
             last = current;
             last.OnExit();
+            ProcessStateChange(actively);
         }
         currentName = name;
         current = actorStates[name];
         current.OnEnter();
+    }
+
+
+    public void ProcessStateChange(bool actively)
+    {
+        ProcessStateEnd();
+    }
+
+
+    public void ProcessStateEnd()
+    {
+
     }
 
     public void LoadActorState()
@@ -139,11 +158,11 @@ public class PengActor : MonoBehaviour
 
         if (actorStates.ContainsKey("Intro"))
         {
-            TransState("Intro");
+            TransState("Intro", true);
         }
         else
         {
-            TransState(initalName);
+            TransState(initalName, true);
         }
     }
 }

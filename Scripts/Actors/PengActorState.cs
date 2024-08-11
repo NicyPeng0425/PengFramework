@@ -76,7 +76,7 @@ public class PengActorState : IPengActorState
                     if(actor.alive)
                     {
                         Debug.Log("Trans");
-                        actor.TransState(PengActor.initalName);
+                        actor.TransState(PengActor.initalName, true);
                     }
                     return;
                 }

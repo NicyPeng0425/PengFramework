@@ -179,7 +179,7 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 if(runTimeSelectionPauseActor != null)
                 {
-                    runTimeSelectionPauseActor.TransState("Idle");
+                    runTimeSelectionPauseActor.TransState("Idle", true);
                 }
                 runTimeSelectionPauseActor = null;
             }

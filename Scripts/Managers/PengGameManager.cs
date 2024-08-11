@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,11 +10,16 @@ public class PengGameManager : MonoBehaviour
     public float globalFrameRate = 60;
     
     public List<PengActor> actors;
+    public PengBlackBoard<PengGameManager> bb;
+    public PengBuffManager<PengGameManager> buff;
 
     private void Awake()
     {
         ReadGlobalFrameRate();
         this.tag = "PengGameManager";
+        bb = new PengBlackBoard<PengGameManager>(this);
+        buff = this.AddComponent<PengBuffManager<PengGameManager>>();
+        buff.owner = this;
     }
     // Start is called before the first frame update
     void Start()
