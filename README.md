@@ -22,6 +22,9 @@ A framework for the development of action games.
 2. 黑板
 3. 更多事件
 4. 配套关卡编辑器
+5. 断点
+6. 运行时数据监控
+7. 更多节点
 
 # 联系我
 
