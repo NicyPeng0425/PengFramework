@@ -111,7 +111,6 @@ namespace PengScript
         public int varID;
     }
 
-
     public class BaseScript
     {
 
@@ -651,7 +650,7 @@ namespace PengScript
     {
         public RangeType rangeType = RangeType.Cylinder;
         public PengListPengActor result = new PengListPengActor(null, "获取到的目标", 0, ConnectionPointType.Out);
-        
+
         public PengInt typeNum = new PengInt(null, "范围类型", 0, ConnectionPointType.In);
         public PengInt pengCamp = new PengInt(null, "阵营", 1, ConnectionPointType.In);
         public PengVector3 pengPara = new PengVector3(null, "参数", 2, ConnectionPointType.In);
@@ -676,7 +675,7 @@ namespace PengScript
             type = PengScriptType.GetTargetsByRange;
             scriptName = GetDescription(type);
 
-            if(specialInfo != "")
+            if (specialInfo != "")
             {
                 switch (int.Parse(specialInfo))
                 {
@@ -752,11 +751,11 @@ namespace PengScript
                             {
                                 c.Add(a.ctrl);
                             }
-                        } 
+                        }
                         returns = new Collider[c.Count];
-                        if(c.Count > 0)
+                        if (c.Count > 0)
                         {
-                            for(int i = 0; i < c.Count; i++)
+                            for (int i = 0; i < c.Count; i++)
                             {
                                 returns[i] = c[i];
                             }
@@ -783,5 +782,81 @@ namespace PengScript
             }
         }
     }
+
+    public class ForIterator : BaseScript
+    {
+        public PengInt firstIndex = new PengInt(null, "首个指数", 0, ConnectionPointType.In);
+        public PengInt lastIndex = new PengInt(null, "末个指数", 1, ConnectionPointType.In);
+
+        public PengInt pengIndex = new PengInt(null, "指数", 0, ConnectionPointType.Out);
+        public ForIterator(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.ForIterator;
+            scriptName = GetDescription(type);
+
+
+            outVars[0] = pengIndex;
+
+            inVars[0] = firstIndex;
+            inVars[1] = lastIndex;
+        }
+
+        public override void Initial()
+        {
+            base.Initial();
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengInt pi = varSource as PengInt;
+                    firstIndex.value = pi.value;
+                    break;
+                case 1:
+                    PengInt pi1 = varSource as PengInt;
+                    lastIndex.value = pi1.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            for (int i = firstIndex.value; i <= lastIndex.value; i++)
+            {
+                pengIndex.value = i;
+                if (flowOutInfo.ElementAt(0).Value > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value) != null)
+                {
+                    trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value).Execute();
+                }
+            }
+        }
+
+        public override void ScriptFlowNext()
+        {
+            if (flowOutInfo.ElementAt(1).Value > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value) != null)
+            {
+                trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value).Execute();
+            }
+        }
+    }
+
 }
 

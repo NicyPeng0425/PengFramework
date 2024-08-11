@@ -1298,8 +1298,11 @@ public class PengActorStateEditorWindow : EditorWindow
         menu.AddItem(new GUIContent("添加节点/按功能类型/值/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/B/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
 
-        menu.AddItem(new GUIContent("添加节点/按功能类型/逻辑/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
+        menu.AddItem(new GUIContent("添加节点/按功能类型/功能/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/F/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
+
+        menu.AddItem(new GUIContent("添加节点/按功能类型/迭代/For循环"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/F/For循环"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
 
         menu.ShowAsContext();
     }
@@ -1364,6 +1367,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(4)), ""));
+                break;
+            case PengScript.PengScriptType.ForIterator:
+                track.nodes.Add(new ForIterator(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(2)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
                 break;
         }
         tracks[currentSelectedTrack] = track;
@@ -1867,6 +1876,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new ValuePengBool(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GetTargetsByRange:
                 return new GetTargetsByRange(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.ForIterator:
+                return new ForIterator(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 

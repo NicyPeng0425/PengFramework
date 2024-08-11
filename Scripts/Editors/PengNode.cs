@@ -802,8 +802,13 @@ public class IfElse: PengNode
                         GUI.Box(re, "ElseIf");
                     }
                 }
-                
-
+                GUIStyle style = new GUIStyle("CN EntryInfo");
+                style.fontSize = 12;
+                style.alignment = TextAnchor.UpperRight;
+                style.fontStyle = FontStyle.Bold;
+                style.normal.textColor = Color.white;
+                Rect flowOut = new Rect(outPoints[i].rect.x - 80, outPoints[i].rect.y, 70, 20);
+                GUI.Box(flowOut, "条件" + (i + 1).ToString(), style);
             }
             Rect add = new Rect(inVars[inVars.Length - 1].varRect.x, inVars[inVars.Length - 1].varRect.y + 20, 60, 20);
             if (GUI.Button(add, "添加"))
@@ -1163,7 +1168,6 @@ public class ValuePengBool : PengNode
     }
 }
 
-
 public class GetTargetsByRange : PengNode
 {
     public enum RangeType
@@ -1259,5 +1263,57 @@ public class GetTargetsByRange : PengNode
                     break;
             }
         }
+    }
+}
+
+public class ForIterator : PengNode
+{
+    public PengInt firstIndex;
+    public PengInt lastIndex;
+
+    public PengInt pengIndex;
+    public ForIterator(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.ReadSpecialParaDescription(specialInfo);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[2];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        outPoints[1] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+
+        inVars = new PengVar[this.varInID.Count];
+        paraNum = this.varInID.Count;
+        outVars = new PengVar[1];
+        firstIndex = new PengInt(this, "首个指数", 0, ConnectionPointType.In);
+        lastIndex = new PengInt(this, "末个指数", 1, ConnectionPointType.In);
+        pengIndex = new PengInt(this, "指数", 0, ConnectionPointType.Out);
+        inVars[0] = firstIndex;
+        inVars[1] = lastIndex;
+        outVars[0] = pengIndex;
+
+        type = NodeType.Iterator;
+        scriptType = PengScript.PengScriptType.ForIterator;
+        nodeName = GetDescription(scriptType);
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        GUIStyle style = new GUIStyle("CN EntryInfo");
+        style.fontSize = 12;
+        style.alignment = TextAnchor.UpperRight;
+        style.fontStyle = FontStyle.Bold;
+        style.normal.textColor = Color.white;
+        Rect loopBody = new Rect(outPoints[0].rect.x - 80, outPoints[0].rect.y, 70, 20);
+        Rect completed = new Rect(outPoints[1].rect.x - 80, outPoints[1].rect.y, 70, 20);
+
+        GUI.Box(loopBody, "循环体", style);
+        GUI.Box(completed, "完成后", style);
     }
 }

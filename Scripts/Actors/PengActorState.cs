@@ -175,6 +175,8 @@ public class PengActorState : IPengActorState
                 return new PengScript.ValuePengBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.GetTargetsByRange:
                 return new PengScript.GetTargetsByRange(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ForIterator:
+                return new PengScript.ForIterator(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
 
         }
     }
