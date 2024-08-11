@@ -1,4 +1,4 @@
-public interface IPengActorState
+﻿public interface IPengActorState
 {
     void OnEnter();
     void OnUpdate();

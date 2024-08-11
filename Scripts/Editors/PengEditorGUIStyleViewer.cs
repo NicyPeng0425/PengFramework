@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -7,14 +7,14 @@ using UnityEngine.UIElements;
 public class PengEditorGUIStyleViewer : EditorWindow
 {
     /// <summary>
-    /// Ö±½Ó³­µÄ£ºhttps://www.cnblogs.com/fengxing999/p/11096049.html
-    /// ±ÆÑøµÄUnity£¬Ã»¸öµØ¶ù¿´ÓĞÄÄĞ©ÄÚÖÃµÄGUIStyle
+    /// ç›´æ¥æŠ„çš„ï¼šhttps://www.cnblogs.com/fengxing999/p/11096049.html
+    /// é€¼å…»çš„Unityï¼Œæ²¡ä¸ªåœ°å„¿çœ‹æœ‰å“ªäº›å†…ç½®çš„GUIStyle
     /// </summary>
     
     private Vector2 scrollVector2 = Vector2.zero;
     private string search = "";
 
-    [MenuItem("PengFramework/¿ª·¢ÓÃ£ºGUIStyle²é¿´Æ÷")]
+    [MenuItem("PengFramework/å¼€å‘ç”¨ï¼šGUIStyleæŸ¥çœ‹å™¨")]
     public static void InitWindow()
     {
         EditorWindow.GetWindow(typeof(PengEditorGUIStyleViewer));
@@ -48,7 +48,7 @@ public class PengEditorGUIStyleViewer : EditorWindow
         GUILayout.Space(40);
         EditorGUILayout.SelectableLabel("", style, GUILayout.Height(40), GUILayout.Width(40));
         GUILayout.Space(50);
-        if (GUILayout.Button("¸´ÖÆGUIStyleÃû×Ö"))
+        if (GUILayout.Button("å¤åˆ¶GUIStyleåå­—"))
         {
             TextEditor textEditor = new TextEditor();
             textEditor.text = style.name;

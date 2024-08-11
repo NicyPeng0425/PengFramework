@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,16 +9,16 @@ using System.Linq;
 public class PengEditorMain : EditorWindow
 {
     /// <summary>
-    /// Æô¶¯Æ÷¡£±ØĞëÒªÏÈÓÃÕâ¸ö¡£
-    /// ³£ÓÃµÄUI»æÖÆ·½·¨Ò²·ÅÔÚÕâ¶ù
+    /// å¯åŠ¨å™¨ã€‚å¿…é¡»è¦å…ˆç”¨è¿™ä¸ªã€‚
+    /// å¸¸ç”¨çš„UIç»˜åˆ¶æ–¹æ³•ä¹Ÿæ”¾åœ¨è¿™å„¿
     /// </summary>
     XmlDocument globalConfiguration;
-    [MenuItem("PengFramework/Æô¶¯Æ÷")]
+    [MenuItem("PengFramework/å¯åŠ¨å™¨")]
     static void Init()
     {
         PengEditorMain window = (PengEditorMain)EditorWindow.GetWindow(typeof(PengEditorMain));
         window.position = new Rect(100,100,300,300);
-        window.titleContent = new GUIContent("Åí¿ò¼ÜÆô¶¯Æ÷");
+        window.titleContent = new GUIContent("å½­æ¡†æ¶å¯åŠ¨å™¨");
     }
 
     private void OnEnable()
@@ -35,12 +35,12 @@ public class PengEditorMain : EditorWindow
             }
             else
             {
-                Debug.LogWarning("ÒâÍâ£ºResources/GlobalConfiguration/GlobalSetting.xml´æÔÚ£¬µ«È´¶Á²»³öTextAsset£¿");
+                Debug.LogWarning("æ„å¤–ï¼šResources/GlobalConfiguration/GlobalSetting.xmlå­˜åœ¨ï¼Œä½†å´è¯»ä¸å‡ºTextAssetï¼Ÿ");
             }
         }/*
         else
         {
-            EditorGUILayout.HelpBox("Ôİ²»´æÔÚÈ«¾ÖÅäÖÃÎÄ¼ş£¬ÇëÊ¹ÓÃÉÏ·½°´Å¥À´Éú³É£¡", MessageType.Warning);
+            EditorGUILayout.HelpBox("æš‚ä¸å­˜åœ¨å…¨å±€é…ç½®æ–‡ä»¶ï¼Œè¯·ä½¿ç”¨ä¸Šæ–¹æŒ‰é’®æ¥ç”Ÿæˆï¼", MessageType.Warning);
         }*/
     }
 
@@ -49,7 +49,7 @@ public class PengEditorMain : EditorWindow
         EditorGUILayout.BeginVertical();
 
         
-        DrawPengFrameworkIcon("Æô¶¯Æ÷");
+        DrawPengFrameworkIcon("å¯åŠ¨å™¨");
         
         
 
@@ -76,7 +76,7 @@ public class PengEditorMain : EditorWindow
         GUILayout.Space(70);
         EditorGUILayout.BeginVertical();
         GUILayout.Space(13);
-        GUILayout.Box(new GUIContent("Åí¿ò¼Ü" + title), style);
+        GUILayout.Box(new GUIContent("å½­æ¡†æ¶" + title), style);
         EditorGUILayout.EndVertical();
         EditorGUILayout.EndHorizontal();
     }
@@ -85,7 +85,7 @@ public class PengEditorMain : EditorWindow
     {
         GUIStyle style = new GUIStyle("Button");
         style.normal.textColor = Color.green;
-        if (GUILayout.Button("´´½¨¡¢²¹È«»òĞŞ¸´ResourcesÎÄ¼ş¼Ğ½á¹¹", style))
+        if (GUILayout.Button("åˆ›å»ºã€è¡¥å…¨æˆ–ä¿®å¤Resourcesæ–‡ä»¶å¤¹ç»“æ„", style))
         {
             CreateResourcesDirectory("");
             CreateResourcesDirectory("/Actors");
@@ -141,11 +141,11 @@ public class PengEditorMain : EditorWindow
                 XmlElement frameSetting = global.CreateElement("FrameSetting");
                 frameSetting.SetAttribute("ActionFrameRate", "60");
 
-                //ºóĞøÌí¼Ó¸ü¶àÈ«¾ÖÅäÖÃĞÅÏ¢
+                //åç»­æ·»åŠ æ›´å¤šå…¨å±€é…ç½®ä¿¡æ¯
 
                 global.AppendChild(frameSetting);
                 global.Save(Application.dataPath + "/Resources/GlobalConfiguration/GlobalSetting.xml");
-                Debug.Log("ÒÑ´´½¨È«¾ÖÅäÖÃ");
+                Debug.Log("å·²åˆ›å»ºå…¨å±€é…ç½®");
             }
             else
             {
@@ -162,16 +162,16 @@ public class PengEditorMain : EditorWindow
                         XmlElement frameSetting = xml.CreateElement("FrameSetting");
                         frameSetting.SetAttribute("ActionFrameRate", "60");
                         xml.AppendChild(frameSetting);
-                        Debug.LogWarning("È«¾ÖÅäÖÃÖĞÈ±Ê§È«¾Ö¶¯×÷Ö¡Ö¡ÂÊ£¬ÏÖÒÑ²¹È«¡£");
+                        Debug.LogWarning("å…¨å±€é…ç½®ä¸­ç¼ºå¤±å…¨å±€åŠ¨ä½œå¸§å¸§ç‡ï¼Œç°å·²è¡¥å…¨ã€‚");
                     }
 
-                    //ºóĞø²¹È«¸ü¶àÈ«¾ÖÅäÖÃĞÅÏ¢
+                    //åç»­è¡¥å…¨æ›´å¤šå…¨å±€é…ç½®ä¿¡æ¯
 
                     xml.Save(Application.dataPath + "/Resources/GlobalConfiguration/GlobalSetting.xml");
                 }
                 else
                 {
-                    Debug.LogWarning("ÒâÍâ£ºResources/GlobalConfiguration/GlobalSetting.xml´æÔÚ£¬µ«È´¶Á²»³öTextAsset£¿");
+                    Debug.LogWarning("æ„å¤–ï¼šResources/GlobalConfiguration/GlobalSetting.xmlå­˜åœ¨ï¼Œä½†å´è¯»ä¸å‡ºTextAssetï¼Ÿ");
                 }
             }
         }
@@ -201,12 +201,12 @@ public class PengEditorMain : EditorWindow
                 }
                 else
                 {
-                    Debug.LogWarning("ÒâÍâ£ºResources/GlobalConfiguration/GlobalSetting.xml´æÔÚ£¬µ«È´¶Á²»³öTextAsset£¿");
+                    Debug.LogWarning("æ„å¤–ï¼šResources/GlobalConfiguration/GlobalSetting.xmlå­˜åœ¨ï¼Œä½†å´è¯»ä¸å‡ºTextAssetï¼Ÿ");
                 }
             }
             else
             {
-                EditorGUILayout.HelpBox("Ôİ²»´æÔÚÈ«¾ÖÅäÖÃÎÄ¼ş£¬ÇëÊ¹ÓÃÉÏ·½°´Å¥À´Éú³É£¡", MessageType.Warning);
+                EditorGUILayout.HelpBox("æš‚ä¸å­˜åœ¨å…¨å±€é…ç½®æ–‡ä»¶ï¼Œè¯·ä½¿ç”¨ä¸Šæ–¹æŒ‰é’®æ¥ç”Ÿæˆï¼", MessageType.Warning);
             }
         }
         else
@@ -217,7 +217,7 @@ public class PengEditorMain : EditorWindow
                 float frameRate = float.Parse(frameSettingElement.GetAttribute("ActionFrameRate"));
                 float frameRateNew = frameRate;
 
-                GUILayout.Label("È«¾Ö¶¯×÷Ö¡ÂÊ£º");
+                GUILayout.Label("å…¨å±€åŠ¨ä½œå¸§ç‡ï¼š");
                 GUILayout.Space(10);
                 frameRateNew = EditorGUILayout.FloatField(frameRateNew, GUILayout.Width(100));
                 if (frameRateNew != frameRate)
@@ -228,7 +228,7 @@ public class PengEditorMain : EditorWindow
             }
             else
             {
-                EditorGUILayout.HelpBox("È«¾ÖÅäÖÃÖĞ²»´æÔÚ¶¯×÷Ö¡Ö¡ÂÊĞÅÏ¢£¬ÇëÊ¹ÓÃÉÏ·½°´Å¥À´ĞŞ¸´£¡", MessageType.Warning);
+                EditorGUILayout.HelpBox("å…¨å±€é…ç½®ä¸­ä¸å­˜åœ¨åŠ¨ä½œå¸§å¸§ç‡ä¿¡æ¯ï¼Œè¯·ä½¿ç”¨ä¸Šæ–¹æŒ‰é’®æ¥ä¿®å¤ï¼", MessageType.Warning);
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -251,7 +251,7 @@ public class PengEditorMain : EditorWindow
             {
                 string element = list[i];
                 EditorGUILayout.BeginHorizontal();
-                GUILayout.Label("Ë÷Òı" + i.ToString() + "£º", GUILayout.Width(60));
+                GUILayout.Label("ç´¢å¼•" + i.ToString() + "ï¼š", GUILayout.Width(60));
                 GUILayout.Space(10);
                 element = GUILayout.TextField(element, GUILayout.Width(150));
                 EditorGUILayout.EndHorizontal();

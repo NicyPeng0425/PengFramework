@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
@@ -42,7 +42,7 @@ public class PengGameManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("È«¾ÖÅäÖÃÖĞÃ»ÓĞÈ«¾Ö¶¯×÷Ö¡ÂÊĞÅÏ¢£¡");
+                Debug.LogWarning("å…¨å±€é…ç½®ä¸­æ²¡æœ‰å…¨å±€åŠ¨ä½œå¸§ç‡ä¿¡æ¯ï¼");
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -52,7 +52,7 @@ public class PengGameManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Î´¶ÁÈ¡µ½È«¾ÖÅäÖÃ£¡");
+            Debug.LogWarning("æœªè¯»å–åˆ°å…¨å±€é…ç½®ï¼");
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

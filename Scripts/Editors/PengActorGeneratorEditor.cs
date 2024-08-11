@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -14,7 +14,7 @@ using UnityEditor.Experimental.GraphView;
 public class PengActorGeneratorEditor : EditorWindow
 {
     /// <summary>
-    /// Ò»¼üÉú³É½ÇÉ«µÄÅ£±Æ¹¤¾ß¡£
+    /// ä¸€é”®ç”Ÿæˆè§’è‰²çš„ç‰›é€¼å·¥å…·ã€‚
     /// </summary>
     /// 
 
@@ -33,9 +33,9 @@ public class PengActorGeneratorEditor : EditorWindow
 
     public enum GenerateMode
     {
-        [Description("´´½¨ĞÂ½ÇÉ«")]
+        [Description("åˆ›å»ºæ–°è§’è‰²")]
         New,
-        [Description("¸´ÖÆÒÑÓĞ½ÇÉ«")]
+        [Description("å¤åˆ¶å·²æœ‰è§’è‰²")]
         Copy,
     }
 
@@ -46,12 +46,12 @@ public class PengActorGeneratorEditor : EditorWindow
     public string pasteName;
 
 
-    [MenuItem("PengFramework/½ÇÉ«Éú³ÉÆ÷")]
+    [MenuItem("PengFramework/è§’è‰²ç”Ÿæˆå™¨")]
     static void Init()
     {
         PengActorGeneratorEditor window = (PengActorGeneratorEditor)EditorWindow.GetWindow(typeof(PengActorGeneratorEditor));
         window.position = new Rect(120, 120, 400, 800);
-        window.titleContent = new GUIContent("Åí¿ò¼Ü½ÇÉ«Éú³ÉÆ÷");
+        window.titleContent = new GUIContent("å½­æ¡†æ¶è§’è‰²ç”Ÿæˆå™¨");
     }
 
     private void OnEnable()
@@ -104,19 +104,19 @@ public class PengActorGeneratorEditor : EditorWindow
         EditorGUILayout.BeginVertical();
 
 
-        PengEditorMain.DrawPengFrameworkIcon("½ÇÉ«Éú³ÉÆ÷");
+        PengEditorMain.DrawPengFrameworkIcon("è§’è‰²ç”Ÿæˆå™¨");
         GUILayout.Space(20);
 
         GUIStyle style = new GUIStyle("Box");
         style.alignment = TextAnchor.UpperLeft;
         style.wordWrap = true;
-        GUILayout.Box("ÌîĞ´×¢Òâ£º\n" +
-            "Ò»¡¢½ÇÉ«Ä£ĞÍĞèÒª´øAnimator×é¼ş¡£\n" +
-            "¶ş¡¢´´½¨Ç°£¬½«½ÇÉ«¶¯»­Æ¬¶Î·ÅÖÃÓÚResources/Animations/½ÇÉ«ID£¬²¢ÒÔ½ÇÉ«ID+@+×´Ì¬ÃûµÄ¸ñÊ½ÃüÃû¡£\n" +
-            "ÀıÈç£ºResources/Animations/100001/100001@Idle\n" +
-            "Èı¡¢½ÇÉ«×´Ì¬Àï±ØĞëÓĞIdle×´Ì¬¡£\n" +
-            "ËÄ¡¢×´Ì¬Ãû×÷Îª×´Ì¬µÄÎ¨Ò»Ê¶±ğ·û£¬Ô­ÔòÉÏ²»ÔÊĞíÆµ·±¸ü¸Ä¡¢²»ÔÊĞíÖØÃû£¬ÇëÉ÷ÖØÖÆ¶¨ÃüÃû¹æ·¶£¬³öÏÖÒò¸ü¸Ä×´Ì¬Ãû¡¢×´Ì¬ÖØÃû¶øµ¼ÖÂµÄbug£¬ºó¹û×Ô¸º£¡\n" +
-            "Îå¡¢ÏëĞŞ¸ÄÉú³É½ÇÉ«µÄ×´Ì¬ÃûÊ±£¬½¨Òé°ÑÒÑÓĞµÄÏë¸ÄµÄÃû×ÖÉ¾µô£¬ÔÙÔÚ×´Ì¬×éÀïÌí¼ÓÒ»¸öĞÂµÄ×Ö¶Î¡£", style);
+        GUILayout.Box("å¡«å†™æ³¨æ„ï¼š\n" +
+            "ä¸€ã€è§’è‰²æ¨¡å‹éœ€è¦å¸¦Animatorç»„ä»¶ã€‚\n" +
+            "äºŒã€åˆ›å»ºå‰ï¼Œå°†è§’è‰²åŠ¨ç”»ç‰‡æ®µæ”¾ç½®äºResources/Animations/è§’è‰²IDï¼Œå¹¶ä»¥è§’è‰²ID+@+çŠ¶æ€åçš„æ ¼å¼å‘½åã€‚\n" +
+            "ä¾‹å¦‚ï¼šResources/Animations/100001/100001@Idle\n" +
+            "ä¸‰ã€è§’è‰²çŠ¶æ€é‡Œå¿…é¡»æœ‰IdleçŠ¶æ€ã€‚\n" +
+            "å››ã€çŠ¶æ€åä½œä¸ºçŠ¶æ€çš„å”¯ä¸€è¯†åˆ«ç¬¦ï¼ŒåŸåˆ™ä¸Šä¸å…è®¸é¢‘ç¹æ›´æ”¹ã€ä¸å…è®¸é‡åï¼Œè¯·æ…é‡åˆ¶å®šå‘½åè§„èŒƒï¼Œå‡ºç°å› æ›´æ”¹çŠ¶æ€åã€çŠ¶æ€é‡åè€Œå¯¼è‡´çš„bugï¼Œåæœè‡ªè´Ÿï¼\n" +
+            "äº”ã€æƒ³ä¿®æ”¹ç”Ÿæˆè§’è‰²çš„çŠ¶æ€åæ—¶ï¼Œå»ºè®®æŠŠå·²æœ‰çš„æƒ³æ”¹çš„åå­—åˆ æ‰ï¼Œå†åœ¨çŠ¶æ€ç»„é‡Œæ·»åŠ ä¸€ä¸ªæ–°çš„å­—æ®µã€‚", style);
 
         GUILayout.Space(10);
 
@@ -153,13 +153,13 @@ public class PengActorGeneratorEditor : EditorWindow
                 }
                 else
                 {
-                    Debug.LogWarning("ÒâÍâ£ºResources/GlobalConfiguration/GlobalSetting.xml´æÔÚ£¬µ«È´¶Á²»³öTextAsset£¿");
+                    Debug.LogWarning("æ„å¤–ï¼šResources/GlobalConfiguration/GlobalSetting.xmlå­˜åœ¨ï¼Œä½†å´è¯»ä¸å‡ºTextAssetï¼Ÿ");
                     return false;
                 }
             }
             else
             {
-                EditorGUILayout.HelpBox("Ôİ²»´æÔÚÈ«¾ÖÅäÖÃÎÄ¼ş£¬ÇëÊ¹ÓÃÉÏ·½°´Å¥À´Éú³É£¡", MessageType.Warning);
+                EditorGUILayout.HelpBox("æš‚ä¸å­˜åœ¨å…¨å±€é…ç½®æ–‡ä»¶ï¼Œè¯·ä½¿ç”¨ä¸Šæ–¹æŒ‰é’®æ¥ç”Ÿæˆï¼", MessageType.Warning);
                 return false;
             }
         }
@@ -173,7 +173,7 @@ public class PengActorGeneratorEditor : EditorWindow
             }
             else
             {
-                EditorGUILayout.HelpBox("È«¾ÖÅäÖÃÖĞ²»´æÔÚ¶¯×÷Ö¡Ö¡ÂÊĞÅÏ¢£¬ÇëÊ¹ÓÃÆô¶¯Æ÷À´ĞŞ¸´£¡", MessageType.Warning);
+                EditorGUILayout.HelpBox("å…¨å±€é…ç½®ä¸­ä¸å­˜åœ¨åŠ¨ä½œå¸§å¸§ç‡ä¿¡æ¯ï¼Œè¯·ä½¿ç”¨å¯åŠ¨å™¨æ¥ä¿®å¤ï¼", MessageType.Warning);
                 return false;
             }
         }
@@ -184,36 +184,36 @@ public class PengActorGeneratorEditor : EditorWindow
         EditorGUILayout.BeginVertical();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("½ÇÉ«ID£º");
+        GUILayout.Label("è§’è‰²IDï¼š");
         actorID = EditorGUILayout.IntField(actorID, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("½ÇÉ«Ãû³Æ£º");
+        GUILayout.Label("è§’è‰²åç§°ï¼š");
         actorName = EditorGUILayout.TextField(actorName, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("½ÇÉ«ÕóÓª£º");
+        GUILayout.Label("è§’è‰²é˜µè¥ï¼š");
         actorCamp = EditorGUILayout.IntField(actorCamp, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("½ÇÉ«Ä£ĞÍ£º");
+        GUILayout.Label("è§’è‰²æ¨¡å‹ï¼š");
         actorModel = (GameObject)EditorGUILayout.ObjectField(actorModel, typeof(GameObject), true, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginVertical();
-        GUILayout.Label("½ÇÉ«×´Ì¬£º");
+        GUILayout.Label("è§’è‰²çŠ¶æ€ï¼š");
         DrawStates();
         EditorGUILayout.EndVertical();
 
 
-        if (GUILayout.Button("Ò»¼üÉú³É½ÇÉ«"))
+        if (GUILayout.Button("ä¸€é”®ç”Ÿæˆè§’è‰²"))
         {
             if(File.Exists(Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml"))
             {
-                EditorUtility.DisplayDialog("¾¯¸æ", "ÒÑ´æÔÚActorÊı¾İ£¡", "ok");
+                EditorUtility.DisplayDialog("è­¦å‘Š", "å·²å­˜åœ¨Actoræ•°æ®ï¼", "ok");
                 EditorGUILayout.EndVertical();
                 return;
             }
@@ -223,13 +223,13 @@ public class PengActorGeneratorEditor : EditorWindow
 
                 if (!hasIdle)
                 {
-                    EditorUtility.DisplayDialog("¾¯¸æ", "½ÇÉ«×´Ì¬Ã»ÓĞIdle£¬ÎŞ·¨Éú³É¡£", "ok");
+                    EditorUtility.DisplayDialog("è­¦å‘Š", "è§’è‰²çŠ¶æ€æ²¡æœ‰Idleï¼Œæ— æ³•ç”Ÿæˆã€‚", "ok");
                     return;
                 }
 
                 GameObject actorNew = GameObject.Instantiate(actorModel);
 
-                //Ìí¼ÓAnimator
+                //æ·»åŠ Animator
                 if (!Directory.Exists(Application.dataPath + "/Resources/Animators/" + actorID.ToString()))
                 {
                     Directory.CreateDirectory(Application.dataPath + "/Resources/Animators/" + actorID.ToString());
@@ -253,14 +253,14 @@ public class PengActorGeneratorEditor : EditorWindow
                 PengTrack enterTrack1 = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
                 if (clip1 != null)
                 {
-                    //Èç¹ûÄÜ¶ÁÈ¡µ½Æ¬¶Î£¬¿ÉÒÔÖ±½Ó¸øenterTrack1¸½¼ÓÒ»¸ö²¥·Å¶¯»­µÄ½Úµã£¬²¢ºÍ¹ìµÀÖ´ĞĞÁ¬½ÓÆğÀ´
+                    //å¦‚æœèƒ½è¯»å–åˆ°ç‰‡æ®µï¼Œå¯ä»¥ç›´æ¥ç»™enterTrack1é™„åŠ ä¸€ä¸ªæ’­æ”¾åŠ¨ç”»çš„èŠ‚ç‚¹ï¼Œå¹¶å’Œè½¨é“æ‰§è¡Œè¿æ¥èµ·æ¥
                     idleState.motion = clip1;
                     clip1.frameRate = globalFrameRate;
                     statesLength["Idle"] = Mathf.FloorToInt(clip1.length * globalFrameRate);
                 }
                 else
                 {
-                    Debug.LogWarning("Actor" + actorID.ToString() + "µÄIdle×´Ì¬Î´ÌîÈë¶¯»­Æ¬¶Î£¬ÇëÊÖ¶¯ÔÚ×´Ì¬ÖĞ·ÅÈëClip¡£");
+                    Debug.LogWarning("Actor" + actorID.ToString() + "çš„IdleçŠ¶æ€æœªå¡«å…¥åŠ¨ç”»ç‰‡æ®µï¼Œè¯·æ‰‹åŠ¨åœ¨çŠ¶æ€ä¸­æ”¾å…¥Clipã€‚");
                 }
                 track.Add(enterTrack1);
                 track.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
@@ -280,14 +280,14 @@ public class PengActorGeneratorEditor : EditorWindow
                         PengTrack enterTrack = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
                         if (clip != null)
                         {
-                            //Èç¹ûÄÜ¶ÁÈ¡µ½Æ¬¶Î£¬¿ÉÒÔÖ±½Ó¸øenterTrack¸½¼ÓÒ»¸ö²¥·Å¶¯»­µÄ½Úµã£¬²¢ºÍ¹ìµÀÖ´ĞĞÁ¬½ÓÆğÀ´
+                            //å¦‚æœèƒ½è¯»å–åˆ°ç‰‡æ®µï¼Œå¯ä»¥ç›´æ¥ç»™enterTracké™„åŠ ä¸€ä¸ªæ’­æ”¾åŠ¨ç”»çš„èŠ‚ç‚¹ï¼Œå¹¶å’Œè½¨é“æ‰§è¡Œè¿æ¥èµ·æ¥
                             state.motion = clip;
                             clip.frameRate = globalFrameRate;
                             statesLength[statesLength.ElementAt(i).Key] = Mathf.FloorToInt(clip.length * globalFrameRate);
                         }
                         else
                         {
-                            Debug.LogWarning("Actor" + actorID.ToString() + "µÄ" + statesLength.ElementAt(i).Key + "×´Ì¬Î´ÌîÈë¶¯»­Æ¬¶Î£¬ÇëÊÖ¶¯ÔÚ×´Ì¬ÖĞ·ÅÈëClip¡£");
+                            Debug.LogWarning("Actor" + actorID.ToString() + "çš„" + statesLength.ElementAt(i).Key + "çŠ¶æ€æœªå¡«å…¥åŠ¨ç”»ç‰‡æ®µï¼Œè¯·æ‰‹åŠ¨åœ¨çŠ¶æ€ä¸­æ”¾å…¥Clipã€‚");
                         }
                         track1.Add(enterTrack);
                         track1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
@@ -316,13 +316,13 @@ public class PengActorGeneratorEditor : EditorWindow
                 }
                 bool success = false;
                 PrefabUtility.SaveAsPrefabAsset(actorNew, Application.dataPath + "/Resources/Actors/" + actorID.ToString() + "/Actor" + actorID.ToString() +".prefab", out success);
-                Debug.Log(string.Format("Actor" + actorID.ToString() + "±£´æ[{0}]", success ? "³É¹¦":"Ê§°Ü"));
+                Debug.Log(string.Format("Actor" + actorID.ToString() + "ä¿å­˜[{0}]", success ? "æˆåŠŸ":"å¤±è´¥"));
                 DestroyImmediate(actorNew);
                 AssetDatabase.Refresh();
             }
             else
             {
-                EditorUtility.DisplayDialog("¾¯¸æ", "Ã»ÓĞ·ÅÈë½ÇÉ«Ä£ĞÍ£¬»ò²»´æÔÚAnimator×é¼ş£¬»òÃ»ÓĞÌîÈë½ÇÉ«×´Ì¬£¬ÎŞ·¨Éú³É¡£", "ok");
+                EditorUtility.DisplayDialog("è­¦å‘Š", "æ²¡æœ‰æ”¾å…¥è§’è‰²æ¨¡å‹ï¼Œæˆ–ä¸å­˜åœ¨Animatorç»„ä»¶ï¼Œæˆ–æ²¡æœ‰å¡«å…¥è§’è‰²çŠ¶æ€ï¼Œæ— æ³•ç”Ÿæˆã€‚", "ok");
             }
 
         }
@@ -341,7 +341,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 EditorGUILayout.BeginVertical();
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(30);
-                GUILayout.Label("×´Ì¬×é£º");
+                GUILayout.Label("çŠ¶æ€ç»„ï¼š");
                 GUILayout.Space(10);
                 string stateGroupName = stateGroup.ElementAt(i).Key;
                 stateGroupName = GUILayout.TextField(stateGroupName, GUILayout.Width(150));
@@ -351,7 +351,7 @@ public class PengActorGeneratorEditor : EditorWindow
                     stateGroupNameNew = stateGroupName;
                 }
                 GUILayout.Space(10);
-                if(GUILayout.Button("É¾³ı"))
+                if(GUILayout.Button("åˆ é™¤"))
                 {
                     stateGroupNameToEdit = stateGroup.ElementAt(i).Key;
                     EditorGUILayout.EndHorizontal();
@@ -359,7 +359,7 @@ public class PengActorGeneratorEditor : EditorWindow
                     continue;
                 }
                 GUILayout.Space(10);
-                if (GUILayout.Button("Ìí¼Ó"))
+                if (GUILayout.Button("æ·»åŠ "))
                 {
                     string sn = ReturnANewStateName();
                     stateGroup.ElementAt(i).Value.Add(sn);
@@ -380,7 +380,7 @@ public class PengActorGeneratorEditor : EditorWindow
                         EditorGUILayout.BeginVertical();
                         EditorGUILayout.BeginHorizontal();
                         GUILayout.Space(60);
-                        GUILayout.Label("×´Ì¬Ãû£º");
+                        GUILayout.Label("çŠ¶æ€åï¼š");
                         GUILayout.Space(10);
                         string stateName = stateGroup.ElementAt(i).Value[j];
                         stateName = GUILayout.TextField(stateName, GUILayout.Width(120));
@@ -390,12 +390,12 @@ public class PengActorGeneratorEditor : EditorWindow
                             stateNameNew = stateName;
                         }
                         GUILayout.Space(10);
-                        GUILayout.Label("Ñ­»·£º");
+                        GUILayout.Label("å¾ªç¯ï¼š");
                         GUILayout.Space(10);
                         bool stateLoop = statesLoop[stateGroup.ElementAt(i).Value[j]];
                         stateLoop = EditorGUILayout.Toggle(stateLoop);
                         GUILayout.Space(10);
-                        if (GUILayout.Button("É¾³ı"))
+                        if (GUILayout.Button("åˆ é™¤"))
                         {
                             stateNameToEdit = stateGroup.ElementAt(i).Value[j];
 
@@ -457,7 +457,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 }
             }
         }
-        if (GUILayout.Button("Ìí¼Ó×´Ì¬×é"))
+        if (GUILayout.Button("æ·»åŠ çŠ¶æ€ç»„"))
         {
             List<string> group1 = new List<string>();
             string sgn = ReturnANewStateGroupName();
@@ -519,33 +519,33 @@ public class PengActorGeneratorEditor : EditorWindow
         EditorGUILayout.BeginVertical();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Ô­ÓĞ¶ÔÏóID£º");
+        GUILayout.Label("åŸæœ‰å¯¹è±¡IDï¼š");
         copyID = EditorGUILayout.IntField(copyID);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Ä¿±ê¶ÔÏóID£º");
+        GUILayout.Label("ç›®æ ‡å¯¹è±¡IDï¼š");
         pasteID = EditorGUILayout.IntField(pasteID);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Ä¿±ê¶ÔÏóÕóÓª£º");
+        GUILayout.Label("ç›®æ ‡å¯¹è±¡é˜µè¥ï¼š");
         pasteCamp = EditorGUILayout.IntField(pasteCamp);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Ä¿±ê¶ÔÏóÃû³Æ£º");
+        GUILayout.Label("ç›®æ ‡å¯¹è±¡åç§°ï¼š");
         pasteName = EditorGUILayout.TextField(pasteName);
         EditorGUILayout.EndHorizontal();
 
-        if (GUILayout.Button("Ò»¼ü¸´ÖÆ"))
+        if (GUILayout.Button("ä¸€é”®å¤åˆ¶"))
         {
             if(File.Exists(Application.dataPath+"/Resources/ActorData/" + copyID.ToString() + "/" + copyID.ToString() + ".xml"))
             {
                 TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + copyID.ToString() + "/" + copyID.ToString());
                 if (textAsset == null)
                 {
-                    Debug.LogError(copyID.ToString() + "µÄÊı¾İ¶ÁÈ¡Ê§°Ü£¡ÔõÃ´»ØÊÂÄØ£¿");
+                    Debug.LogError(copyID.ToString() + "çš„æ•°æ®è¯»å–å¤±è´¥ï¼æ€ä¹ˆå›äº‹å‘¢ï¼Ÿ");
                     return;
                 }
                 XmlDocument doc = new XmlDocument();
@@ -590,7 +590,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 }
                 doc.Save(Application.dataPath + "/Resources/ActorData/" + pasteID.ToString() + "/" + pasteID.ToString() + ".xml");
 
-                //¸´ÖÆ£ºÎïÌå£¨¸ÄID£©£»ÎïÌåÉÏµÄPengActor×é¼ş£»Animator£»ËùÓĞµÄ¶¯»­Æ¬¶Î
+                //å¤åˆ¶ï¼šç‰©ä½“ï¼ˆæ”¹IDï¼‰ï¼›ç‰©ä½“ä¸Šçš„PengActorç»„ä»¶ï¼›Animatorï¼›æ‰€æœ‰çš„åŠ¨ç”»ç‰‡æ®µ
                 GameObject actorOld = Resources.Load("Actors/" + copyID.ToString() + "/Actor" + copyID.ToString()) as GameObject;
                 GameObject actorNew = GameObject.Instantiate(actorOld);
 

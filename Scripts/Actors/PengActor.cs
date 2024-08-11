@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -17,7 +17,7 @@ public class PengActor : MonoBehaviour
     [HideInInspector]
     public static string initalName = "Idle";
 
-    //ÔËĞĞÊ±¶¯Ì¬Êı¾İ
+    //è¿è¡Œæ—¶åŠ¨æ€æ•°æ®
     [HideInInspector]
     public string currentName;
     [HideInInspector]
@@ -97,7 +97,7 @@ public class PengActor : MonoBehaviour
                         {
                             if(int.Parse(son.GetAttribute("ActorID")) != actorID)
                             {
-                                Debug.LogWarning("Actor" + actorID.ToString() + "µÄActorÊı¾İÖĞ¼ÇÔØµÄActorIDÓëÆä±¾ÉíµÄID²»·û£¡");
+                                Debug.LogWarning("Actor" + actorID.ToString() + "çš„Actoræ•°æ®ä¸­è®°è½½çš„ActorIDä¸å…¶æœ¬èº«çš„IDä¸ç¬¦ï¼");
                                 this.gameObject.SetActive(false);
                                 return;
                             }    
@@ -133,7 +133,7 @@ public class PengActor : MonoBehaviour
         }
         else
         {
-            Debug.Log("Actor" + actorID.ToString() + "µÄActorÊı¾İ¶ÁÈ¡Ê§°Ü£¡");
+            Debug.Log("Actor" + actorID.ToString() + "çš„Actoræ•°æ®è¯»å–å¤±è´¥ï¼");
             this.gameObject.SetActive(false);
         }
 

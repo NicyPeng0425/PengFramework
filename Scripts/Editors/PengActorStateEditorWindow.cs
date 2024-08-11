@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +15,10 @@ using UnityEditor.Animations;
 public class PengActorStateEditorWindow : EditorWindow
 {
     /// <summary>
-    /// ½ÚµãÍ¼²¿·ÖÖ÷Òª²Î¿¼£º
+    /// èŠ‚ç‚¹å›¾éƒ¨åˆ†ä¸»è¦å‚è€ƒï¼š
     /// https://blog.csdn.net/qq_31967569/article/details/81025419
     /// https://blog.csdn.net/u013412391/article/details/120873714
-    /// ¸ĞĞ»Á½Î»´óÀĞ£¡
+    /// æ„Ÿè°¢ä¸¤ä½å¤§ä½¬ï¼
     /// </summary>
     public List<PengNode> nodes = new List<PengNode>();
     public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
@@ -36,7 +36,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public float globalFrameRate;
 
 
-    //µ±Ç°±à¼­×´Ì¬µÄĞÅÏ¢»º´æ
+    //å½“å‰ç¼–è¾‘çŠ¶æ€çš„ä¿¡æ¯ç¼“å­˜
     public Vector2 timelineScrollPos = Vector2.zero;
     private int m_currentFrameLength;
     public int currentFrameLength
@@ -79,15 +79,15 @@ public class PengActorStateEditorWindow : EditorWindow
             if (!m_runTimeEdit) { PauseEditingActor(); }
         }
     }
-    //×´Ì¬×é
+    //çŠ¶æ€ç»„
     public Dictionary<string, List<string>> states = new Dictionary<string, List<string>>();
-    //×´Ì¬×éÊÇ·ñÕÛµş
+    //çŠ¶æ€ç»„æ˜¯å¦æŠ˜å 
     public Dictionary<string, bool> statesFold = new Dictionary<string, bool>();
-    //ËùÓĞ×´Ì¬¼°Æä¶ÔÓ¦µÄ¹ìµÀ×é
+    //æ‰€æœ‰çŠ¶æ€åŠå…¶å¯¹åº”çš„è½¨é“ç»„
     public Dictionary<string, List<PengTrack>> statesTrack = new Dictionary<string, List<PengTrack>>();
-    //ËùÓĞ×´Ì¬¼°Æä¶ÔÓ¦µÄ³¤¶È
+    //æ‰€æœ‰çŠ¶æ€åŠå…¶å¯¹åº”çš„é•¿åº¦
     public Dictionary<string, int> statesLength = new Dictionary<string, int>();
-    //ËùÓĞ×´Ì¬¼°Æä¶ÔÓ¦µÄÊÇ·ñÑ­»·
+    //æ‰€æœ‰çŠ¶æ€åŠå…¶å¯¹åº”çš„æ˜¯å¦å¾ªç¯
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
     public string currentStateName;
     public PengActor runTimeSelectionPauseActor = null;
@@ -97,12 +97,12 @@ public class PengActorStateEditorWindow : EditorWindow
     //
 
 
-    [MenuItem("PengFramework/½ÇÉ«×´Ì¬±à¼­Æ÷")]
+    [MenuItem("PengFramework/è§’è‰²çŠ¶æ€ç¼–è¾‘å™¨")]
     static void Init()
     {
         PengActorStateEditorWindow window = (PengActorStateEditorWindow)EditorWindow.GetWindow(typeof(PengActorStateEditorWindow));
         window.position = new Rect(100, 100, 1200, 700);
-        window.titleContent = new GUIContent("Åí¿ò¼Ü½ÇÉ«×´Ì¬±à¼­Æ÷");
+        window.titleContent = new GUIContent("å½­æ¡†æ¶è§’è‰²çŠ¶æ€ç¼–è¾‘å™¨");
     }
 
     private void OnEnable()
@@ -119,13 +119,13 @@ public class PengActorStateEditorWindow : EditorWindow
 
         if (Selection.activeGameObject == null)
         {
-            EditorGUILayout.HelpBox("ÇëÑ¡Ôñ¶ÔÏó", MessageType.Info);
+            EditorGUILayout.HelpBox("è¯·é€‰æ‹©å¯¹è±¡", MessageType.Info);
             return;
         }
 
         if (Selection.activeGameObject.GetComponent<PengActor>() == null)
         {
-            EditorGUILayout.HelpBox("ËùÑ¡¶ÔÏó²»º¬PengActor×é¼ş", MessageType.Warning);
+            EditorGUILayout.HelpBox("æ‰€é€‰å¯¹è±¡ä¸å«PengActorç»„ä»¶", MessageType.Warning);
             return;
         }
 
@@ -166,7 +166,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     runTimeSelectionPauseActor.pauseTime = 100f;
                     runTimeSelectionPauseActor.ctrl.enabled = false;
 
-                    //·Ç³£Éµ±ÆµÄ²ÉÑù·½·¨£¬ÓĞÃ»ÓĞÈËÄÜ¾È¾È
+                    //éå¸¸å‚»é€¼çš„é‡‡æ ·æ–¹æ³•ï¼Œæœ‰æ²¡æœ‰äººèƒ½æ•‘æ•‘
                     runTimeSelectionPauseActor.anim.Play(currentStateName, 0, 0);
                     runTimeSelectionPauseActor.anim.Update(0);
                     runTimeSelectionPauseActor.anim.Update(((float)currentSelectedFrame / globalFrameRate));
@@ -218,13 +218,13 @@ public class PengActorStateEditorWindow : EditorWindow
             GUI.Box(new Rect(0, 0, position.width, timelineHeight), "", style);
             DrawTimelineMap();
         }
-        //»æÖÆTimeline Title
+        //ç»˜åˆ¶Timeline Title
         GUI.Box(new Rect(0, 0, sideBarWidth, position.height), "", style);
 
         EditorGUILayout.BeginHorizontal();
 
         EditorGUILayout.BeginVertical(GUILayout.Height(position.height), GUILayout.Width(sideBarWidth));
-        PengEditorMain.DrawPengFrameworkIcon("½ÇÉ«×´Ì¬±à¼­Æ÷");
+        PengEditorMain.DrawPengFrameworkIcon("è§’è‰²çŠ¶æ€ç¼–è¾‘å™¨");
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.BeginVertical(GUILayout.Height(timelineHeight), GUILayout.Width(position.width));
@@ -243,7 +243,7 @@ public class PengActorStateEditorWindow : EditorWindow
         styleSave.fontSize = 13;
         styleSave.normal.textColor = new Color(0.4f, 0.95f, 0.6f);
         Rect save = new Rect(sideBarWidth - 45, 5, 40, 40);
-        if (GUI.Button(save, "±£´æ\nÊı¾İ", styleSave))
+        if (GUI.Button(save, "ä¿å­˜\næ•°æ®", styleSave))
         {
             Save(true);
         }
@@ -354,7 +354,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         {
                             currentDeleteTrack = i;
                             GenericMenu menu = new GenericMenu();
-                            menu.AddItem(new GUIContent("É¾³ı¹ìµÀ"), false, () => { DeleteTrack(); });
+                            menu.AddItem(new GUIContent("åˆ é™¤è½¨é“"), false, () => { DeleteTrack(); });
                             menu.ShowAsContext();
                             Event.current.Use();
                         }
@@ -712,7 +712,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     }
                     if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryAdd.Contains(Event.current.mousePosition))
                     {
-                        //´´½¨ĞÂ×´Ì¬
+                        //åˆ›å»ºæ–°çŠ¶æ€
                         string stateName = "NewState";
                         bool sameName = true;
                         int index = 1;
@@ -748,7 +748,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryDelete.Contains(Event.current.mousePosition))
                     {
                         deleteStateGroupAt = i;
-                        deleteStateGroup = EditorUtility.DisplayDialog("É¾³ı×´Ì¬·Ö×é", "ÊÇ·ñÒªÉ¾³ı×´Ì¬·Ö×é" + states.ElementAt(deleteStateGroupAt).Key + "?", "É¾³ı", "È¡Ïû");
+                        deleteStateGroup = EditorUtility.DisplayDialog("åˆ é™¤çŠ¶æ€åˆ†ç»„", "æ˜¯å¦è¦åˆ é™¤çŠ¶æ€åˆ†ç»„" + states.ElementAt(deleteStateGroupAt).Key + "?", "åˆ é™¤", "å–æ¶ˆ");
                     }
                 }
 
@@ -783,7 +783,7 @@ public class PengActorStateEditorWindow : EditorWindow
                                 GUI.Box(sonEntryLoop, "Loop", styleLoop);
                             }
                             GUI.Box(sonEntryLength, statesLength[states.ElementAt(i).Value[j]].ToString() + "F", styleLoop);
-                            //¸ü¸Äµ±Ç°Ñ¡ÔñµÄ×´Ì¬
+                            //æ›´æ”¹å½“å‰é€‰æ‹©çš„çŠ¶æ€
                             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && sonEntrySelect.Contains(Event.current.mousePosition))
                             {
                                 if (currentStateName != states.ElementAt(i).Value[j])
@@ -804,7 +804,7 @@ public class PengActorStateEditorWindow : EditorWindow
                             {
                                 deleteStateGroupAt = i;
                                 deleteStateAt = j;
-                                deleteState = EditorUtility.DisplayDialog("É¾³ı×´Ì¬", "ÊÇ·ñÒªÉ¾³ı×´Ì¬" + states.ElementAt(deleteStateGroupAt).Value[deleteStateAt] + "?", "É¾³ı", "È¡Ïû");
+                                deleteState = EditorUtility.DisplayDialog("åˆ é™¤çŠ¶æ€", "æ˜¯å¦è¦åˆ é™¤çŠ¶æ€" + states.ElementAt(deleteStateGroupAt).Value[deleteStateAt] + "?", "åˆ é™¤", "å–æ¶ˆ");
                             }
                         }
                     }
@@ -841,7 +841,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
         GUI.Box(border, "", style);
         GUI.Box(header, "", style1);
-        GUI.Box(headerTitle, "½ÇÉ«×´Ì¬ÁĞ±í", style1);
+        GUI.Box(headerTitle, "è§’è‰²çŠ¶æ€åˆ—è¡¨", style1);
         if (GUI.Button(addState, "+"))
         {
             List<string> stateGroup = new List<string>();
@@ -858,7 +858,7 @@ public class PengActorStateEditorWindow : EditorWindow
             GUI.changed = true;
         }
 
-        if (GUI.Button(unfoldAll, "È«Õ¹¿ª", style7))
+        if (GUI.Button(unfoldAll, "å…¨å±•å¼€", style7))
         {
             if (statesFold.Count > 0)
             {
@@ -870,7 +870,7 @@ public class PengActorStateEditorWindow : EditorWindow
             GUI.changed = true;
         }
 
-        if (GUI.Button(foldAll, "È«ÕÛµş", style7))
+        if (GUI.Button(foldAll, "å…¨æŠ˜å ", style7))
         {
             if (statesFold.Count > 0)
             {
@@ -909,18 +909,18 @@ public class PengActorStateEditorWindow : EditorWindow
 
         GUI.Box(border, "", style);
         GUI.Box(header, "", style1);
-        GUI.Box(headerTitle, "½ÇÉ«»ù±¾ĞÅÏ¢", style1);
+        GUI.Box(headerTitle, "è§’è‰²åŸºæœ¬ä¿¡æ¯", style1);
 
         if(EditorApplication.isPlaying)
         {
             Rect runTimeEditRect = new Rect(headerTitle.x + 100, headerTitle.y, 100, headerTitle.height);
-            runTimeEdit = GUI.Toggle(runTimeEditRect, runTimeEdit, "ÔËĞĞÊ±±à¼­");
+            runTimeEdit = GUI.Toggle(runTimeEditRect, runTimeEdit, "è¿è¡Œæ—¶ç¼–è¾‘");
         }
 
-        GUI.Box(actorNameLabel, "½ÇÉ«ID£º", style2);
+        GUI.Box(actorNameLabel, "è§’è‰²IDï¼š", style2);
         GUI.Box(actorName, currentActorID.ToString(), style2);
 
-        GUI.Box(actorCampLabel, "½ÇÉ«ÕóÓª£º", style2);
+        GUI.Box(actorCampLabel, "è§’è‰²é˜µè¥ï¼š", style2);
         currentActorCampString = GUI.TextField(actorCamp, currentActorCamp.ToString(), style2);
 
         if (int.TryParse(currentActorCampString, out currentActorCamp))
@@ -930,7 +930,7 @@ public class PengActorStateEditorWindow : EditorWindow
         else
         {
             currentActorCampString = currentActorCamp.ToString();
-            EditorUtility.DisplayDialog("¾¯¸æ", "ÕóÓª±ØĞëÒÔÕûĞÍÊı×ÖÀ´±êÊ¶£¡", "ok");
+            EditorUtility.DisplayDialog("è­¦å‘Š", "é˜µè¥å¿…é¡»ä»¥æ•´å‹æ•°å­—æ¥æ ‡è¯†ï¼", "ok");
         }
 
     }
@@ -1051,7 +1051,7 @@ public class PengActorStateEditorWindow : EditorWindow
         EditorGUILayout.BeginVertical(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(40));
 
         EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width - sideBarWidth), GUILayout.Height(20));
-        GUILayout.Label("PengActor ID£º");
+        GUILayout.Label("PengActor IDï¼š");
         GUILayout.Space(10);
         GUILayout.Label(currentActorID.ToString());
         GUILayout.FlexibleSpace();
@@ -1061,7 +1061,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
         if (currentStateName != "" && currentStateName != null)
         {
-            if (GUILayout.Button("´´½¨¹ìµÀ", GUILayout.Width(100)))
+            if (GUILayout.Button("åˆ›å»ºè½¨é“", GUILayout.Width(100)))
             {
                 int index = (tracks.Count + 1);
                 string trackName = "Track" + index.ToString();
@@ -1083,7 +1083,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
             if (copyInfo != null)
             {
-                if (GUILayout.Button("Õ³Ìù¹ìµÀ", GUILayout.Width(100)))
+                if (GUILayout.Button("ç²˜è´´è½¨é“", GUILayout.Width(100)))
                 {
                     int index = (tracks.Count + 1);
                     string trackName = "Track" + index.ToString();
@@ -1106,7 +1106,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 GUILayout.Space(10);
             }
 
-            GUILayout.Label("×´Ì¬Ãû³Æ£º", GUILayout.Width(65));
+            GUILayout.Label("çŠ¶æ€åç§°ï¼š", GUILayout.Width(65));
 
             GUILayout.Space(5);
 
@@ -1177,7 +1177,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 currentStateName = stateName;
             }
             GUILayout.Space(10);
-            GUILayout.Label("ÊÇ·ñÑ­»·£º", GUILayout.Width(65));
+            GUILayout.Label("æ˜¯å¦å¾ªç¯ï¼š", GUILayout.Width(65));
             GUILayout.Space(5);
             try
             {
@@ -1194,7 +1194,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 }
             }
             GUILayout.Space(10);
-            GUILayout.Label("×´Ì¬³¤¶È£º", GUILayout.Width(65));
+            GUILayout.Label("çŠ¶æ€é•¿åº¦ï¼š", GUILayout.Width(65));
             GUILayout.Space(5);
 
             try
@@ -1280,29 +1280,29 @@ public class PengActorStateEditorWindow : EditorWindow
     private void RightMouseMenu(Vector2 mousePos)
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/±íÏÖ/²¥·Å¶¯»­"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/B/²¥·Å¶¯»­"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/è¡¨ç°/æ’­æ”¾åŠ¨ç”»"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/B/æ’­æ”¾åŠ¨ç”»"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/·ÖÆç/Ìõ¼ş·ÖÆç"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/T/Ìõ¼ş·ÖÆç"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/åˆ†æ­§/æ¡ä»¶åˆ†æ­§"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/T/æ¡ä»¶åˆ†æ­§"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/Öµ/ÕûĞÍ"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/Z/ÕûĞÍ"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/å€¼/æ•´å‹"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/Z/æ•´å‹"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/Öµ/¸¡µã"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/F/¸¡µã"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/å€¼/æµ®ç‚¹"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/F/æµ®ç‚¹"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/Öµ/×Ö·û´®"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/Z/×Ö·û´®"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/å€¼/å­—ç¬¦ä¸²"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/Z/å­—ç¬¦ä¸²"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/Öµ/²¼¶û"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/B/²¼¶û"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/å€¼/å¸ƒå°”"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/B/å¸ƒå°”"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/¹¦ÄÜ/·¶Î§»ñÈ¡Ä¿±ê"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/F/·¶Î§»ñÈ¡Ä¿±ê"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/åŠŸèƒ½/èŒƒå›´è·å–ç›®æ ‡"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/F/èŒƒå›´è·å–ç›®æ ‡"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
 
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´¹¦ÄÜÀàĞÍ/µü´ú/ForÑ­»·"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
-        menu.AddItem(new GUIContent("Ìí¼Ó½Úµã/°´Ãû³Æ×ÖÄ¸/F/ForÑ­»·"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åŠŸèƒ½ç±»å‹/è¿­ä»£/Forå¾ªç¯"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
+        menu.AddItem(new GUIContent("æ·»åŠ èŠ‚ç‚¹/æŒ‰åç§°å­—æ¯/F/Forå¾ªç¯"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
 
         menu.ShowAsContext();
     }
@@ -1410,7 +1410,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
 
             GUI.Box(box, "", style);
-            GUI.Box(label1, "¹ìµÀÃû³Æ£º", style);
+            GUI.Box(label1, "è½¨é“åç§°ï¼š", style);
 
             if (tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
             {
@@ -1421,11 +1421,11 @@ public class PengActorStateEditorWindow : EditorWindow
                 Rect label4 = new Rect(box.x + 418, box.y + 3, 50, 20);
                 Rect period = new Rect(label4.x + 60, box.y + 3, 50, 20);
 
-                GUI.Box(label2, "¿ªÊ¼Ö¡£º", style);
+                GUI.Box(label2, "å¼€å§‹å¸§ï¼š", style);
                 GUI.Box(start, tracks[currentSelectedTrack].start.ToString(), style);
-                GUI.Box(label3, "½áÊøÖ¡£º", style);
+                GUI.Box(label3, "ç»“æŸå¸§ï¼š", style);
                 GUI.Box(end, tracks[currentSelectedTrack].end.ToString(), style);
-                GUI.Box(label4, "³ÖĞøÖ¡£º", style);
+                GUI.Box(label4, "æŒç»­å¸§ï¼š", style);
                 GUI.Box(period, (tracks[currentSelectedTrack].end - tracks[currentSelectedTrack].start + 1).ToString(), style);
             }
 
@@ -1441,7 +1441,7 @@ public class PengActorStateEditorWindow : EditorWindow
             if (tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Enter && tracks[currentSelectedTrack].execTime != PengTrack.ExecTime.Exit)
             {
                 Rect copy = new Rect(box.x + 520, box.y + 3, 80, 20);
-                if (GUI.Button(copy, "¸´ÖÆ¹ìµÀ"))
+                if (GUI.Button(copy, "å¤åˆ¶è½¨é“"))
                 {
                     copyInternalDoc = new XmlDocument();
                     XmlDeclaration decl = copyInternalDoc.CreateXmlDeclaration("1.0", "UTF-8", "");
@@ -1450,7 +1450,7 @@ public class PengActorStateEditorWindow : EditorWindow
             }
 
             Rect recovery = new Rect(box.x + 620, box.y + 3, 80, 20);
-            if (GUI.Button(recovery, "»ØÕı"))
+            if (GUI.Button(recovery, "å›æ­£"))
             {
                 if (tracks[currentSelectedTrack].nodes.Count > 0)
                 {
@@ -1614,7 +1614,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, bool showMsg)
     {
-        //ActorÊı¾İ½á¹¹£º
+        //Actoræ•°æ®ç»“æ„ï¼š
         //<Actor>
         //  <ActorInfo>
         //      <ActorID ActorID = "..." />
@@ -1645,12 +1645,12 @@ public class PengActorStateEditorWindow : EditorWindow
         //</Actor>
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
-        //Ò»¶ş¼¶½á¹¹
+        //ä¸€äºŒçº§ç»“æ„
         XmlElement root = doc.CreateElement("Actor");
         XmlElement info = doc.CreateElement("ActorInfo");
         XmlElement states = doc.CreateElement("ActorState");
 
-        //infoÏÂµÄÈı¼¶½á¹¹
+        //infoä¸‹çš„ä¸‰çº§ç»“æ„
         XmlElement ID = doc.CreateElement("ActorID");
         ID.SetAttribute("ActorID", actorID.ToString());
         XmlElement camp = doc.CreateElement("Camp");
@@ -1662,8 +1662,8 @@ public class PengActorStateEditorWindow : EditorWindow
         info.AppendChild(camp);
         info.AppendChild(name);
 
-        //statesÏÂµÄÈı¼¶½á¹¹
-        //ËÀÍöµü´ú
+        //statesä¸‹çš„ä¸‰çº§ç»“æ„
+        //æ­»äº¡è¿­ä»£
         if (stateGroup.Count > 0)
         {
             for (int i = 0; i < stateGroup.Count; i++)
@@ -1705,7 +1705,7 @@ public class PengActorStateEditorWindow : EditorWindow
         doc.Save(Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
         if (showMsg)
         {
-            Debug.Log("±£´æ³É¹¦£¬±£´æÓÚ" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+            Debug.Log("ä¿å­˜æˆåŠŸï¼Œä¿å­˜äº" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
         }
         AssetDatabase.Refresh();
 
@@ -1730,13 +1730,13 @@ public class PengActorStateEditorWindow : EditorWindow
         string path = Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml";
         if (!File.Exists(path))
         {
-            Debug.LogError("Î´¶ÁÈ¡µ½IDÎª" + actorID.ToString() + "µÄ½ÇÉ«Êı¾İ£¡¶ÁÈ¡µØÖ·£º" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+            Debug.LogError("æœªè¯»å–åˆ°IDä¸º" + actorID.ToString() + "çš„è§’è‰²æ•°æ®ï¼è¯»å–åœ°å€ï¼š" + Application.dataPath + "/Resources/ActorData/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
             return;
         }
         TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + actorID.ToString() + "/" + actorID.ToString());
         if (textAsset == null)
         {
-            Debug.LogError(actorID.ToString() + "µÄÊı¾İ¶ÁÈ¡Ê§°Ü£¡ÔõÃ´»ØÊÂÄØ£¿");
+            Debug.LogError(actorID.ToString() + "çš„æ•°æ®è¯»å–å¤±è´¥ï¼æ€ä¹ˆå›äº‹å‘¢ï¼Ÿ");
             return;
         }
         XmlDocument doc = new XmlDocument();
@@ -1764,13 +1764,13 @@ public class PengActorStateEditorWindow : EditorWindow
 
         if (actorInfo == null || actorInfo.ChildNodes.Count == 0)
         {
-            Debug.LogError(actorID.ToString() + "µÄ½ÇÉ«Êı¾İÀïÃ»ÓĞ½ÇÉ«ĞÅÏ¢£¡ÔõÃ´»ØÊÂÄØ£¿");
+            Debug.LogError(actorID.ToString() + "çš„è§’è‰²æ•°æ®é‡Œæ²¡æœ‰è§’è‰²ä¿¡æ¯ï¼æ€ä¹ˆå›äº‹å‘¢ï¼Ÿ");
             return;
         }
 
         if (actorState == null || actorState.ChildNodes.Count == 0)
         {
-            Debug.LogError(actorID.ToString() + "µÄ½ÇÉ«Êı¾İÀïÃ»ÓĞ½ÇÉ«×´Ì¬£¡ÔõÃ´»ØÊÂÄØ£¿");
+            Debug.LogError(actorID.ToString() + "çš„è§’è‰²æ•°æ®é‡Œæ²¡æœ‰è§’è‰²çŠ¶æ€ï¼æ€ä¹ˆå›äº‹å‘¢ï¼Ÿ");
             return;
         }
 
@@ -1779,7 +1779,7 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             if(ele.Name == "ActorID")
             {
-                //¶ÁÈ¡ID
+                //è¯»å–ID
                 currentActorID = int.Parse(ele.GetAttribute("ActorID"));
                 continue;
             }
@@ -2033,7 +2033,7 @@ public class PengActorStateEditorWindow : EditorWindow
         }
         else
         {
-            EditorGUILayout.HelpBox("Ã»ÓĞÈ«¾ÖÅäÖÃ£¬ÇëÊ¹ÓÃÆô¶¯Æ÷ĞŞ¸´£¡", MessageType.Warning);
+            EditorGUILayout.HelpBox("æ²¡æœ‰å…¨å±€é…ç½®ï¼Œè¯·ä½¿ç”¨å¯åŠ¨å™¨ä¿®å¤ï¼", MessageType.Warning);
             return false;
         }
     }

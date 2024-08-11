@@ -1,4 +1,4 @@
-using PengVariables;
+ï»¿using PengVariables;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,93 +16,103 @@ using static UnityEditor.PlayerSettings;
 namespace PengScript
 {
     /// <summary>
-    /// Î°´óµÄÅí½Å±¾£¡
+    /// ä¼Ÿå¤§çš„å½­è„šæœ¬ï¼
     /// 
-    /// Ìí¼ÓĞÂ½Å±¾µÄ¹Ø×¢µã£º
+    /// æ·»åŠ æ–°è„šæœ¬çš„å…³æ³¨ç‚¹ï¼š
     /// 1. PengScriptType
-    /// 2. ÔÚPengNode.csÀïÌí¼ÓĞÂ½Å±¾µÄ½ÚµãĞÎÊ½
-    /// 3. ÔÚPengActorStateEditorWindow.csµÄRightMouseMenu()ÀïĞ´Ìí¼ÓĞÂ½Å±¾µÄ½ÚµãµÄ·½·¨
-    /// 4. ÔÚPengActorStateEditorWindow.csµÄReadPengNode()ÀïĞ´¶ÁÈ¡ĞÂ½Å±¾µÄ½ÚµãµÄ·½·¨
-    /// 5. ÔÚPengScript.csÀïÌí¼ÓĞÂ½Å±¾µÄÔËĞĞÊ±ĞÎÊ½£¬°üÀ¨¹¹Ôìº¯Êı¼°¾ßÌå·½·¨
-    /// 6. ÔÚPengActorState.ConstructRunTimePengScript()ÀïÌí¼ÓÔËĞĞÊ±¹¹½¨ĞÂ½Å±¾µÄ·½·¨
+    /// 2. åœ¨PengNode.csé‡Œæ·»åŠ æ–°è„šæœ¬çš„èŠ‚ç‚¹å½¢å¼
+    /// 3. åœ¨PengActorStateEditorWindow.csçš„RightMouseMenu()é‡Œå†™æ·»åŠ æ–°è„šæœ¬çš„èŠ‚ç‚¹çš„æ–¹æ³•
+    /// 4. åœ¨PengActorStateEditorWindow.csçš„ReadPengNode()é‡Œå†™è¯»å–æ–°è„šæœ¬çš„èŠ‚ç‚¹çš„æ–¹æ³•
+    /// 5. åœ¨PengScript.csé‡Œæ·»åŠ æ–°è„šæœ¬çš„è¿è¡Œæ—¶å½¢å¼ï¼ŒåŒ…æ‹¬æ„é€ å‡½æ•°åŠå…·ä½“æ–¹æ³•
+    /// 6. åœ¨PengActorState.ConstructRunTimePengScript()é‡Œæ·»åŠ è¿è¡Œæ—¶æ„å»ºæ–°è„šæœ¬çš„æ–¹æ³•
     /// </summary>
     /// 
 
 
     public enum PengScriptType
     {
-        [Description("¹ìµÀÖ´ĞĞ")]
+        [Description("è½¨é“æ‰§è¡Œ")]
         OnTrackExecute,
-        [Description("Êä³ö¶ÔÏó")]
+        [Description("è¾“å‡ºå¯¹è±¡")]
         DebugLog,
-        [Description("²¥·Å¶¯»­")]
+        [Description("æ’­æ”¾åŠ¨ç”»")]
         PlayAnimation,
-        [Description("ÇĞ»»×´Ì¬")]
+        [Description("åˆ‡æ¢çŠ¶æ€")]
         TransState,
-        [Description("·¶Î§»ñÈ¡Ä¿±ê")]
+        [Description("èŒƒå›´è·å–ç›®æ ‡")]
         GetTargetsByRange,
-        [Description("È«¾ÖÊ±¼ä±äËÙ")]
+        [Description("å…¨å±€æ—¶é—´å˜é€Ÿ")]
         GlobalTimeScale,
-        [Description("²¥·ÅÒôÆµ")]
+        [Description("æ’­æ”¾éŸ³é¢‘")]
         PlayAudio,
-        [Description("²¥·ÅÌØĞ§")]
+        [Description("æ’­æ”¾ç‰¹æ•ˆ")]
         PlayEffects,
-        [Description("Çå¿ÕÄ¿±ê")]
+        [Description("æ¸…ç©ºç›®æ ‡")]
         ClearTargets,
-        [Description("³¢ÊÔË÷µĞ")]
+        [Description("å°è¯•ç´¢æ•Œ")]
         TryGetEnemy,
-        [Description("ÔÊĞí×ªÏò")]
+        [Description("å…è®¸è½¬å‘")]
         AllowChangeDirection,
-        [Description("ÉèÖÃÏÔÒş")]
+        [Description("è®¾ç½®æ˜¾éš")]
         SetVisibility,
-        [Description("ÉËº¦Á÷³Ì")]
+        [Description("ä¼¤å®³æµç¨‹")]
         AttackDamage,
-        [Description("ÉèÖÃºÚ°å±äÁ¿")]
+        [Description("è®¾ç½®é»‘æ¿å˜é‡")]
         SetBlackBoardVariables,
-        [Description("»ñÈ¡ºÚ°å±äÁ¿")]
+        [Description("è·å–é»‘æ¿å˜é‡")]
         GetBlackBoardVariables,
-        [Description("ÊäÈë·ÖÆç")]
+        [Description("è¾“å…¥åˆ†æ­§")]
         GetInput,
-        [Description("Ìõ¼ş·ÖÆç")]
+        [Description("æ¡ä»¶åˆ†æ­§")]
         IfElse,
-        [Description("Ã¶¾Ù·ÖÆç")]
+        [Description("æšä¸¾åˆ†æ­§")]
         SwitchEnum,
-        [Description("ÕûĞÍ·ÖÆç")]
+        [Description("æ•´å‹åˆ†æ­§")]
         SwitchInt,
-        [Description("Forµü´ú")]
+        [Description("Forè¿­ä»£")]
         ForIterator,
-        [Description("Foreachµü´ú")]
+        [Description("Foreachè¿­ä»£")]
         ForeachIterator,
-        [Description("ÆÁÄ»Õğ¶¯")]
+        [Description("å±å¹•éœ‡åŠ¨")]
         CameraImpulse,
-        [Description("ºó´¦Àí")]
+        [Description("åå¤„ç†")]
         PostProcess,
-        [Description("¾µÍ·Æ«ÒÆ")]
+        [Description("é•œå¤´åç§»")]
         CameraOffset,
-        [Description("¾µÍ·Fov")]
+        [Description("é•œå¤´Fov")]
         CameraFOV,
-        [Description("¼Ó")]
+        [Description("åŠ ")]
         MathPlus,
-        [Description("¼õ")]
+        [Description("å‡")]
         MathMinus,
-        [Description("³Ë")]
+        [Description("ä¹˜")]
         MathTime,
-        [Description("³ı")]
+        [Description("é™¤")]
         MathDivide,
-        [Description("Æ½·½")]
+        [Description("å¹³æ–¹")]
         MathSquare,
-        [Description("±È½Ï")]
+        [Description("æ¯”è¾ƒ")]
         MathCompare,
-        [Description("²¼¶û")]
+        [Description("å¸ƒå°”")]
         MathBool,
-        [Description("ÕûĞÍ")]
+        [Description("æ•´å‹")]
         ValuePengInt,
-        [Description("¸¡µã")]
+        [Description("æµ®ç‚¹")]
         ValuePengFloat,
-        [Description("²¼¶û")]
+        [Description("å¸ƒå°”")]
         ValuePengBool,
-        [Description("×Ö·û´®")]
+        [Description("å­—ç¬¦ä¸²")]
         ValuePengString,
+        [Description("Vector3")]
+        ValuePengVector3,
+        [Description("Vector2")]
+        ValuePengVector2,
+        [Description("æµ®ç‚¹ç»„åˆä¸ºVector3")]
+        ValueFloatToPengVector3,
+        [Description("æµ®ç‚¹ç»„åˆä¸ºVector2")]
+        ValueFloatToPengVector2,
+        [Description("å–åˆ—è¡¨æ•°é‡")]
+        ValueGetListCount,
     }
 
     public struct ScriptIDVarID
@@ -114,21 +124,21 @@ namespace PengScript
     public class BaseScript
     {
 
-        //BaseScriptÃèÊöÎÄ¼ş
-        //scriptName Ãû×Ö
-        //scriptType ½Å±¾ÀàĞÍ
-        //scriptID ½Å±¾ID
-        //varInID ²ÎÊıÈëĞÅÏ¢
-        //outID ½Å±¾Á÷³öĞÅÏ¢
-        //²ÎÊıĞÅÏ¢
+        //BaseScriptæè¿°æ–‡ä»¶
+        //scriptName åå­—
+        //scriptType è„šæœ¬ç±»å‹
+        //scriptID è„šæœ¬ID
+        //varInID å‚æ•°å…¥ä¿¡æ¯
+        //outID è„šæœ¬æµå‡ºä¿¡æ¯
+        //å‚æ•°ä¿¡æ¯
 
-        //½Å±¾Ãû³Æ£¬ÏÔÊ¾ÔÚ±à¼­Æ÷ÉÏ
-        public string scriptName = "Ä¬ÈÏ";
-        //½Å±¾µÄËùÓĞÕß
+        //è„šæœ¬åç§°ï¼Œæ˜¾ç¤ºåœ¨ç¼–è¾‘å™¨ä¸Š
+        public string scriptName = "é»˜è®¤";
+        //è„šæœ¬çš„æ‰€æœ‰è€…
         public PengActor actor;
-        //½Å±¾ÀàĞÍ
+        //è„šæœ¬ç±»å‹
         public PengScriptType type;
-        //ËùÊô¹ìµÀ
+        //æ‰€å±è½¨é“
         public PengTrack trackMaster;
 
         public PengVar[] inVars;
@@ -144,7 +154,7 @@ namespace PengScript
 
         }
 
-        //Ö´ĞĞÒ»´Î
+        //æ‰§è¡Œä¸€æ¬¡
         public virtual void Execute()
         {
             Initial();
@@ -154,7 +164,7 @@ namespace PengScript
 
         public virtual void Initial()
         {
-            //Ö´ĞĞÇ°µÄ³õÊ¼»¯
+            //æ‰§è¡Œå‰çš„åˆå§‹åŒ–
             if (varInID.Count > 0 && inVars.Length > 0)
             {
                 for (int i = 0; i < varInID.Count; i++)
@@ -176,12 +186,12 @@ namespace PengScript
 
         public virtual void Function()
         {
-            //¾ßÌå¹¦ÄÜ
+            //å…·ä½“åŠŸèƒ½
         }
 
         public virtual void ScriptFlowNext()
         {
-            //½Å±¾Á÷
+            //è„šæœ¬æµ
             if (trackMaster != null && trackMaster.scripts.Count > 0)
             {
                 if (flowOutInfo.Count > 0)
@@ -311,8 +321,8 @@ namespace PengScript
 
     public class OnTrackExecute: BaseScript
     {
-        public PengInt pengTrackExecuteFrame = new PengInt(null, "¹ìµÀÖ´ĞĞÖ¡", 0, ConnectionPointType.Out);
-        public PengInt pengStateExecuteFrame = new PengInt(null, "×´Ì¬Ö´ĞĞÖ¡", 0, ConnectionPointType.Out);
+        public PengInt pengTrackExecuteFrame = new PengInt(null, "è½¨é“æ‰§è¡Œå¸§", 0, ConnectionPointType.Out);
+        public PengInt pengStateExecuteFrame = new PengInt(null, "çŠ¶æ€æ‰§è¡Œå¸§", 0, ConnectionPointType.Out);
         public OnTrackExecute(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -344,11 +354,11 @@ namespace PengScript
 
     public class PlayAnimation : BaseScript
     {
-        public PengString pengAnimationName = new PengString(null, "¶¯»­Ãû³Æ", 0, ConnectionPointType.In);
-        public PengBool pengHardCut = new PengBool(null, "ÊÇ·ñÓ²ÇĞ", 1, ConnectionPointType.In);
-        public PengFloat pengTransitionNormalizedTime = new PengFloat(null, "¹ı¶ÈÊ±¼ä", 2, ConnectionPointType.In);
-        public PengFloat pengStartAtNormalizedTime = new PengFloat(null, "¿ªÊ¼Ê±¼ä", 3, ConnectionPointType.In);
-        public PengInt pengAnimationLayer = new PengInt(null, "¶¯»­²ã", 4, ConnectionPointType.Out);
+        public PengString pengAnimationName = new PengString(null, "åŠ¨ç”»åç§°", 0, ConnectionPointType.In);
+        public PengBool pengHardCut = new PengBool(null, "æ˜¯å¦ç¡¬åˆ‡", 1, ConnectionPointType.In);
+        public PengFloat pengTransitionNormalizedTime = new PengFloat(null, "è¿‡åº¦æ—¶é—´", 2, ConnectionPointType.In);
+        public PengFloat pengStartAtNormalizedTime = new PengFloat(null, "å¼€å§‹æ—¶é—´", 3, ConnectionPointType.In);
+        public PengInt pengAnimationLayer = new PengInt(null, "åŠ¨ç”»å±‚", 4, ConnectionPointType.Out);
         public PlayAnimation(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -413,7 +423,7 @@ namespace PengScript
             int stateId = Animator.StringToHash(pengAnimationName.value);
             if (!actor.anim.HasState(pengAnimationLayer.value, stateId)) 
             {
-                Debug.LogWarning("²»´æÔÚ¸Ã¶¯»­×´Ì¬£º" + pengAnimationName.value + "£¬À´×Ô×´Ì¬"+actor.currentName + "µÄ" + trackMaster.name + "¹ìµÀµÄ" + ID.ToString() + "ºÅ½Å±¾¡£");
+                Debug.LogWarning("ä¸å­˜åœ¨è¯¥åŠ¨ç”»çŠ¶æ€ï¼š" + pengAnimationName.value + "ï¼Œæ¥è‡ªçŠ¶æ€"+actor.currentName + "çš„" + trackMaster.name + "è½¨é“çš„" + ID.ToString() + "å·è„šæœ¬ã€‚");
                 return;
             }
             if (pengHardCut.value)
@@ -453,7 +463,7 @@ namespace PengScript
             scriptName = GetDescription(type);
             for (int i = 0; i < inVars.Length; i++)
             {
-                PengBool condition = new PengBool(null, "Ìõ¼ş", i, ConnectionPointType.In);
+                PengBool condition = new PengBool(null, "æ¡ä»¶", i, ConnectionPointType.In);
                 inVars[i] = condition;
                 bools[i] = condition;
             }
@@ -543,7 +553,7 @@ namespace PengScript
 
     public class ValuePengInt : BaseScript
     {
-        public PengInt pengInt = new PengInt(null, "Öµ", 0, ConnectionPointType.Out);
+        public PengInt pengInt = new PengInt(null, "å€¼", 0, ConnectionPointType.Out);
         public ValuePengInt(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -570,7 +580,7 @@ namespace PengScript
 
     public class ValuePengFloat : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat(null, "Öµ", 0, ConnectionPointType.Out);
+        public PengFloat pengFloat = new PengFloat(null, "å€¼", 0, ConnectionPointType.Out);
         public ValuePengFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -596,7 +606,7 @@ namespace PengScript
 
     public class ValuePengString : BaseScript
     {
-        public PengString pengString = new PengString(null, "Öµ", 0, ConnectionPointType.Out);
+        public PengString pengString = new PengString(null, "å€¼", 0, ConnectionPointType.Out);
         public ValuePengString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -622,7 +632,7 @@ namespace PengScript
 
     public class ValuePengBool : BaseScript
     {
-        public PengBool pengBool = new PengBool(null, "Öµ", 0, ConnectionPointType.Out);
+        public PengBool pengBool = new PengBool(null, "å€¼", 0, ConnectionPointType.Out);
         public ValuePengBool(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -649,12 +659,12 @@ namespace PengScript
     public class GetTargetsByRange : BaseScript
     {
         public RangeType rangeType = RangeType.Cylinder;
-        public PengListPengActor result = new PengListPengActor(null, "»ñÈ¡µ½µÄÄ¿±ê", 0, ConnectionPointType.Out);
+        public PengListPengActor result = new PengListPengActor(null, "è·å–åˆ°çš„ç›®æ ‡", 0, ConnectionPointType.Out);
 
-        public PengInt typeNum = new PengInt(null, "·¶Î§ÀàĞÍ", 0, ConnectionPointType.In);
-        public PengInt pengCamp = new PengInt(null, "ÕóÓª", 1, ConnectionPointType.In);
-        public PengVector3 pengPara = new PengVector3(null, "²ÎÊı", 2, ConnectionPointType.In);
-        public PengVector3 pengOffset = new PengVector3(null, "Æ«ÒÆ", 3, ConnectionPointType.In);
+        public PengInt typeNum = new PengInt(null, "èŒƒå›´ç±»å‹", 0, ConnectionPointType.In);
+        public PengInt pengCamp = new PengInt(null, "é˜µè¥", 1, ConnectionPointType.In);
+        public PengVector3 pengPara = new PengVector3(null, "å‚æ•°", 2, ConnectionPointType.In);
+        public PengVector3 pengOffset = new PengVector3(null, "åç§»", 3, ConnectionPointType.In);
         public GetTargetsByRange(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -785,10 +795,10 @@ namespace PengScript
 
     public class ForIterator : BaseScript
     {
-        public PengInt firstIndex = new PengInt(null, "Ê×¸öÖ¸Êı", 0, ConnectionPointType.In);
-        public PengInt lastIndex = new PengInt(null, "Ä©¸öÖ¸Êı", 1, ConnectionPointType.In);
+        public PengInt firstIndex = new PengInt(null, "é¦–ä¸ªæŒ‡æ•°", 0, ConnectionPointType.In);
+        public PengInt lastIndex = new PengInt(null, "æœ«ä¸ªæŒ‡æ•°", 1, ConnectionPointType.In);
 
-        public PengInt pengIndex = new PengInt(null, "Ö¸Êı", 0, ConnectionPointType.Out);
+        public PengInt pengIndex = new PengInt(null, "æŒ‡æ•°", 0, ConnectionPointType.Out);
         public ForIterator(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;

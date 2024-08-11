@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -13,17 +13,17 @@ using PengScript;
 
 public class PengNode
 {
-    //NodeÃèÊöÎÄ¼ş
-    //nodeName Ãû×Ö
-    //scriptType ½Å±¾ÀàĞÍ
-    //pos ½ÚµãÍ¼ÉÏµÄÎ»ÖÃ
-    //paraNum ²ÎÊıÊıÁ¿
-    //nodeID ½Å±¾ID
-    //varOutID ²ÎÊı³öĞÅÏ¢
-    //varInID ²ÎÊıÈëĞÅÏ¢
-    //outID ½Å±¾Á÷³öĞÅÏ¢
-    //²ÎÊıĞÅÏ¢
-    public string nodeName = "Ä¬ÈÏ";
+    //Nodeæè¿°æ–‡ä»¶
+    //nodeName åå­—
+    //scriptType è„šæœ¬ç±»å‹
+    //pos èŠ‚ç‚¹å›¾ä¸Šçš„ä½ç½®
+    //paraNum å‚æ•°æ•°é‡
+    //nodeID è„šæœ¬ID
+    //varOutID å‚æ•°å‡ºä¿¡æ¯
+    //varInID å‚æ•°å…¥ä¿¡æ¯
+    //outID è„šæœ¬æµå‡ºä¿¡æ¯
+    //å‚æ•°ä¿¡æ¯
+    public string nodeName = "é»˜è®¤";
     public PengScript.PengScriptType scriptType;
     public Vector2 pos;
     Rect m_Rect;
@@ -60,14 +60,14 @@ public class PengNode
     public PengVar[] inVars;
     public PengVar[] outVars;
 
-    //µÚx¸öFlowOutÁ¬½Óµã£¬Á´½Óµ½ÄÄ¸ö½ÚµãµÄFlowIn½Úµã¡£ÒòÎªËùÓĞ½ÚµãÖ»ÓĞÒ»¸öFlowIn£¬ËùÒÔÖ»ĞèÒª¼ÇÔØ½ÚµãID
-    //ValueÈ¡ÖµÎª-1Ê±±íÊ¾¸ÃµãÃ»ÓĞÁ´½Ó
+    //ç¬¬xä¸ªFlowOutè¿æ¥ç‚¹ï¼Œé“¾æ¥åˆ°å“ªä¸ªèŠ‚ç‚¹çš„FlowInèŠ‚ç‚¹ã€‚å› ä¸ºæ‰€æœ‰èŠ‚ç‚¹åªæœ‰ä¸€ä¸ªFlowInï¼Œæ‰€ä»¥åªéœ€è¦è®°è½½èŠ‚ç‚¹ID
+    //Valueå–å€¼ä¸º-1æ—¶è¡¨ç¤ºè¯¥ç‚¹æ²¡æœ‰é“¾æ¥
     public Dictionary<int, int> outID = new Dictionary<int, int>();
-    //µÚx¸öVarOutÁ¬½Óµã£¬Á´½Óµ½ÄÄĞ©½ÚµãµÄÄÄÒ»VarInÁ¬½Óµã¡£ÒòÎªVarOut¿ÉÒÔÁ´½Ó¶à¸öµã£¬ËùÒÔÓÃList
-    //List.CountÎª0Ê±±íÊ¾Ã»ÓĞÁ´½Ó
+    //ç¬¬xä¸ªVarOutè¿æ¥ç‚¹ï¼Œé“¾æ¥åˆ°å“ªäº›èŠ‚ç‚¹çš„å“ªä¸€VarInè¿æ¥ç‚¹ã€‚å› ä¸ºVarOutå¯ä»¥é“¾æ¥å¤šä¸ªç‚¹ï¼Œæ‰€ä»¥ç”¨List
+    //List.Countä¸º0æ—¶è¡¨ç¤ºæ²¡æœ‰é“¾æ¥
     public Dictionary<int, List<NodeIDConnectionID>> varOutID = new Dictionary<int, List<NodeIDConnectionID>>();
-    //µÚx¸öVarInÁ¬½Óµã£¬´ÓÄÄ¸ö½ÚµãµÄÄÄÒ»VarOutÈ¡Öµ¡£¼üÖµ¶Ô£º<½ÚµãID£¬Á¬½ÓµãID>
-    //ValueµÄKeyÈ¡ÖµÎª-1Ê±±íÊ¾¸ÃµãÃ»ÓĞÁ´½Ó
+    //ç¬¬xä¸ªVarInè¿æ¥ç‚¹ï¼Œä»å“ªä¸ªèŠ‚ç‚¹çš„å“ªä¸€VarOutå–å€¼ã€‚é”®å€¼å¯¹ï¼š<èŠ‚ç‚¹IDï¼Œè¿æ¥ç‚¹ID>
+    //Valueçš„Keyå–å€¼ä¸º-1æ—¶è¡¨ç¤ºè¯¥ç‚¹æ²¡æœ‰é“¾æ¥
     public Dictionary<int, NodeIDConnectionID> varInID = new Dictionary<int, NodeIDConnectionID>();                     
     
     public PengActorStateEditorWindow master;
@@ -205,7 +205,7 @@ public class PengNode
                     Vector2 buttonSize = new Vector2(20, 20);
                     Vector2 lineCenter = (GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center + outPoints[i].rect.center) * 0.5f;
 
-                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "¡Á"))
+                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "Ã—"))
                     {
                         outID[i] = -1;
                     }
@@ -227,7 +227,7 @@ public class PengNode
                     Vector2 buttonSize = new Vector2(20, 20);
                     Vector2 lineCenter = (inVars[i].point.rect.center + GetPengVarByNodeIDPengVarOutID(varInID.ElementAt(i).Value.nodeID, varInID.ElementAt(i).Value.connectionID).point.rect.center) * 0.5f;
 
-                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "¡Á"))
+                    if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "Ã—"))
                     {
                         for(int j = GetNodeByNodeID(varInID[i].nodeID).varOutID[varInID[i].connectionID].Count - 1; j >= 0; j--)
                         {
@@ -334,7 +334,7 @@ public class PengNode
         GenericMenu menu = new GenericMenu();
         if(scriptType != PengScript.PengScriptType.OnTrackExecute)
         {
-            menu.AddItem(new GUIContent("É¾³ı½Úµã"), false, () => master.ProcessRemoveNode(this));
+            menu.AddItem(new GUIContent("åˆ é™¤èŠ‚ç‚¹"), false, () => master.ProcessRemoveNode(this));
             menu.ShowAsContext();
         }
     }
@@ -419,7 +419,7 @@ public class PengNode
         }
         else
         {
-            Debug.LogError("×Ö·û´®¸ñÊ½²»ÕıÈ·£¬ÎŞ·¨×ª³ÉRect£¡");
+            Debug.LogError("å­—ç¬¦ä¸²æ ¼å¼ä¸æ­£ç¡®ï¼Œæ— æ³•è½¬æˆRectï¼");
             return new Rect(0,0,0,0);
         }
     }
@@ -441,7 +441,7 @@ public class PengNode
         }
         else
         {
-            Debug.LogError("×Ö·û´®¸ñÊ½²»ÕıÈ·£¬ÎŞ·¨×ª³ÉVector2£¡");
+            Debug.LogError("å­—ç¬¦ä¸²æ ¼å¼ä¸æ­£ç¡®ï¼Œæ— æ³•è½¬æˆVector2ï¼");
             return Vector2.zero;
         }
     }
@@ -644,16 +644,16 @@ public class PengNode
 
 public class OnTrackExecute : PengNode
 {
-    //NodeÃèÊöÎÄ¼ş
-    //nodeName Ãû×Ö
-    //scriptType ½Å±¾ÀàĞÍ
-    //pos ½ÚµãÍ¼ÉÏµÄÎ»ÖÃ
-    //paraNum ²ÎÊıÊıÁ¿
-    //nodeID ½Å±¾ID
-    //varOutID ²ÎÊı³öĞÅÏ¢
-    //varInID ²ÎÊıÈëĞÅÏ¢
-    //outID ½Å±¾Á÷³öĞÅÏ¢
-    //²ÎÊıĞÅÏ¢
+    //Nodeæè¿°æ–‡ä»¶
+    //nodeName åå­—
+    //scriptType è„šæœ¬ç±»å‹
+    //pos èŠ‚ç‚¹å›¾ä¸Šçš„ä½ç½®
+    //paraNum å‚æ•°æ•°é‡
+    //nodeID è„šæœ¬ID
+    //varOutID å‚æ•°å‡ºä¿¡æ¯
+    //varInID å‚æ•°å…¥ä¿¡æ¯
+    //outID è„šæœ¬æµå‡ºä¿¡æ¯
+    //å‚æ•°ä¿¡æ¯
     public PengInt pengTrackExecuteFrame;
     public PengInt pengStateExecuteFrame;
 
@@ -672,8 +672,8 @@ public class OnTrackExecute : PengNode
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengVar[0];
         outVars = new PengVar[2];
-        pengTrackExecuteFrame = new PengInt(this, "µ±Ç°¹ìµÀÖ¡", 0, ConnectionPointType.Out);
-        pengStateExecuteFrame = new PengInt(this, "µ±Ç°×´Ì¬Ö¡", 1, ConnectionPointType.Out);
+        pengTrackExecuteFrame = new PengInt(this, "å½“å‰è½¨é“å¸§", 0, ConnectionPointType.Out);
+        pengStateExecuteFrame = new PengInt(this, "å½“å‰çŠ¶æ€å¸§", 1, ConnectionPointType.Out);
         outVars[0] = pengTrackExecuteFrame;
         outVars[1] = pengStateExecuteFrame;
 
@@ -715,11 +715,11 @@ public class PlayAnimation : PengNode
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengVar[5];
         outVars = new PengVar[0];
-        pengAnimationName = new PengString(this, "¶¯»­Ãû³Æ", 0, ConnectionPointType.In);
-        pengHardCut = new PengBool(this, "ÊÇ·ñÓ²ÇĞ", 1, ConnectionPointType.In);
-        pengTransitionNormalizedTime = new PengFloat(this, "¹ı¶ÉÊ±¼ä", 2, ConnectionPointType.In);
-        pengStartAtNormalizedTime = new PengFloat(this, "¿ªÊ¼Ê±¼ä", 3, ConnectionPointType.In);
-        pengAnimationLayer = new PengInt(this, "¶¯»­²ã", 4, ConnectionPointType.In);
+        pengAnimationName = new PengString(this, "åŠ¨ç”»åç§°", 0, ConnectionPointType.In);
+        pengHardCut = new PengBool(this, "æ˜¯å¦ç¡¬åˆ‡", 1, ConnectionPointType.In);
+        pengTransitionNormalizedTime = new PengFloat(this, "è¿‡æ¸¡æ—¶é—´", 2, ConnectionPointType.In);
+        pengStartAtNormalizedTime = new PengFloat(this, "å¼€å§‹æ—¶é—´", 3, ConnectionPointType.In);
+        pengAnimationLayer = new PengInt(this, "åŠ¨ç”»å±‚", 4, ConnectionPointType.In);
         inVars[0] = pengAnimationName;
         inVars[1] = pengHardCut;
         inVars[2] = pengTransitionNormalizedTime;
@@ -768,7 +768,7 @@ public class IfElse: PengNode
         for (int i = 0; i < this.outID.Count; i++)
         {
             outPoints[i] = new PengNodeConnection(ConnectionPointType.FlowOut, i, this, null);
-            PengBool ifInVar = new PengBool(this, "Ìõ¼ş"+(i+1).ToString(), i, ConnectionPointType.In);
+            PengBool ifInVar = new PengBool(this, "æ¡ä»¶"+(i+1).ToString(), i, ConnectionPointType.In);
             inVars[i] = ifInVar;
         }
 
@@ -808,22 +808,22 @@ public class IfElse: PengNode
                 style.fontStyle = FontStyle.Bold;
                 style.normal.textColor = Color.white;
                 Rect flowOut = new Rect(outPoints[i].rect.x - 80, outPoints[i].rect.y, 70, 20);
-                GUI.Box(flowOut, "Ìõ¼ş" + (i + 1).ToString(), style);
+                GUI.Box(flowOut, "æ¡ä»¶" + (i + 1).ToString(), style);
             }
             Rect add = new Rect(inVars[inVars.Length - 1].varRect.x, inVars[inVars.Length - 1].varRect.y + 20, 60, 20);
-            if (GUI.Button(add, "Ìí¼Ó"))
+            if (GUI.Button(add, "æ·»åŠ "))
             {
                 this.AddConditions();
             }
             if (inVars.Length > 1)
             {
                 Rect remove = new Rect(add.x + 70, add.y, 60, 20);
-                if (GUI.Button(remove, "ÒÆ³ı"))
+                if (GUI.Button(remove, "ç§»é™¤"))
                 {
                     this.RemoveConditions();
                 }
                 Rect change = new Rect(add.x + 140, add.y, 60, 20);
-                if (GUI.Button(change, "¸ü¸Ä"))
+                if (GUI.Button(change, "æ›´æ”¹"))
                 {
                     this.ChangeCondition(inVars.Length - 1);
                 }
@@ -867,7 +867,7 @@ public class IfElse: PengNode
 
     public void AddConditions()
     {
-        PengBool newVar = new PengBool(this, "Ìõ¼ş" + (inVars.Length + 1).ToString(), inVars.Length, ConnectionPointType.In);
+        PengBool newVar = new PengBool(this, "æ¡ä»¶" + (inVars.Length + 1).ToString(), inVars.Length, ConnectionPointType.In);
         PengVar[] newInVars = new PengVar[inVars.Length + 1];
         for(int i = 0;i < inVars.Length;i++)
         {
@@ -955,7 +955,7 @@ public class ValuePengInt : PengNode
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengVar[0];
         outVars = new PengVar[1];
-        pengInt = new PengInt(this, "Öµ", 0, ConnectionPointType.Out);
+        pengInt = new PengInt(this, "å€¼", 0, ConnectionPointType.Out);
         outVars[0] = pengInt;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1020,7 +1020,7 @@ public class ValuePengFloat : PengNode
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengVar[0];
         outVars = new PengVar[1];
-        pengFloat = new PengFloat(this, "Öµ", 0, ConnectionPointType.Out);
+        pengFloat = new PengFloat(this, "å€¼", 0, ConnectionPointType.Out);
         outVars[0] = pengFloat;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1085,7 +1085,7 @@ public class ValuePengString : PengNode
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengVar[0];
         outVars = new PengVar[1];
-        pengString = new PengString(this, "Öµ", 0, ConnectionPointType.Out);
+        pengString = new PengString(this, "å€¼", 0, ConnectionPointType.Out);
         outVars[0] = pengString;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1132,7 +1132,7 @@ public class ValuePengBool : PengNode
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengVar[0];
         outVars = new PengVar[1];
-        pengBool = new PengBool(this, "Öµ", 0, ConnectionPointType.Out);
+        pengBool = new PengBool(this, "å€¼", 0, ConnectionPointType.Out);
         outVars[0] = pengBool;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1172,11 +1172,11 @@ public class GetTargetsByRange : PengNode
 {
     public enum RangeType
     {
-        [Description("Ô²ÖùÌå")]
+        [Description("åœ†æŸ±ä½“")]
         Cylinder,
-        [Description("ÇòÌå")]
+        [Description("çƒä½“")]
         Sphere,
-        [Description("ºĞĞÎ")]
+        [Description("ç›’å½¢")]
         Box,
     }
 
@@ -1203,12 +1203,12 @@ public class GetTargetsByRange : PengNode
         inVars = new PengVar[4];
         outVars = new PengVar[1];
 
-        typeNum = new PengInt(this, "·¶Î§ÀàĞÍ", 0, ConnectionPointType.In);
+        typeNum = new PengInt(this, "èŒƒå›´ç±»å‹", 0, ConnectionPointType.In);
         typeNum.point = null;
-        result = new PengListPengActor(this, "»ñÈ¡µ½µÄÄ¿±ê", 0, ConnectionPointType.Out);
-        pengCamp = new PengInt(this, "ÕóÓª", 1, ConnectionPointType.In);
-        pengPara = new PengVector3(this, "²ÎÊı", 2, ConnectionPointType.In);
-        pengOffset = new PengVector3(this, "Æ«ÒÆ", 3, ConnectionPointType.In);
+        result = new PengListPengActor(this, "è·å–åˆ°çš„ç›®æ ‡", 0, ConnectionPointType.Out);
+        pengCamp = new PengInt(this, "é˜µè¥", 1, ConnectionPointType.In);
+        pengPara = new PengVector3(this, "å‚æ•°", 2, ConnectionPointType.In);
+        pengOffset = new PengVector3(this, "åç§»", 3, ConnectionPointType.In);
 
         outVars[0] = result;
         inVars[0] = typeNum;
@@ -1290,9 +1290,9 @@ public class ForIterator : PengNode
         inVars = new PengVar[this.varInID.Count];
         paraNum = this.varInID.Count;
         outVars = new PengVar[1];
-        firstIndex = new PengInt(this, "Ê×¸öÖ¸Êı", 0, ConnectionPointType.In);
-        lastIndex = new PengInt(this, "Ä©¸öÖ¸Êı", 1, ConnectionPointType.In);
-        pengIndex = new PengInt(this, "Ö¸Êı", 0, ConnectionPointType.Out);
+        firstIndex = new PengInt(this, "é¦–ä¸ªæŒ‡æ•°", 0, ConnectionPointType.In);
+        lastIndex = new PengInt(this, "æœ«ä¸ªæŒ‡æ•°", 1, ConnectionPointType.In);
+        pengIndex = new PengInt(this, "æŒ‡æ•°", 0, ConnectionPointType.Out);
         inVars[0] = firstIndex;
         inVars[1] = lastIndex;
         outVars[0] = pengIndex;
@@ -1313,7 +1313,7 @@ public class ForIterator : PengNode
         Rect loopBody = new Rect(outPoints[0].rect.x - 80, outPoints[0].rect.y, 70, 20);
         Rect completed = new Rect(outPoints[1].rect.x - 80, outPoints[1].rect.y, 70, 20);
 
-        GUI.Box(loopBody, "Ñ­»·Ìå", style);
-        GUI.Box(completed, "Íê³Éºó", style);
+        GUI.Box(loopBody, "å¾ªç¯ä½“", style);
+        GUI.Box(completed, "å®Œæˆå", style);
     }
 }
