@@ -318,7 +318,7 @@ public class PengNode
                 }
                 break;
             case EventType.KeyDown:
-                if(e.keyCode == KeyCode.Delete && isSelected && scriptType != PengScriptType.OnExecute)
+                if(e.keyCode == KeyCode.Delete && isSelected && scriptType != PengScriptType.OnTrackExecute)
                 {
                     master.ProcessRemoveNode(this);
                     e.Use();
@@ -332,7 +332,7 @@ public class PengNode
     private void RightMouseMenu()
     {
         GenericMenu menu = new GenericMenu();
-        if(scriptType != PengScript.PengScriptType.OnExecute)
+        if(scriptType != PengScript.PengScriptType.OnTrackExecute)
         {
             menu.AddItem(new GUIContent("删除节点"), false, () => master.ProcessRemoveNode(this));
             menu.ShowAsContext();
@@ -642,7 +642,7 @@ public class PengNode
     }
 }
 
-public class OnExecute : PengNode
+public class OnTrackExecute : PengNode
 {
     //Node描述文件
     //nodeName 名字
@@ -657,7 +657,7 @@ public class OnExecute : PengNode
     public PengInt pengTrackExecuteFrame;
     public PengInt pengStateExecuteFrame;
 
-    public OnExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public OnTrackExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -678,7 +678,7 @@ public class OnExecute : PengNode
         outVars[1] = pengStateExecuteFrame;
 
         type = NodeType.Event;
-        scriptType = PengScript.PengScriptType.OnExecute;
+        scriptType = PengScript.PengScriptType.OnTrackExecute;
         nodeName = GetDescription(scriptType);
 
 
@@ -1159,6 +1159,105 @@ public class ValuePengBool : PengNode
         else
         {
             pengBool.value = false;
+        }
+    }
+}
+
+
+public class GetTargetsByRange : PengNode
+{
+    public enum RangeType
+    {
+        [Description("圆柱体")]
+        Cylinder,
+        [Description("球体")]
+        Sphere,
+        [Description("盒形")]
+        Box,
+    }
+
+    public PengListPengActor result;
+    public RangeType rangeType = RangeType.Cylinder;
+    public PengInt typeNum;
+    public PengInt pengCamp;
+    public PengVector3 pengPara;
+    public PengVector3 pengOffset;
+
+    public GetTargetsByRange(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+
+        inVars = new PengVar[4];
+        outVars = new PengVar[1];
+
+        typeNum = new PengInt(this, "范围类型", 0, ConnectionPointType.In);
+        typeNum.point = null;
+        result = new PengListPengActor(this, "获取到的目标", 0, ConnectionPointType.Out);
+        pengCamp = new PengInt(this, "阵营", 1, ConnectionPointType.In);
+        pengPara = new PengVector3(this, "参数", 2, ConnectionPointType.In);
+        pengOffset = new PengVector3(this, "偏移", 3, ConnectionPointType.In);
+
+        outVars[0] = result;
+        inVars[0] = typeNum;
+        inVars[1] = pengCamp;
+        inVars[2] = pengPara;
+        inVars[3] = pengOffset;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.GetTargetsByRange;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 4;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect field = new Rect(typeNum.varRect.x + 40, typeNum.varRect.y, 70, 18);
+        rangeType = (RangeType)EditorGUI.EnumPopup(field, rangeType);
+
+    }
+    public override string SpecialParaDescription()
+    {
+        switch (rangeType)
+        {
+            default:
+                return "";
+            case RangeType.Cylinder:
+                return "1";
+            case RangeType.Sphere:
+                return "2";
+            case RangeType.Box:
+                return "3";
+        }
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            switch (int.Parse(info))
+            {
+                case 1:
+                    rangeType = RangeType.Cylinder;
+                    break;
+                case 2:
+                    rangeType = RangeType.Sphere;
+                    break;
+                case 3:
+                    rangeType = RangeType.Box;
+                    break;
+            }
         }
     }
 }

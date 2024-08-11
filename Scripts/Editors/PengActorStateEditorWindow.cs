@@ -1280,7 +1280,7 @@ public class PengActorStateEditorWindow : EditorWindow
     private void RightMouseMenu(Vector2 mousePos)
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("添加节点/按功能类型/角色表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
+        menu.AddItem(new GUIContent("添加节点/按功能类型/表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/B/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
 
         menu.AddItem(new GUIContent("添加节点/按功能类型/分歧/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
@@ -1297,6 +1297,9 @@ public class PengActorStateEditorWindow : EditorWindow
 
         menu.AddItem(new GUIContent("添加节点/按功能类型/值/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
         menu.AddItem(new GUIContent("添加节点/按名称字母/B/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
+
+        menu.AddItem(new GUIContent("添加节点/按功能类型/逻辑/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
+        menu.AddItem(new GUIContent("添加节点/按名称字母/F/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
 
         menu.ShowAsContext();
     }
@@ -1355,6 +1358,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case PengScript.PengScriptType.GetTargetsByRange:
+                track.nodes.Add(new GetTargetsByRange(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(4)), ""));
                 break;
         }
         tracks[currentSelectedTrack] = track;
@@ -1824,7 +1833,15 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public static PengNode ReadPengNode(XmlElement ele, ref PengTrack track)
     {
-        PengScript.PengScriptType type = (PengScript.PengScriptType)Enum.Parse(typeof(PengScript.PengScriptType), ele.GetAttribute("ScriptType"));
+        PengScript.PengScriptType type;
+        if (ele.GetAttribute("ScriptType") == "OnExecute")
+        {
+            type = PengScript.PengScriptType.OnTrackExecute;
+        }
+        else
+        {
+            type = (PengScript.PengScriptType)Enum.Parse(typeof(PengScript.PengScriptType), ele.GetAttribute("ScriptType"));
+        }
         int ID = int.Parse(ele.GetAttribute("ScriptID"));
         string outID = ele.GetAttribute("OutID");
         string varOutID = ele.GetAttribute("VarOutID");
@@ -1834,8 +1851,8 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             default:
                 return null;
-            case PengScript.PengScriptType.OnExecute:
-                return new OnExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.OnTrackExecute:
+                return new OnTrackExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayAnimation:
                 return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.IfElse:
@@ -1848,6 +1865,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new ValuePengString(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengBool:
                 return new ValuePengBool(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.GetTargetsByRange:
+                return new GetTargetsByRange(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 

@@ -45,7 +45,7 @@ public class PengTrack
         PengTrack track = this;
         if(isNew)
         {
-            nodes.Add(new OnExecute(Vector2.zero, master, ref track, 1,
+            nodes.Add(new OnTrackExecute(Vector2.zero, master, ref track, 1,
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(2)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));

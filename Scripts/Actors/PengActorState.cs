@@ -157,8 +157,8 @@ public class PengActorState : IPengActorState
         {
             default:
                 return null;
-            case PengScriptType.OnExecute:
-                return new OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.OnTrackExecute:
+                return new PengScript.OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.DebugLog:
                 return null;
             case PengScriptType.PlayAnimation:
@@ -173,6 +173,9 @@ public class PengActorState : IPengActorState
                 return new PengScript.ValuePengString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengBool:
                 return new PengScript.ValuePengBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.GetTargetsByRange:
+                return new PengScript.GetTargetsByRange(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+
         }
     }
 }

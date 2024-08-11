@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PengActor : MonoBehaviour
@@ -38,12 +39,15 @@ public class PengActor : MonoBehaviour
     public int currentStateLength = 0;
     [HideInInspector]
     public List<PengActor> targets = new List<PengActor>();
+    [HideInInspector]
+    public PengActorControl input;
 
 
     private void Awake()
     {
         anim = this.GetComponent<Animator>();
         ctrl = this.GetComponent<CharacterController>();
+        this.AddComponent<PengActorControl>();
         LoadActorState();
     }
     // Start is called before the first frame update

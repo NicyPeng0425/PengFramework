@@ -301,6 +301,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 actorNew.GetComponent<Animator>().runtimeAnimatorController = anim;
                 PengActor pa = actorNew.AddComponent<PengActor>();
                 actorNew.AddComponent<CharacterController>();
+                actorNew.GetComponent<CharacterController>().center = new Vector3(0,1,0);
                 pa.actorID = actorID;
                 actorNew.tag = "PengActor";
                 actorNew.layer = LayerMask.NameToLayer("PengActor");

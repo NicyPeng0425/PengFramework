@@ -10,6 +10,8 @@ using System.Security.Cryptography.X509Certificates;
 using static IfElse;
 using System.Xml;
 using System;
+using static GetTargetsByRange;
+using static UnityEditor.PlayerSettings;
 
 namespace PengScript
 {
@@ -30,7 +32,7 @@ namespace PengScript
     public enum PengScriptType
     {
         [Description("轨道执行")]
-        OnExecute,
+        OnTrackExecute,
         [Description("输出对象")]
         DebugLog,
         [Description("播放动画")]
@@ -327,7 +329,7 @@ namespace PengScript
 
         public override void Construct(string specialInfo)
         {
-            type = PengScriptType.OnExecute;
+            type = PengScriptType.OnTrackExecute;
             scriptName = GetDescription(type);
 
             outVars[0] = pengTrackExecuteFrame;
@@ -365,7 +367,7 @@ namespace PengScript
         {
             base.Construct(specialInfo);
 
-            type = PengScriptType.OnExecute;
+            type = PengScriptType.OnTrackExecute;
             scriptName = GetDescription(type);
             inVars[0] = pengAnimationName;
             inVars[1] = pengHardCut;
@@ -642,6 +644,143 @@ namespace PengScript
 
             outVars[0] = pengBool;
             pengBool.value = int.Parse(specialInfo) > 0;
+        }
+    }
+
+    public class GetTargetsByRange : BaseScript
+    {
+        public RangeType rangeType = RangeType.Cylinder;
+        public PengListPengActor result = new PengListPengActor(null, "获取到的目标", 0, ConnectionPointType.Out);
+        
+        public PengInt typeNum = new PengInt(null, "范围类型", 0, ConnectionPointType.In);
+        public PengInt pengCamp = new PengInt(null, "阵营", 1, ConnectionPointType.In);
+        public PengVector3 pengPara = new PengVector3(null, "参数", 2, ConnectionPointType.In);
+        public PengVector3 pengOffset = new PengVector3(null, "偏移", 3, ConnectionPointType.In);
+        public GetTargetsByRange(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.GetTargetsByRange;
+            scriptName = GetDescription(type);
+
+            if(specialInfo != "")
+            {
+                switch (int.Parse(specialInfo))
+                {
+                    case 1:
+                        rangeType = RangeType.Cylinder;
+                        typeNum.value = 1;
+                        break;
+                    case 2:
+                        rangeType = RangeType.Sphere;
+                        typeNum.value = 2;
+                        break;
+                    case 3:
+                        rangeType = RangeType.Box;
+                        typeNum.value = 3;
+                        break;
+                }
+            }
+
+            outVars[0] = result;
+
+            inVars[0] = typeNum;
+            inVars[1] = pengCamp;
+            inVars[2] = pengPara;
+            inVars[3] = pengOffset;
+        }
+
+        public override void Initial()
+        {
+            base.Initial();
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengInt pi = varSource as PengInt;
+                    typeNum.value = pi.value;
+                    break;
+                case 1:
+                    PengInt pi1 = varSource as PengInt;
+                    pengCamp.value = pi1.value;
+                    break;
+                case 2:
+                    PengVector3 pv = varSource as PengVector3;
+                    pengPara.value = pv.value;
+                    break;
+                case 3:
+                    PengVector3 pv2 = varSource as PengVector3;
+                    pengOffset.value = pv2.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            result.value = new List<PengActor>();
+            Vector3 pos = actor.transform.position + pengOffset.value.x * actor.transform.right + pengOffset.value.y * actor.transform.up + pengOffset.value.z * actor.transform.forward;
+            Collider[] returns = new Collider[0];
+            if (actor.game.actors.Count > 0)
+            {
+                switch (rangeType)
+                {
+                    case RangeType.Cylinder:
+                        List<CharacterController> c = new List<CharacterController>();
+                        foreach (PengActor a in actor.game.actors)
+                        {
+                            Vector3 selfDir1 = new Vector3(actor.transform.forward.x, 0, actor.transform.forward.z);
+                            Vector3 tarDir1 = new Vector3(a.transform.position.x - actor.transform.position.x, 0, a.transform.position.z - actor.transform.position.z);
+                            float angle1 = Vector3.Angle(selfDir1, tarDir1);
+                            if ((a.transform.position.y >= pos.y && a.transform.position.y <= pos.y + pengPara.value.y) && angle1 <= pengPara.value.z && tarDir1.magnitude <= pengPara.value.x)
+                            {
+                                c.Add(a.ctrl);
+                            }
+                        } 
+                        returns = new Collider[c.Count];
+                        if(c.Count > 0)
+                        {
+                            for(int i = 0; i < c.Count; i++)
+                            {
+                                returns[i] = c[i];
+                            }
+                        }
+                        break;
+                    case RangeType.Sphere:
+                        returns = Physics.OverlapSphere(pos, pengPara.value.x);
+                        break;
+                    case RangeType.Box:
+                        returns = Physics.OverlapBox(pos, pengPara.value / 2, actor.transform.rotation);
+                        break;
+                }
+            }
+            if (returns.Length > 0)
+            {
+                foreach (Collider re in returns)
+                {
+                    PengActor pa = re.GetComponent<PengActor>();
+                    if (pa != null && pa.actorCamp == pengCamp.value && pa.alive)
+                    {
+                        result.value.Add(pa);
+                    }
+                }
+            }
         }
     }
 }
