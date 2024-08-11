@@ -25,7 +25,7 @@ namespace PengVariables
         Vector3,
         [Description("向量2")]
         Vector2,
-        [Description("泛型")]
+        [Description("彭泛型")]
         T,
     }
 
@@ -61,51 +61,6 @@ namespace PengVariables
             }
         }
     }
-    /*
-    public class PengTValue<T>
-    {
-        public T value;
-        public PengScript.BaseScript script;
-        public PengNode node;
-        public string name;
-        public PengVarType type;
-        public Rect varRect;
-        public PengNodeConnection point;
-        public int index;
-        public ConnectionPointType connectionType;
-
-
-        public PengTValue(PengNode node, string name, int index, ConnectionPointType pointType)
-        {
-            this.node = node;
-            this.name = name;
-            this.index = index;
-            connectionType = pointType;
-            type = PengVarType.Float;
-            point = new PengNodeConnection(pointType, index, node, this);
-        }
-
-        public virtual void DrawVar()
-        {
-            GUIStyle style = new GUIStyle("DD Background");
-            style.fontSize = 10;
-            if (connectionType == ConnectionPointType.In)
-            {
-                style.alignment = TextAnchor.MiddleLeft;
-                varRect = new Rect(node.rectSmall.x + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
-            }
-            else if (connectionType == ConnectionPointType.Out)
-            {
-                style.alignment = TextAnchor.MiddleLeft;
-                varRect = new Rect(node.rectSmall.x + 0.5f * node.rectSmall.width + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
-            }
-            GUI.Box(varRect, " " + name + "(" + type.ToString() + ")", style);
-            if (point != null)
-            {
-                point.Draw(varRect);
-            }
-        }
-    }*/
 
     public class PengFloat: PengVar
     {
