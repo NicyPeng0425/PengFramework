@@ -12,6 +12,7 @@ using System.Xml;
 using System;
 using static GetTargetsByRange;
 using static UnityEditor.PlayerSettings;
+using Unity.VisualScripting;
 
 namespace PengScript
 {
@@ -19,100 +20,94 @@ namespace PengScript
     /// 伟大的彭脚本！
     /// 
     /// 添加新脚本的关注点：
-    /// 1. PengScriptType
+    /// 1. PengScriptType里添加新脚本的类型
     /// 2. 在PengNode.cs里添加新脚本的节点形式
-    /// 3. 在PengActorStateEditorWindow.cs的RightMouseMenu()里写添加新脚本的节点的方法
+    /// 3. 在PengActorStateEditorWindow.cs的ProcessAddNode()里写添加新脚本的节点的方法
     /// 4. 在PengActorStateEditorWindow.cs的ReadPengNode()里写读取新脚本的节点的方法
     /// 5. 在PengScript.cs里添加新脚本的运行时形式，包括构造函数及具体方法
     /// 6. 在PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法
     /// </summary>
-    /// 
-
 
     public enum PengScriptType
     {
-        [Description("轨道执行")]
+        [Description("1,轨道执行,事件,G,低封装")]
         OnTrackExecute,
-        [Description("输出对象")]
+        [Description("1,输出文本,功能,S,低封装")]
         DebugLog,
-        [Description("播放动画")]
+        [Description("1,播放动画,表现,B,高封装")]
         PlayAnimation,
-        [Description("切换状态")]
+        [Description("0,切换状态,功能,Q,高封装")]
         TransState,
-        [Description("范围获取目标")]
+        [Description("1,范围获取目标,功能,F,高封装")]
         GetTargetsByRange,
-        [Description("全局时间变速")]
+        [Description("0,全局时间变速,功能,Q,高封装")]
         GlobalTimeScale,
-        [Description("播放音频")]
+        [Description("0,播放音频,表现,B,高封装")]
         PlayAudio,
-        [Description("播放特效")]
+        [Description("0,播放特效,表现,B,高封装")]
         PlayEffects,
-        [Description("清空目标")]
+        [Description("0,清空目标,功能,Q,高封装")]
         ClearTargets,
-        [Description("尝试索敌")]
+        [Description("0,尝试索敌,功能,C,高封装")]
         TryGetEnemy,
-        [Description("允许转向")]
+        [Description("0,允许转向,功能,Y,高封装")]
         AllowChangeDirection,
-        [Description("设置显隐")]
+        [Description("0,设置显隐,表现,S,高封装")]
         SetVisibility,
-        [Description("伤害流程")]
+        [Description("0,伤害流程,功能,S,高封装")]
         AttackDamage,
-        [Description("设置黑板变量")]
+        [Description("0,设置黑板变量,功能,S,低封装")]
         SetBlackBoardVariables,
-        [Description("获取黑板变量")]
+        [Description("0,获取黑板变量,功能,H,低封装")]
         GetBlackBoardVariables,
-        [Description("输入分歧")]
+        [Description("0,输入分歧,功能,S,高封装")]
         GetInput,
-        [Description("条件分歧")]
+        [Description("1,条件分歧,分歧,T,低封装")]
         IfElse,
-        [Description("枚举分歧")]
+        [Description("0,枚举分歧,分歧,M,低封装")]
         SwitchEnum,
-        [Description("整型分歧")]
-        SwitchInt,
-        [Description("For迭代")]
+        [Description("1,For迭代,循环,F,低封装")]
         ForIterator,
-        [Description("Foreach迭代")]
+        [Description("0,Foreach迭代,循环,F,低封装")]
         ForeachIterator,
-        [Description("屏幕震动")]
+        [Description("0,相机震动,表现,X,高封装")]
         CameraImpulse,
-        [Description("后处理")]
+        [Description("0,后处理,表现,H,高封装")]
         PostProcess,
-        [Description("镜头偏移")]
+        [Description("0,相机偏移,表现,X,高封装")]
         CameraOffset,
-        [Description("镜头Fov")]
+        [Description("0,相机Fov,表现,X,高封装")]
         CameraFOV,
-        [Description("加")]
+        [Description("0,加,运算,J,低封装")]
         MathPlus,
-        [Description("减")]
+        [Description("0,减,运算,J,低封装")]
         MathMinus,
-        [Description("乘")]
+        [Description("0,乘,运算,C,低封装")]
         MathTime,
-        [Description("除")]
+        [Description("0,除,运算,C,低封装")]
         MathDivide,
-        [Description("平方")]
+        [Description("0,平方,运算,P,低封装")]
         MathSquare,
-        [Description("比较")]
+        [Description("0,比较,运算,B,低封装")]
         MathCompare,
-        [Description("布尔")]
+        [Description("0,布尔运算,运算,B,低封装")]
         MathBool,
-        [Description("整型")]
+        [Description("1,整型,值,Z,低封装")]
         ValuePengInt,
-        [Description("浮点")]
+        [Description("1,浮点,值,F,低封装")]
         ValuePengFloat,
-        [Description("布尔")]
+        [Description("1,布尔,值,B,低封装")]
         ValuePengBool,
-        [Description("字符串")]
+        [Description("1,字符串,值,Z,低封装")]
         ValuePengString,
-        [Description("Vector3")]
+        [Description("1,Vector3,值,V,低封装")]
         ValuePengVector3,
-        [Description("Vector2")]
+        [Description("0,Vector2,值,V,低封装")]
         ValuePengVector2,
-        [Description("浮点组合为Vector3")]
-        ValueFloatToPengVector3,
-        [Description("浮点组合为Vector2")]
-        ValueFloatToPengVector2,
-        [Description("取列表数量")]
+        [Description("0,取列表数量,值,Q,低封装")]
         ValueGetListCount,
+        [Description("1,浮点转字符串,值,F,低封装")]
+        ValueFloatToString,
     }
 
     public struct ScriptIDVarID
@@ -179,6 +174,11 @@ namespace PengScript
             }
         }
 
+        public virtual void GetValue()
+        {
+
+        }
+
         public virtual void SetValue(int inVarID, PengVar varSource)
         {
 
@@ -212,11 +212,6 @@ namespace PengScript
                     }
                 }
             }
-        }
-
-        public virtual void GetValue()
-        {
-
         }
 
         public void InitialPengVars()
@@ -316,7 +311,6 @@ namespace PengScript
             }
             return result;
         }
-
     }
 
     public class OnTrackExecute: BaseScript
@@ -868,5 +862,184 @@ namespace PengScript
         }
     }
 
+    public class ValuePengVector3 : BaseScript
+    {
+        public PengFloat pengX = new PengFloat(null, "值", 0, ConnectionPointType.In);
+        public PengFloat pengY = new PengFloat(null, "值", 1, ConnectionPointType.In);
+        public PengFloat pengZ = new PengFloat(null, "值", 2, ConnectionPointType.In);
+
+        public PengVector3 pengVector3 = new PengVector3(null, "值", 0, ConnectionPointType.Out);
+        public ValuePengVector3(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.ValuePengVector3;
+            scriptName = GetDescription(type);
+            inVars[0] = pengX;
+            inVars[1] = pengY;
+            inVars[2] = pengZ;
+            outVars[0] = pengVector3;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                pengX.value = float.Parse(str[0]);
+                pengY.value = float.Parse(str[1]);
+                pengZ.value = float.Parse(str[2]);
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            pengVector3.value = new Vector3(pengX.value, pengY.value, pengZ.value);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf1 = varSource as PengFloat;
+                    pengX.value = pf1.value;
+                    break;
+                case 1:
+                    PengFloat pf2 = varSource as PengFloat;
+                    pengY.value = pf2.value;
+                    break;
+                case 2:
+                    PengFloat pf3 = varSource as PengFloat;
+                    pengZ.value = pf3.value;
+                    break;
+            }
+        }
+    }
+
+    public class DebugLog : BaseScript
+    {
+        public PengString pengString = new PengString(null, "文本", 0, ConnectionPointType.In);
+        public DebugLog(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.DebugLog;
+            scriptName = GetDescription(type);
+            inVars[0] = pengString;
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengString ps = varSource as PengString;
+                    pengString.value = ps.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            Debug.Log(pengString.value);
+        }
+    }
+
+    public class ValueFloatToString : BaseScript
+    {
+        public PengFloat pengFloat = new PengFloat(null, "浮点", 0, ConnectionPointType.In);
+
+        public PengString pengString = new PengString(null, "文本", 0, ConnectionPointType.Out);
+        public ValueFloatToString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.ValueFloatToString;
+            scriptName = GetDescription(type);
+            inVars[0] = pengFloat;
+            outVars[0] = pengString;
+            if (specialInfo != "")
+            {
+                pengFloat.value = float.Parse(specialInfo);
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            pengString.value = pengFloat.value.ToString();
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf1 = varSource as PengFloat;
+                    pengFloat.value = pf1.value;
+                    break;
+            }
+        }
+    }
 }
 

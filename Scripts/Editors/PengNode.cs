@@ -351,6 +351,33 @@ public class PengNode
         this.master = master;
     }
 
+    public static bool GetCodedDown(Enum value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    if(int.Parse(attr.Description.Split(",")[0]) > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                         return false; 
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
     public static string GetDescription(Enum value)
     {
         Type type = value.GetType();
@@ -363,7 +390,64 @@ public class PengNode
                 DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
                 if (attr != null)
                 {
-                    return attr.Description;
+                    return attr.Description.Split(",")[1];
+                }
+            }
+        }
+        return null;
+    }
+
+    public static string GetCatalogByFunction(Enum value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    return attr.Description.Split(",")[2];
+                }
+            }
+        }
+        return null;
+    }
+
+    public static string GetCatalogByName(Enum value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    return attr.Description.Split(",")[3];
+                }
+            }
+        }
+        return null;
+    }
+
+    public static string GetCatalogByPackage(Enum value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    return attr.Description.Split(",")[4];
                 }
             }
         }
@@ -970,19 +1054,7 @@ public class ValuePengInt : PengNode
     {
         base.Draw();
         Rect intField = new Rect(pengInt.varRect.x + 45, pengInt.varRect.y, 65, 18);
-        string text = pengInt.value.ToString();
-        text = GUI.TextField(intField, text);
-        if(text != pengInt.value.ToString())
-        {
-            if(int.TryParse(text, out pengInt.value))
-            {
-
-            }
-            else
-            {
-                text = pengInt.value.ToString();
-            }
-        }
+        pengInt.value = EditorGUI.IntField(intField, pengInt.value);
     }
     public override string SpecialParaDescription()
     {
@@ -1035,19 +1107,7 @@ public class ValuePengFloat : PengNode
     {
         base.Draw();
         Rect floatField = new Rect(pengFloat.varRect.x + 45, pengFloat.varRect.y, 65, 18);
-        string text = pengFloat.value.ToString();
-        text = GUI.TextField(floatField, text);
-        if (text != pengFloat.value.ToString())
-        {
-            if (float.TryParse(text, out pengFloat.value))
-            {
-
-            }
-            else
-            {
-                text = pengFloat.value.ToString();
-            }
-        }
+        pengFloat.value = EditorGUI.FloatField(floatField, pengFloat.value);
     }
     public override string SpecialParaDescription()
     {
@@ -1315,5 +1375,172 @@ public class ForIterator : PengNode
 
         GUI.Box(loopBody, "循环体", style);
         GUI.Box(completed, "完成后", style);
+    }
+}
+
+public class ValuePengVector3 : PengNode
+{
+    public PengFloat pengX;
+    public PengFloat pengY;
+    public PengFloat pengZ;
+
+    public PengVector3 pengVec3;
+
+    public ValuePengVector3(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inVars = new PengVar[3];
+        outVars = new PengVar[1];
+
+        pengX = new PengFloat(this, "X", 0, ConnectionPointType.In);
+        pengY = new PengFloat(this, "Y", 1, ConnectionPointType.In);
+        pengZ = new PengFloat(this, "Z", 2, ConnectionPointType.In);
+        pengVec3 = new PengVector3(this, "Vector3", 0, ConnectionPointType.Out);
+
+        inVars[0] = pengX;
+        inVars[1] = pengY;
+        inVars[2] = pengZ;
+        outVars[0] = pengVec3;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValuePengVector3;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 3;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 3; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        pengX.value = EditorGUI.FloatField(field, pengX.value);
+                        break;
+                    case 1:
+                        pengY.value = EditorGUI.FloatField(field, pengY.value);
+                        break;
+                    case 2:
+                        pengZ.value = EditorGUI.FloatField(field, pengZ.value);
+                        break;
+                }
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengX.value.ToString() + "," + pengY.value.ToString() + "," + pengZ.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if(info != "")
+        {
+            string[] str = info.Split(",");
+            pengX.value = float.Parse(str[0]);
+            pengY.value = float.Parse(str[1]);
+            pengZ.value = float.Parse(str[2]);
+        }
+    }
+}
+
+public class DebugLog : PengNode
+{
+    public PengString obj;
+
+    public DebugLog(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengVar[1];
+        obj = new PengString(this, "文本", 0, ConnectionPointType.In);
+        inVars[0] = obj;
+        outVars = new PengVar[0];
+
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.DebugLog;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+    }
+}
+
+public class ValueFloatToString : PengNode
+{
+    public PengFloat pengFloat;
+
+    public PengString pengString;
+
+    public ValueFloatToString(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inVars = new PengVar[1];
+        outVars = new PengVar[1];
+
+        pengFloat = new PengFloat(this, "浮点", 0, ConnectionPointType.In);
+        pengString = new PengString(this, "字符串", 0, ConnectionPointType.Out);
+
+        inVars[0] = pengFloat;
+        outVars[0] = pengString;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValueFloatToString;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        if (varInID[0].nodeID < 0)
+        {
+            Rect field = new Rect(inVars[0].varRect.x + 45, inVars[0].varRect.y, 65, 18);
+            pengFloat.value = EditorGUI.FloatField(field, pengFloat.value);
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengFloat.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            pengFloat.value = float.Parse(info);
+        }
     }
 }

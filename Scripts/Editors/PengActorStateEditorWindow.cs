@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using Unity.VisualScripting;
 using System.Threading.Tasks;
 using UnityEditor.Animations;
+using UnityEditorInternal.VersionControl;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -1280,31 +1281,22 @@ public class PengActorStateEditorWindow : EditorWindow
     private void RightMouseMenu(Vector2 mousePos)
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("添加节点/按功能类型/表现/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/B/播放动画"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.PlayAnimation); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/分歧/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/T/条件分歧"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.IfElse); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/值/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/Z/整型"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengInt); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/值/浮点"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/F/浮点"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengFloat); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/值/字符串"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/Z/字符串"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengString); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/值/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/B/布尔"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ValuePengBool); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/功能/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/F/范围获取目标"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.GetTargetsByRange); });
-
-        menu.AddItem(new GUIContent("添加节点/按功能类型/迭代/For循环"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
-        menu.AddItem(new GUIContent("添加节点/按名称字母/F/For循环"), false, () => { ProcessAddNode(mousePos, PengScript.PengScriptType.ForIterator); });
+        for (int i = 0; i < Enum.GetValues(typeof(PengScript.PengScriptType)).Length; i++)
+        {
+            RightMouseMenuDetail(ref menu, (PengScript.PengScriptType)Enum.GetValues(typeof(PengScript.PengScriptType)).GetValue(i), mousePos);
+        }
 
         menu.ShowAsContext();
+    }
+
+    public void RightMouseMenuDetail(ref GenericMenu menu, PengScript.PengScriptType scriptType, Vector2 mousePos)
+    {
+        if(PengNode.GetCodedDown(scriptType) && scriptType != PengScript.PengScriptType.OnTrackExecute)
+        {
+            menu.AddItem(new GUIContent("添加节点/按类型分类/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+            menu.AddItem(new GUIContent("添加节点/按首字母分类/" + PengNode.GetCatalogByName(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+            menu.AddItem(new GUIContent("添加节点/按封装程度分类/" + PengNode.GetCatalogByPackage(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+        }
     }
 
     private void ProcessAddNode(Vector2 mousePos, PengScript.PengScriptType type)
@@ -1373,6 +1365,24 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(2)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
+                break;
+            case PengScript.PengScriptType.ValuePengVector3:
+                track.nodes.Add(new ValuePengVector3(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
+                break;
+            case PengScript.PengScriptType.DebugLog:
+                track.nodes.Add(new DebugLog(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
+            case PengScript.PengScriptType.ValueFloatToString:
+                track.nodes.Add(new ValueFloatToString(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
         }
         tracks[currentSelectedTrack] = track;
@@ -1878,6 +1888,12 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new GetTargetsByRange(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ForIterator:
                 return new ForIterator(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.ValuePengVector3:
+                return new ValuePengVector3(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.ValueFloatToString:
+                return new ValueFloatToString(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.DebugLog:
+                return new DebugLog(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -1922,34 +1938,6 @@ public class PengActorStateEditorWindow : EditorWindow
             PengNode node = ReadPengNode(nodeEle, ref track);
             track.nodes.Add(node);
         }
-        /*
-        if (track.nodes.Count > 0)
-        {
-            for (int i = 0; i < track.nodes.Count; i++)
-            {
-                if (track.nodes[i].outID.Count > 0)
-                {
-                    for (int j = 0; j < track.nodes[i].outID.Count; j++)
-                    {
-                        if (track.nodes[i].outID.ElementAt(j).Value > 0)
-                        {
-                            track.lines.Add(new PengNodeConnectionLine(GetPengNodeByID(track.nodes[i].outID.ElementAt(j).Value, track.nodes).inPoint, track.nodes[i].outPoints[track.nodes[i].outID.ElementAt(j).Key]));
-                        }
-                    }
-                }
-                if (track.nodes[i].varInID.Count > 0)
-                {
-                    for (int j = 0; j < track.nodes[i].varInID.Count; j++)
-                    {
-                        if (track.nodes[i].varInID.ElementAt(j).Value.nodeID > 0)
-                        {
-                            track.lines.Add(new PengNodeConnectionLine(GetPengVarByVarID(track.nodes[i], j, ConnectionPointType.In).point,
-                               GetPengVarByVarID(GetPengNodeByID(track.nodes[i].varInID.ElementAt(j).Value.nodeID, track.nodes), track.nodes[i].varInID.ElementAt(j).Value.connectionID, ConnectionPointType.Out).point));
-                        }
-                    }
-                }
-            }
-        }*/
         return track;
     }
 

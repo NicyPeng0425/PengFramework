@@ -27,7 +27,10 @@ public class PengTrack
             {
                 foreach(PengNode node in nodes)
                 {
-                    node.master = m_master;
+                    if (node != null)
+                    {
+                        node.master = m_master;
+                    }
                 }
             }
         }
