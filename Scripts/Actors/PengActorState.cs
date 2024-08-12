@@ -183,6 +183,8 @@ public class PengActorState : IPengActorState
                 return new PengScript.ValueFloatToString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.TransState:
                 return new PengScript.TransState(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.BreakPoint:
+                return new PengScript.BreakPoint(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

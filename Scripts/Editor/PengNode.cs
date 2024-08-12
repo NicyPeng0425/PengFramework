@@ -1568,6 +1568,7 @@ public class TransState : PengNode
         stateName = new PengEditorVariables.PengString(this, "状态名称", 0, ConnectionPointType.In);
         inVars[0] = stateName;
 
+        ReadSpecialParaDescription(specialInfo);
         type = NodeType.Action;
         scriptType = PengScript.PengScriptType.TransState;
         nodeName = GetDescription(scriptType);
@@ -1596,5 +1597,35 @@ public class TransState : PengNode
         {
             stateName.value = info;
         }
+    }
+}
+
+public class BreakPoint : PengNode
+{
+    public BreakPoint(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.BreakPoint;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
     }
 }

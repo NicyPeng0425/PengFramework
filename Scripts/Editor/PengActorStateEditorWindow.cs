@@ -1397,6 +1397,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
+            case PengScript.PengScriptType.BreakPoint:
+                track.nodes.Add(new BreakPoint(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
         }
         tracks[currentSelectedTrack] = track;
     }
@@ -1599,11 +1605,6 @@ public class PengActorStateEditorWindow : EditorWindow
             Handles.color = Color.white;
         }
         Handles.EndGUI();
-    }
-
-    public void UpdateCurrentStateInfo()
-    {
-        ReadActorData(100425);
     }
 
     public void OnCurrentSelectedTrackChanged()
@@ -1906,6 +1907,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new DebugLog(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.TransState:
                 return new TransState(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.BreakPoint:
+                return new BreakPoint(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 

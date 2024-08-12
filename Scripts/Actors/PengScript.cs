@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Xml;
 using System;
 using Unity.VisualScripting;
+using UnityEditor;
 
 namespace PengScript
 {
@@ -35,7 +36,7 @@ namespace PengScript
     {
         [Description("1,轨道执行,事件,G,低封装")]
         OnTrackExecute,
-        [Description("1,输出对象,功能,S,低封装")]
+        [Description("1,输出对象,调试,S,低封装")]
         DebugLog,
         [Description("1,播放动画,表现,B,高封装")]
         PlayAnimation,
@@ -111,6 +112,8 @@ namespace PengScript
         ValueGetListCount,
         [Description("1,浮点转字符串,值,F,低封装")]
         ValueFloatToString,
+        [Description("1,断点,调试,D,低封装")]
+        BreakPoint,
     }
 
     public struct ScriptIDVarID
@@ -1221,6 +1224,40 @@ namespace PengScript
             {
                 Debug.Log("Actor" + actor.actorID.ToString() + "在" + actor.currentName + "状态的" + trackMaster.name + "轨道中调用了切换状态，但没有给定名称的状态。");
             }
+        }
+    }
+    public class BreakPoint : BaseScript
+    {
+        public BreakPoint(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.BreakPoint;
+            scriptName = GetDescription(type);
+        }
+
+        public override void Function()
+        {
+            base.Function();
+#if UNITY_EDITOR
+            if (!EditorApplication.isPaused)
+            {
+                EditorApplication.isPaused = true;
+            }
+#endif
         }
     }
 }
