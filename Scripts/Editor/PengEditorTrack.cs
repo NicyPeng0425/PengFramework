@@ -1,18 +1,12 @@
-﻿using PengScript;
+using PengScript;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PengTrack
+public class PengEditorTrack
 {
-    public enum ExecTime
-    {
-        Enter,
-        Update,
-        Exit,
-    }
-    public string name;
-    public ExecTime execTime;
+    public string trackName;
+    public PengTrack.ExecTime execTime;
 
     public int start;
     public int end;
@@ -20,12 +14,12 @@ public class PengTrack
     public PengActorStateEditorWindow master
     {
         get { return m_master; }
-        set 
-        { 
+        set
+        {
             m_master = value;
             if (nodes.Count > 0)
             {
-                foreach(PengNode node in nodes)
+                foreach (PengNode node in nodes)
                 {
                     if (node != null)
                     {
@@ -37,16 +31,16 @@ public class PengTrack
     }
     public List<PengNode> nodes = new List<PengNode>();
     public List<BaseScript> scripts = new List<BaseScript>();
-    
-    public PengTrack(ExecTime time, string name, int start, int end, PengActorStateEditorWindow master, bool isNew)
+
+    public PengEditorTrack(PengTrack.ExecTime time, string name, int start, int end, PengActorStateEditorWindow master, bool isNew)
     {
-        this.name = name;
+        this.trackName = name;
         this.execTime = time;
         this.start = start;
         this.end = end;
         this.master = master;
-        PengTrack track = this;
-        if(isNew)
+        PengEditorTrack track = this;
+        if (isNew)
         {
             nodes.Add(new OnTrackExecute(Vector2.zero, master, ref track, 1,
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
@@ -54,7 +48,7 @@ public class PengTrack
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
 
             nodes[0].ProcessDrag(new Vector2(300f, 415f));
-        }  
+        }
     }
 
     public void ExecuteOnce()

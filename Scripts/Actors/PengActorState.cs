@@ -134,7 +134,7 @@ public class PengActorState : IPengActorState
         {
             XmlElement trackEle = stateEle.ChildNodes[i] as XmlElement;
             PengTrack track = new PengTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), trackEle.GetAttribute("ExecTime")), trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")),
-                int.Parse(trackEle.GetAttribute("End")), null, false);
+                int.Parse(trackEle.GetAttribute("End")));
             
             for(int j = 0; j < trackEle.ChildNodes.Count; j++)
             {

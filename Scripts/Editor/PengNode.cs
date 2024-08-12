@@ -57,8 +57,8 @@ public class PengNode
 
     public PengNodeConnection inPoint;
     public PengNodeConnection[] outPoints;
-    public PengVar[] inVars;
-    public PengVar[] outVars;
+    public PengEditorVariables.PengVar[] inVars;
+    public PengEditorVariables.PengVar[] outVars;
 
     //第x个FlowOut连接点，链接到哪个节点的FlowIn节点。因为所有节点只有一个FlowIn，所以只需要记载节点ID
     //Value取值为-1时表示该点没有链接
@@ -71,7 +71,7 @@ public class PengNode
     public Dictionary<int, NodeIDConnectionID> varInID = new Dictionary<int, NodeIDConnectionID>();                     
     
     public PengActorStateEditorWindow master;
-    public PengTrack trackMaster;
+    public PengEditorTrack trackMaster;
     public int nodeID;
 
     public enum NodeType
@@ -497,7 +497,7 @@ public class PengNode
         return null;
     }
 
-    public PengVar GetPengVarByNodeIDPengVarOutID(int nodeID, int VarID)
+    public PengEditorVariables.PengVar GetPengVarByNodeIDPengVarOutID(int nodeID, int VarID)
     {
         return GetNodeByNodeID(nodeID).outVars[VarID];
     }
@@ -756,10 +756,10 @@ public class OnTrackExecute : PengNode
     //varInID 参数入信息
     //outID 脚本流出信息
     //参数信息
-    public PengInt pengTrackExecuteFrame;
-    public PengInt pengStateExecuteFrame;
+    public PengEditorVariables.PengInt pengTrackExecuteFrame;
+    public PengEditorVariables.PengInt pengStateExecuteFrame;
 
-    public OnTrackExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public OnTrackExecute(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -772,10 +772,10 @@ public class OnTrackExecute : PengNode
         inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengVar[0];
-        outVars = new PengVar[2];
-        pengTrackExecuteFrame = new PengInt(this, "当前轨道帧", 0, ConnectionPointType.Out);
-        pengStateExecuteFrame = new PengInt(this, "当前状态帧", 1, ConnectionPointType.Out);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[2];
+        pengTrackExecuteFrame = new PengEditorVariables.PengInt(this, "当前轨道帧", 0, ConnectionPointType.Out);
+        pengStateExecuteFrame = new PengEditorVariables.PengInt(this, "当前状态帧", 1, ConnectionPointType.Out);
         outVars[0] = pengTrackExecuteFrame;
         outVars[1] = pengStateExecuteFrame;
 
@@ -783,9 +783,7 @@ public class OnTrackExecute : PengNode
         scriptType = PengScript.PengScriptType.OnTrackExecute;
         nodeName = GetDescription(scriptType);
 
-
         paraNum = 2;
-
         
     }
 
@@ -797,13 +795,13 @@ public class OnTrackExecute : PengNode
 
 public class PlayAnimation : PengNode
 {
-    public PengString pengAnimationName;
-    public PengBool pengHardCut;
-    public PengFloat pengTransitionNormalizedTime;
-    public PengFloat pengStartAtNormalizedTime;
-    public PengInt pengAnimationLayer;
+    public PengEditorVariables.PengString pengAnimationName;
+    public PengEditorVariables.PengBool pengHardCut;
+    public PengEditorVariables.PengFloat pengTransitionNormalizedTime;
+    public PengEditorVariables.PengFloat pengStartAtNormalizedTime;
+    public PengEditorVariables.PengInt pengAnimationLayer;
     
-    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public PlayAnimation(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -815,13 +813,13 @@ public class PlayAnimation : PengNode
         inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengVar[5];
-        outVars = new PengVar[0];
-        pengAnimationName = new PengString(this, "动画名称", 0, ConnectionPointType.In);
-        pengHardCut = new PengBool(this, "是否硬切", 1, ConnectionPointType.In);
-        pengTransitionNormalizedTime = new PengFloat(this, "过渡时间", 2, ConnectionPointType.In);
-        pengStartAtNormalizedTime = new PengFloat(this, "开始时间", 3, ConnectionPointType.In);
-        pengAnimationLayer = new PengInt(this, "动画层", 4, ConnectionPointType.In);
+        inVars = new PengEditorVariables.PengVar[5];
+        outVars = new PengEditorVariables.PengVar[0];
+        pengAnimationName = new PengEditorVariables.PengString(this, "动画名称", 0, ConnectionPointType.In);
+        pengHardCut = new PengEditorVariables.PengBool(this, "是否硬切", 1, ConnectionPointType.In);
+        pengTransitionNormalizedTime = new PengEditorVariables.PengFloat(this, "过渡时间", 2, ConnectionPointType.In);
+        pengStartAtNormalizedTime = new PengEditorVariables.PengFloat(this, "开始时间", 3, ConnectionPointType.In);
+        pengAnimationLayer = new PengEditorVariables.PengInt(this, "动画层", 4, ConnectionPointType.In);
         inVars[0] = pengAnimationName;
         inVars[1] = pengHardCut;
         inVars[2] = pengTransitionNormalizedTime;
@@ -843,16 +841,10 @@ public class PlayAnimation : PengNode
 
 public class IfElse: PengNode
 {
-    public enum IfElseIfElse
-    {
-        If,
-        ElseIf,
-        Else
-    }
 
-    public List<IfElseIfElse> conditionTypes = new List<IfElseIfElse>();
+    public List<PengScript.IfElse.IfElseIfElse> conditionTypes = new List<PengScript.IfElse.IfElseIfElse>();
 
-    public IfElse(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public IfElse(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -865,16 +857,16 @@ public class IfElse: PengNode
 
         inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[this.outID.Count];
-        inVars = new PengVar[this.varInID.Count];
+        inVars = new PengEditorVariables.PengVar[this.varInID.Count];
         paraNum = this.varInID.Count;
         for (int i = 0; i < this.outID.Count; i++)
         {
             outPoints[i] = new PengNodeConnection(ConnectionPointType.FlowOut, i, this, null);
-            PengBool ifInVar = new PengBool(this, "条件"+(i+1).ToString(), i, ConnectionPointType.In);
+            PengEditorVariables.PengBool ifInVar = new PengEditorVariables.PengBool(this, "条件"+(i+1).ToString(), i, ConnectionPointType.In);
             inVars[i] = ifInVar;
         }
 
-        outVars = new PengVar[0];
+        outVars = new PengEditorVariables.PengVar[0];
         type = NodeType.Branch;
         scriptType = PengScript.PengScriptType.IfElse;
         nodeName = GetDescription(scriptType);
@@ -958,19 +950,19 @@ public class IfElse: PengNode
             string[] str = info.Split(",");
             for (int i = 0; i < str.Length; i++)
             {
-                conditionTypes.Add((IfElseIfElse)Enum.Parse(typeof(IfElseIfElse), str[i]));
+                conditionTypes.Add((PengScript.IfElse.IfElseIfElse)Enum.Parse(typeof(PengScript.IfElse.IfElseIfElse), str[i]));
             }
         }
         else
         {
-            conditionTypes.Add(IfElseIfElse.If);
+            conditionTypes.Add(PengScript.IfElse.IfElseIfElse.If);
         }
     }
 
     public void AddConditions()
     {
-        PengBool newVar = new PengBool(this, "条件" + (inVars.Length + 1).ToString(), inVars.Length, ConnectionPointType.In);
-        PengVar[] newInVars = new PengVar[inVars.Length + 1];
+        PengEditorVariables.PengBool newVar = new PengEditorVariables.PengBool(this, "条件" + (inVars.Length + 1).ToString(), inVars.Length, ConnectionPointType.In);
+        PengEditorVariables.PengVar[] newInVars = new PengEditorVariables.PengVar[inVars.Length + 1];
         for(int i = 0;i < inVars.Length;i++)
         {
             newInVars[i] = inVars[i];
@@ -978,7 +970,7 @@ public class IfElse: PengNode
         newInVars[newInVars.Length - 1] = newVar;
         inVars = newInVars;
 
-        conditionTypes.Add(IfElseIfElse.ElseIf);
+        conditionTypes.Add(PengScript.IfElse.IfElseIfElse.ElseIf);
 
         PengNodeConnection[] newOutPoints = new PengNodeConnection[inVars.Length];
         for (int i = 0; i < outPoints.Length; i++)
@@ -1009,7 +1001,7 @@ public class IfElse: PengNode
                     }
                 }
             }
-            PengVar[] newInVars = new PengVar[inVars.Length - 1];
+            PengEditorVariables.PengVar[] newInVars = new PengEditorVariables.PengVar[inVars.Length - 1];
             PengNodeConnection[] newOutPoints = new PengNodeConnection[inVars.Length - 1];
             for (int i = 0; i < newInVars.Length; i++)
             {
@@ -1028,22 +1020,22 @@ public class IfElse: PengNode
 
     public void ChangeCondition (int index)
     {
-        if (conditionTypes[index] == IfElseIfElse.ElseIf)
+        if (conditionTypes[index] == PengScript.IfElse.IfElseIfElse.ElseIf)
         {
-            conditionTypes[index] = IfElseIfElse.Else;
+            conditionTypes[index] = PengScript.IfElse.IfElseIfElse.Else;
         }
-        else if(conditionTypes[index] == IfElseIfElse.Else)
+        else if(conditionTypes[index] == PengScript.IfElse.IfElseIfElse.Else)
         {
-            conditionTypes[index] = IfElseIfElse.ElseIf;
+            conditionTypes[index] = PengScript.IfElse.IfElseIfElse.ElseIf;
         }
     }
 }
 
 public class ValuePengInt : PengNode
 {
-    public PengInt pengInt;
+    public PengEditorVariables.PengInt pengInt;
 
-    public ValuePengInt(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValuePengInt(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1055,9 +1047,9 @@ public class ValuePengInt : PengNode
         //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
-        inVars = new PengVar[0];
-        outVars = new PengVar[1];
-        pengInt = new PengInt(this, "值", 0, ConnectionPointType.Out);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+        pengInt = new PengEditorVariables.PengInt(this, "值", 0, ConnectionPointType.Out);
         outVars[0] = pengInt;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1094,9 +1086,9 @@ public class ValuePengInt : PengNode
 
 public class ValuePengFloat : PengNode
 {
-    public PengFloat pengFloat;
+    public PengEditorVariables.PengFloat pengFloat;
 
-    public ValuePengFloat(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValuePengFloat(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1108,9 +1100,9 @@ public class ValuePengFloat : PengNode
         //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
-        inVars = new PengVar[0];
-        outVars = new PengVar[1];
-        pengFloat = new PengFloat(this, "值", 0, ConnectionPointType.Out);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+        pengFloat = new PengEditorVariables.PengFloat(this, "值", 0, ConnectionPointType.Out);
         outVars[0] = pengFloat;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1147,9 +1139,9 @@ public class ValuePengFloat : PengNode
 
 public class ValuePengString : PengNode
 {
-    public PengString pengString;
+    public PengEditorVariables.PengString pengString;
 
-    public ValuePengString(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValuePengString(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1161,9 +1153,9 @@ public class ValuePengString : PengNode
         //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
-        inVars = new PengVar[0];
-        outVars = new PengVar[1];
-        pengString = new PengString(this, "值", 0, ConnectionPointType.Out);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+        pengString = new PengEditorVariables.PengString(this, "值", 0, ConnectionPointType.Out);
         outVars[0] = pengString;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1194,9 +1186,9 @@ public class ValuePengString : PengNode
 
 public class ValuePengBool : PengNode
 {
-    public PengBool pengBool;
+    public PengEditorVariables.PengBool pengBool;
 
-    public ValuePengBool(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValuePengBool(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1208,9 +1200,9 @@ public class ValuePengBool : PengNode
         //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
-        inVars = new PengVar[0];
-        outVars = new PengVar[1];
-        pengBool = new PengBool(this, "值", 0, ConnectionPointType.Out);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+        pengBool = new PengEditorVariables.PengBool(this, "值", 0, ConnectionPointType.Out);
         outVars[0] = pengBool;
 
         ReadSpecialParaDescription(specialInfo);
@@ -1248,24 +1240,16 @@ public class ValuePengBool : PengNode
 
 public class GetTargetsByRange : PengNode
 {
-    public enum RangeType
-    {
-        [Description("圆柱体")]
-        Cylinder,
-        [Description("球体")]
-        Sphere,
-        [Description("盒形")]
-        Box,
-    }
+    
 
-    public PengList<PengActor> result;
-    public RangeType rangeType = RangeType.Cylinder;
-    public PengInt typeNum;
-    public PengInt pengCamp;
-    public PengVector3 pengPara;
-    public PengVector3 pengOffset;
+    public PengEditorVariables.PengList<PengActor> result;
+    public PengScript.GetTargetsByRange.RangeType rangeType = PengScript.GetTargetsByRange.RangeType.Cylinder;
+    public PengEditorVariables.PengInt typeNum;
+    public PengEditorVariables.PengInt pengCamp;
+    public PengEditorVariables.PengVector3 pengPara;
+    public PengEditorVariables.PengVector3 pengOffset;
 
-    public GetTargetsByRange(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public GetTargetsByRange(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1278,15 +1262,15 @@ public class GetTargetsByRange : PengNode
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
 
-        inVars = new PengVar[4];
-        outVars = new PengVar[1];
+        inVars = new PengEditorVariables.PengVar[4];
+        outVars = new PengEditorVariables.PengVar[1];
 
-        typeNum = new PengInt(this, "范围类型", 0, ConnectionPointType.In);
+        typeNum = new PengEditorVariables.PengInt(this, "范围类型", 0, ConnectionPointType.In);
         typeNum.point = null;
-        result = new PengList<PengActor>(this, "获取到的目标", 0, ConnectionPointType.Out);
-        pengCamp = new PengInt(this, "阵营", 1, ConnectionPointType.In);
-        pengPara = new PengVector3(this, "参数", 2, ConnectionPointType.In);
-        pengOffset = new PengVector3(this, "偏移", 3, ConnectionPointType.In);
+        result = new PengEditorVariables.PengList<PengActor>(this, "获取到的目标", 0, ConnectionPointType.Out);
+        pengCamp = new PengEditorVariables.PengInt(this, "阵营", 1, ConnectionPointType.In);
+        pengPara = new PengEditorVariables.PengVector3(this, "参数", 2, ConnectionPointType.In);
+        pengOffset = new PengEditorVariables.PengVector3(this, "偏移", 3, ConnectionPointType.In);
 
         outVars[0] = result;
         inVars[0] = typeNum;
@@ -1306,7 +1290,7 @@ public class GetTargetsByRange : PengNode
     {
         base.Draw();
         Rect field = new Rect(typeNum.varRect.x + 40, typeNum.varRect.y, 70, 18);
-        rangeType = (RangeType)EditorGUI.EnumPopup(field, rangeType);
+        rangeType = (PengScript.GetTargetsByRange.RangeType)EditorGUI.EnumPopup(field, rangeType);
 
     }
     public override string SpecialParaDescription()
@@ -1315,11 +1299,11 @@ public class GetTargetsByRange : PengNode
         {
             default:
                 return "";
-            case RangeType.Cylinder:
+            case PengScript.GetTargetsByRange.RangeType.Cylinder:
                 return "1";
-            case RangeType.Sphere:
+            case PengScript.GetTargetsByRange.RangeType.Sphere:
                 return "2";
-            case RangeType.Box:
+            case PengScript.GetTargetsByRange.RangeType.Box:
                 return "3";
         }
     }
@@ -1331,13 +1315,13 @@ public class GetTargetsByRange : PengNode
             switch (int.Parse(info))
             {
                 case 1:
-                    rangeType = RangeType.Cylinder;
+                    rangeType = PengScript.GetTargetsByRange.RangeType.Cylinder;
                     break;
                 case 2:
-                    rangeType = RangeType.Sphere;
+                    rangeType = PengScript.GetTargetsByRange.RangeType.Sphere;
                     break;
                 case 3:
-                    rangeType = RangeType.Box;
+                    rangeType = PengScript.GetTargetsByRange.RangeType.Box;
                     break;
             }
         }
@@ -1346,11 +1330,11 @@ public class GetTargetsByRange : PengNode
 
 public class ForIterator : PengNode
 {
-    public PengInt firstIndex;
-    public PengInt lastIndex;
+    public PengEditorVariables.PengInt firstIndex;
+    public PengEditorVariables.PengInt lastIndex;
 
-    public PengInt pengIndex;
-    public ForIterator(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public PengEditorVariables.PengInt pengIndex;
+    public ForIterator(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1365,12 +1349,12 @@ public class ForIterator : PengNode
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         outPoints[1] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
 
-        inVars = new PengVar[this.varInID.Count];
+        inVars = new PengEditorVariables.PengVar[this.varInID.Count];
         paraNum = this.varInID.Count;
-        outVars = new PengVar[1];
-        firstIndex = new PengInt(this, "首个指数", 0, ConnectionPointType.In);
-        lastIndex = new PengInt(this, "末个指数", 1, ConnectionPointType.In);
-        pengIndex = new PengInt(this, "指数", 0, ConnectionPointType.Out);
+        outVars = new PengEditorVariables.PengVar[1];
+        firstIndex = new PengEditorVariables.PengInt(this, "首个指数", 0, ConnectionPointType.In);
+        lastIndex = new PengEditorVariables.PengInt(this, "末个指数", 1, ConnectionPointType.In);
+        pengIndex = new PengEditorVariables.PengInt(this, "指数", 0, ConnectionPointType.Out);
         inVars[0] = firstIndex;
         inVars[1] = lastIndex;
         outVars[0] = pengIndex;
@@ -1398,13 +1382,13 @@ public class ForIterator : PengNode
 
 public class ValuePengVector3 : PengNode
 {
-    public PengFloat pengX;
-    public PengFloat pengY;
-    public PengFloat pengZ;
+    public PengEditorVariables.PengFloat pengX;
+    public PengEditorVariables.PengFloat pengY;
+    public PengEditorVariables.PengFloat pengZ;
 
-    public PengVector3 pengVec3;
+    public PengEditorVariables.PengVector3 pengVec3;
 
-    public ValuePengVector3(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValuePengVector3(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1413,13 +1397,13 @@ public class ValuePengVector3 : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inVars = new PengVar[3];
-        outVars = new PengVar[1];
+        inVars = new PengEditorVariables.PengVar[3];
+        outVars = new PengEditorVariables.PengVar[1];
 
-        pengX = new PengFloat(this, "X", 0, ConnectionPointType.In);
-        pengY = new PengFloat(this, "Y", 1, ConnectionPointType.In);
-        pengZ = new PengFloat(this, "Z", 2, ConnectionPointType.In);
-        pengVec3 = new PengVector3(this, "Vector3", 0, ConnectionPointType.Out);
+        pengX = new PengEditorVariables.PengFloat(this, "X", 0, ConnectionPointType.In);
+        pengY = new PengEditorVariables.PengFloat(this, "Y", 1, ConnectionPointType.In);
+        pengZ = new PengEditorVariables.PengFloat(this, "Z", 2, ConnectionPointType.In);
+        pengVec3 = new PengEditorVariables.PengVector3(this, "Vector3", 0, ConnectionPointType.Out);
 
         inVars[0] = pengX;
         inVars[1] = pengY;
@@ -1476,9 +1460,9 @@ public class ValuePengVector3 : PengNode
 
 public class DebugLog : PengNode
 {
-    public PengT obj;
+    public PengEditorVariables.PengT obj;
 
-    public DebugLog(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public DebugLog(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1490,10 +1474,10 @@ public class DebugLog : PengNode
         inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengVar[1];
-        obj = new PengT(this, "对象", 0, ConnectionPointType.In);
+        inVars = new PengEditorVariables.PengVar[1];
+        obj = new PengEditorVariables.PengT(this, "对象", 0, ConnectionPointType.In);
         inVars[0] = obj;
-        outVars = new PengVar[0];
+        outVars = new PengEditorVariables.PengVar[0];
 
         type = NodeType.Action;
         scriptType = PengScript.PengScriptType.DebugLog;
@@ -1510,11 +1494,11 @@ public class DebugLog : PengNode
 
 public class ValueFloatToString : PengNode
 {
-    public PengFloat pengFloat;
+    public PengEditorVariables.PengFloat pengFloat;
 
-    public PengString pengString;
+    public PengEditorVariables.PengString pengString;
 
-    public ValueFloatToString(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public ValueFloatToString(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1523,11 +1507,11 @@ public class ValueFloatToString : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inVars = new PengVar[1];
-        outVars = new PengVar[1];
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[1];
 
-        pengFloat = new PengFloat(this, "浮点", 0, ConnectionPointType.In);
-        pengString = new PengString(this, "字符串", 0, ConnectionPointType.Out);
+        pengFloat = new PengEditorVariables.PengFloat(this, "浮点", 0, ConnectionPointType.In);
+        pengString = new PengEditorVariables.PengString(this, "字符串", 0, ConnectionPointType.Out);
 
         inVars[0] = pengFloat;
         outVars[0] = pengString;
@@ -1565,9 +1549,9 @@ public class ValueFloatToString : PengNode
 
 public class TransState : PengNode
 {
-    public PengString stateName;
+    public PengEditorVariables.PengString stateName;
 
-    public TransState(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    public TransState(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
@@ -1579,9 +1563,9 @@ public class TransState : PengNode
         inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengVar[1];
-        outVars = new PengVar[0];
-        stateName = new PengString(this, "状态名称", 0, ConnectionPointType.In);
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[0];
+        stateName = new PengEditorVariables.PengString(this, "状态名称", 0, ConnectionPointType.In);
         inVars[0] = stateName;
 
         type = NodeType.Action;

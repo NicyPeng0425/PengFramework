@@ -245,12 +245,12 @@ public class PengActorGeneratorEditor : EditorWindow
 
 
 
-                Dictionary<string, List<PengTrack>> stateTrack = new Dictionary<string, List<PengTrack>>();
+                Dictionary<string, List<PengEditorTrack>> stateTrack = new Dictionary<string, List<PengEditorTrack>>();
 
                 AnimatorState idleState = states.AddState("Idle", new Vector3(states.entryPosition.x + 200, states.entryPosition.y, 0));
                 AnimationClip clip1 = Resources.Load("Animations/" + actorID.ToString() + "/" + actorID + "@Idle") as AnimationClip;
-                List<PengTrack> track = new List<PengTrack>();
-                PengTrack enterTrack1 = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
+                List<PengEditorTrack> track = new List<PengEditorTrack>();
+                PengEditorTrack enterTrack1 = new PengEditorTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
                 InitialAnimation(ref enterTrack1, "Idle");
                 if (clip1 != null)
                 {
@@ -264,8 +264,8 @@ public class PengActorGeneratorEditor : EditorWindow
                     Debug.LogWarning("Actor" + actorID.ToString() + "的Idle状态未填入动画片段，请手动在状态中放入Clip。");
                 }
                 track.Add(enterTrack1);
-                track.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
-                track.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, null, true));
+                track.Add(new PengEditorTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
+                track.Add(new PengEditorTrack(PengTrack.ExecTime.Update, "Track", 3, 20, null, true));
                 stateTrack.Add("Idle", track);
 
 
@@ -277,8 +277,8 @@ public class PengActorGeneratorEditor : EditorWindow
                         AnimatorState state = states.AddState(statesLength.ElementAt(i).Key, new Vector3(states.entryPosition.x + 200, states.entryPosition.y + 50 * (j + 1), 0));
                         AnimationClip clip = Resources.Load("Animations/" + actorID.ToString() + "/" + actorID.ToString() + "@" + statesLength.ElementAt(i).Key) as AnimationClip;
 
-                        List<PengTrack> track1 = new List<PengTrack>();
-                        PengTrack enterTrack = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
+                        List<PengEditorTrack> track1 = new List<PengEditorTrack>();
+                        PengEditorTrack enterTrack = new PengEditorTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
                         InitialAnimation(ref enterTrack, statesLength.ElementAt(i).Key);
 
                         if (clip != null)
@@ -292,8 +292,8 @@ public class PengActorGeneratorEditor : EditorWindow
                             Debug.LogWarning("Actor" + actorID.ToString() + "的" + statesLength.ElementAt(i).Key + "状态未填入动画片段，请手动在状态中放入Clip。");
                         }
                         track1.Add(enterTrack);
-                        track1.Add(new PengTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
-                        track1.Add(new PengTrack(PengTrack.ExecTime.Update, "Track", 3, 20, null, true));
+                        track1.Add(new PengEditorTrack(PengTrack.ExecTime.Exit, "OnExit", 0, 0, null, true));
+                        track1.Add(new PengEditorTrack(PengTrack.ExecTime.Update, "Track", 3, 20, null, true));
                         stateTrack.Add(statesLength.ElementAt(i).Key, track1);
                         j++;
                     }
@@ -331,7 +331,7 @@ public class PengActorGeneratorEditor : EditorWindow
         EditorGUILayout.EndVertical();
     }
 
-    public void InitialAnimation(ref PengTrack enterTrack, string stateName)
+    public void InitialAnimation(ref PengEditorTrack enterTrack, string stateName)
     {
         PengNode animNode = new PlayAnimation(enterTrack.nodes[0].pos + new Vector2(300, 0), null, ref enterTrack, 2,
                             PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),

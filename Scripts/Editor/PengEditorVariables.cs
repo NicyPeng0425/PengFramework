@@ -1,34 +1,11 @@
-﻿using System.Collections;
+using PengScript;
+using PengVariables;
+using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
-namespace PengVariables
+namespace PengEditorVariables
 {
-    public enum PengVarType
-    {
-        [Description("无")]
-        None,
-        [Description("浮点")]
-        Float,
-        [Description("整型")]
-        Int,
-        [Description("字符串")]
-        String,
-        [Description("布尔")]
-        Bool,
-        [Description("PengActor")]
-        PengActor,
-        [Description("列表")]
-        PengList,
-        [Description("向量3")]
-        Vector3,
-        [Description("向量2")]
-        Vector2,
-        [Description("彭泛型")]
-        T,
-    }
-
     public class PengVar
     {
         public PengScript.BaseScript script;
@@ -49,7 +26,7 @@ namespace PengVariables
                 style.alignment = TextAnchor.MiddleLeft;
                 varRect = new Rect(node.rectSmall.x + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
             }
-            else if(connectionType == ConnectionPointType.Out)
+            else if (connectionType == ConnectionPointType.Out)
             {
                 style.alignment = TextAnchor.MiddleLeft;
                 varRect = new Rect(node.rectSmall.x + 0.5f * node.rectSmall.width + 5f, node.rect.y + node.rect.height + 5 + 23 * index, 110, 18);
@@ -62,11 +39,11 @@ namespace PengVariables
         }
     }
 
-    public class PengFloat: PengVar
+    public class PengFloat : PengVar
     {
         public float value;
 
-        public PengFloat(PengNode node, string name, int index, ConnectionPointType pointType) 
+        public PengFloat(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -82,7 +59,7 @@ namespace PengVariables
     {
         public int value;
 
-        public PengInt(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengInt(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -97,7 +74,7 @@ namespace PengVariables
     {
         public string value;
 
-        public PengString(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengString(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -112,7 +89,7 @@ namespace PengVariables
     {
         public bool value;
 
-        public PengBool(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengBool(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -126,7 +103,7 @@ namespace PengVariables
     public class PengPengActor : PengVar
     {
         public PengActor value = null;
-        public PengPengActor(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengPengActor(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -141,9 +118,9 @@ namespace PengVariables
     {
         public List<T> value = new List<T>();
 
-        public PengList(){ }
+        public PengList() { }
 
-        public PengList(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengList(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -157,7 +134,7 @@ namespace PengVariables
     public class PengVector3 : PengVar
     {
         public Vector3 value = Vector3.zero;
-        public PengVector3(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengVector3(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -171,7 +148,7 @@ namespace PengVariables
     public class PengVector2 : PengVar
     {
         public Vector2 value = Vector2.zero;
-        public PengVector2(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengVector2(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;
@@ -186,7 +163,7 @@ namespace PengVariables
     {
         public PengVar value;
 
-        public PengT(PengNode node, string name, int index, ConnectionPointType pointType)
+        public PengT(PengNode node, string name, int index, PengScript.ConnectionPointType pointType)
         {
             this.node = node;
             this.name = name;

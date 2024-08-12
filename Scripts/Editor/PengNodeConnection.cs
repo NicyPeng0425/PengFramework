@@ -4,19 +4,13 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
-public enum ConnectionPointType
-{
-    In,
-    Out,
-    FlowIn,
-    FlowOut,
-}
+
 
 public class PengNodeConnection
 {
     public Rect rect;
-    public ConnectionPointType type;
-    public PengVariables.PengVar pengVar;
+    public PengScript.ConnectionPointType type;
+    public PengEditorVariables.PengVar pengVar;
     public PengNode node;
     public int m_lineNum = 0;
     public int lineNum
@@ -31,11 +25,11 @@ public class PengNodeConnection
     }
     public int index;
 
-    public PengNodeConnection(ConnectionPointType type, int index, PengNode node, PengVariables.PengVar pengVar)
+    public PengNodeConnection(PengScript.ConnectionPointType type, int index, PengNode node, PengEditorVariables.PengVar pengVar)
     {
         this.type = type;
         this.node = node;
-        if (type == ConnectionPointType.In || type == ConnectionPointType.Out)
+        if (type == PengScript.ConnectionPointType.In || type == PengScript.ConnectionPointType.Out)
         {
             this.pengVar = pengVar;
         }
@@ -49,18 +43,18 @@ public class PengNodeConnection
 
         switch (type)
         {
-            case ConnectionPointType.In:
+            case PengScript.ConnectionPointType.In:
                 this.rect.x = rect.x - this.rect.width;
                 this.rect.height = 15f;
                 break;
-            case ConnectionPointType.Out:
+            case PengScript.ConnectionPointType.Out:
                 this.rect.x = rect.x + rect.width;
                 this.rect.height = 15f;
                 break;
-            case ConnectionPointType.FlowIn:
+            case PengScript.ConnectionPointType.FlowIn:
                 this.rect.x = rect.x - this.rect.width + 5f;
                 break;
-            case ConnectionPointType.FlowOut:
+            case PengScript.ConnectionPointType.FlowOut:
                 this.rect.x = rect.x + rect.width - 5f;
                 break;
         }
@@ -77,8 +71,8 @@ public class PengNodeConnection
                 {
                     switch(type)
                     {
-                        case ConnectionPointType.In:
-                            if(node.master.selectingPoint.type == ConnectionPointType.Out && (node.master.selectingPoint.pengVar.type == pengVar.type || pengVar.type == PengVariables.PengVarType.T))
+                        case PengScript.ConnectionPointType.In:
+                            if(node.master.selectingPoint.type == PengScript.ConnectionPointType.Out && (node.master.selectingPoint.pengVar.type == pengVar.type || pengVar.type == PengVariables.PengVarType.T))
                             {
                                 PengNode.NodeIDConnectionID thisConnection = new PengNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;
@@ -92,8 +86,8 @@ public class PengNodeConnection
                                 node.master.selectingPoint.node.varOutID[node.master.selectingPoint.index].Add(thisConnection);
                             }
                             break;
-                        case ConnectionPointType.Out:
-                            if (node.master.selectingPoint.type == ConnectionPointType.In && (node.master.selectingPoint.pengVar.type == pengVar.type || node.master.selectingPoint.pengVar.type == PengVariables.PengVarType.T))
+                        case PengScript.ConnectionPointType.Out:
+                            if (node.master.selectingPoint.type == PengScript.ConnectionPointType.In && (node.master.selectingPoint.pengVar.type == pengVar.type || node.master.selectingPoint.pengVar.type == PengVariables.PengVarType.T))
                             {
                                 PengNode.NodeIDConnectionID thisConnection = new PengNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;
@@ -107,14 +101,14 @@ public class PengNodeConnection
                                 node.master.selectingPoint.node.varInID[node.master.selectingPoint.index] = thisConnection;
                             }
                             break;
-                        case ConnectionPointType.FlowIn:
-                            if (node.master.selectingPoint.type == ConnectionPointType.FlowOut && node.master.selectingPoint.lineNum == 0)
+                        case PengScript.ConnectionPointType.FlowIn:
+                            if (node.master.selectingPoint.type == PengScript.ConnectionPointType.FlowOut && node.master.selectingPoint.lineNum == 0)
                             {
                                 node.master.selectingPoint.node.outID[node.master.selectingPoint.index] = node.nodeID;
                             }
                             break;
-                        case ConnectionPointType.FlowOut:
-                            if (node.master.selectingPoint.type == ConnectionPointType.FlowIn && lineNum == 0)
+                        case PengScript.ConnectionPointType.FlowOut:
+                            if (node.master.selectingPoint.type == PengScript.ConnectionPointType.FlowIn && lineNum == 0)
                             {
                                 node.outID[index] = node.master.selectingPoint.node.nodeID;
                             }

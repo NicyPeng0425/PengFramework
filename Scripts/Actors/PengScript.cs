@@ -5,13 +5,8 @@ using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 using System.Reflection;
-using static PengNode;
-using System.Security.Cryptography.X509Certificates;
-using static IfElse;
 using System.Xml;
 using System;
-using static GetTargetsByRange;
-using static UnityEditor.PlayerSettings;
 using Unity.VisualScripting;
 
 namespace PengScript
@@ -27,6 +22,14 @@ namespace PengScript
     /// 5. 在PengScript.cs里添加新脚本的运行时形式，包括构造函数及具体方法
     /// 6. 在PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法
     /// </summary>
+
+    public enum ConnectionPointType
+    {
+        In,
+        Out,
+        FlowIn,
+        FlowOut,
+    }
 
     public enum PengScriptType
     {
@@ -268,6 +271,24 @@ namespace PengScript
             }
             return str;
         }
+        public static string GetDescription(Enum value)
+        {
+            Type type = value.GetType();
+            string name = Enum.GetName(type, value);
+            if (name != null)
+            {
+                FieldInfo field = type.GetField(name);
+                if (field != null)
+                {
+                    DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                    if (attr != null)
+                    {
+                        return attr.Description.Split(",")[1];
+                    }
+                }
+            }
+            return null;
+        }
 
         public static List<string> ParseStringToStringList(string str)
         {
@@ -311,12 +332,28 @@ namespace PengScript
             }
             return result;
         }
+        public static Dictionary<int, int> ParseStringToDictionaryIntInt(string str)
+        {
+            Dictionary<int, int> result = new Dictionary<int, int>();
+            if (str == "")
+                return result;
+            string[] strings = str.Split(",");
+            if (strings.Length > 0)
+            {
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    string[] s = strings[i].Split(":");
+                    result.Add(int.Parse(s[0]), int.Parse(s[1]));
+                }
+            }
+            return result;
+        }
     }
 
     public class OnTrackExecute: BaseScript
     {
-        public PengInt pengTrackExecuteFrame = new PengInt(null, "轨道执行帧", 0, ConnectionPointType.Out);
-        public PengInt pengStateExecuteFrame = new PengInt(null, "状态执行帧", 0, ConnectionPointType.Out);
+        public PengInt pengTrackExecuteFrame = new PengInt("轨道执行帧", 0, ConnectionPointType.Out);
+        public PengInt pengStateExecuteFrame = new PengInt("状态执行帧", 0, ConnectionPointType.Out);
         public OnTrackExecute(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -348,11 +385,11 @@ namespace PengScript
 
     public class PlayAnimation : BaseScript
     {
-        public PengString pengAnimationName = new PengString(null, "动画名称", 0, ConnectionPointType.In);
-        public PengBool pengHardCut = new PengBool(null, "是否硬切", 1, ConnectionPointType.In);
-        public PengFloat pengTransitionNormalizedTime = new PengFloat(null, "过度时间", 2, ConnectionPointType.In);
-        public PengFloat pengStartAtNormalizedTime = new PengFloat(null, "开始时间", 3, ConnectionPointType.In);
-        public PengInt pengAnimationLayer = new PengInt(null, "动画层", 4, ConnectionPointType.Out);
+        public PengString pengAnimationName = new PengString("动画名称", 0, ConnectionPointType.In);
+        public PengBool pengHardCut = new PengBool("是否硬切", 1, ConnectionPointType.In);
+        public PengFloat pengTransitionNormalizedTime = new PengFloat("过度时间", 2, ConnectionPointType.In);
+        public PengFloat pengStartAtNormalizedTime = new PengFloat("开始时间", 3, ConnectionPointType.In);
+        public PengInt pengAnimationLayer = new PengInt("动画层", 4, ConnectionPointType.Out);
         public PlayAnimation(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -433,6 +470,13 @@ namespace PengScript
 
     public class IfElse : BaseScript
     {
+
+        public enum IfElseIfElse
+        {
+            If,
+            ElseIf,
+            Else
+        }
         public List<IfElseIfElse> conditionTypes = new List<IfElseIfElse>();
         public int executeNum = -1;
         public PengBool[] bools;
@@ -457,7 +501,7 @@ namespace PengScript
             scriptName = GetDescription(type);
             for (int i = 0; i < inVars.Length; i++)
             {
-                PengBool condition = new PengBool(null, "条件", i, ConnectionPointType.In);
+                PengBool condition = new PengBool("条件", i, ConnectionPointType.In);
                 inVars[i] = condition;
                 bools[i] = condition;
             }
@@ -547,7 +591,7 @@ namespace PengScript
 
     public class ValuePengInt : BaseScript
     {
-        public PengInt pengInt = new PengInt(null, "值", 0, ConnectionPointType.Out);
+        public PengInt pengInt = new PengInt("值", 0, ConnectionPointType.Out);
         public ValuePengInt(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -574,7 +618,7 @@ namespace PengScript
 
     public class ValuePengFloat : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat(null, "值", 0, ConnectionPointType.Out);
+        public PengFloat pengFloat = new PengFloat("值", 0, ConnectionPointType.Out);
         public ValuePengFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -600,7 +644,7 @@ namespace PengScript
 
     public class ValuePengString : BaseScript
     {
-        public PengString pengString = new PengString(null, "值", 0, ConnectionPointType.Out);
+        public PengString pengString = new PengString("值", 0, ConnectionPointType.Out);
         public ValuePengString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -626,7 +670,7 @@ namespace PengScript
 
     public class ValuePengBool : BaseScript
     {
-        public PengBool pengBool = new PengBool(null, "值", 0, ConnectionPointType.Out);
+        public PengBool pengBool = new PengBool("值", 0, ConnectionPointType.Out);
         public ValuePengBool(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -652,13 +696,23 @@ namespace PengScript
 
     public class GetTargetsByRange : BaseScript
     {
-        public RangeType rangeType = RangeType.Cylinder;
-        public PengList<PengActor> result = new PengList<PengActor>(null, "获取到的目标", 0, ConnectionPointType.Out);
+        public enum RangeType
+        {
+            [Description("圆柱体")]
+            Cylinder,
+            [Description("球体")]
+            Sphere,
+            [Description("盒形")]
+            Box,
+        }
 
-        public PengInt typeNum = new PengInt(null, "范围类型", 0, ConnectionPointType.In);
-        public PengInt pengCamp = new PengInt(null, "阵营", 1, ConnectionPointType.In);
-        public PengVector3 pengPara = new PengVector3(null, "参数", 2, ConnectionPointType.In);
-        public PengVector3 pengOffset = new PengVector3(null, "偏移", 3, ConnectionPointType.In);
+        public RangeType rangeType = RangeType.Cylinder;
+        public PengList<PengActor> result = new PengList<PengActor>("获取到的目标", 0, ConnectionPointType.Out);
+
+        public PengInt typeNum = new PengInt("范围类型", 0, ConnectionPointType.In);
+        public PengInt pengCamp = new PengInt("阵营", 1, ConnectionPointType.In);
+        public PengVector3 pengPara = new PengVector3("参数", 2, ConnectionPointType.In);
+        public PengVector3 pengOffset = new PengVector3("偏移", 3, ConnectionPointType.In);
         public GetTargetsByRange(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -789,10 +843,10 @@ namespace PengScript
 
     public class ForIterator : BaseScript
     {
-        public PengInt firstIndex = new PengInt(null, "首个指数", 0, ConnectionPointType.In);
-        public PengInt lastIndex = new PengInt(null, "末个指数", 1, ConnectionPointType.In);
+        public PengInt firstIndex = new PengInt("首个指数", 0, ConnectionPointType.In);
+        public PengInt lastIndex = new PengInt("末个指数", 1, ConnectionPointType.In);
 
-        public PengInt pengIndex = new PengInt(null, "指数", 0, ConnectionPointType.Out);
+        public PengInt pengIndex = new PengInt("指数", 0, ConnectionPointType.Out);
         public ForIterator(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -864,11 +918,11 @@ namespace PengScript
 
     public class ValuePengVector3 : BaseScript
     {
-        public PengFloat pengX = new PengFloat(null, "值", 0, ConnectionPointType.In);
-        public PengFloat pengY = new PengFloat(null, "值", 1, ConnectionPointType.In);
-        public PengFloat pengZ = new PengFloat(null, "值", 2, ConnectionPointType.In);
+        public PengFloat pengX = new PengFloat("值", 0, ConnectionPointType.In);
+        public PengFloat pengY = new PengFloat("值", 1, ConnectionPointType.In);
+        public PengFloat pengZ = new PengFloat("值", 2, ConnectionPointType.In);
 
-        public PengVector3 pengVector3 = new PengVector3(null, "值", 0, ConnectionPointType.Out);
+        public PengVector3 pengVector3 = new PengVector3("值", 0, ConnectionPointType.Out);
         public ValuePengVector3(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -940,7 +994,7 @@ namespace PengScript
 
     public class DebugLog : BaseScript
     {
-        public PengT pengT = new PengT(null, "对象", 0, ConnectionPointType.In);
+        public PengT pengT = new PengT("对象", 0, ConnectionPointType.In);
         public string str = "";
         public DebugLog(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
@@ -1047,9 +1101,9 @@ namespace PengScript
 
     public class ValueFloatToString : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat(null, "浮点", 0, ConnectionPointType.In);
+        public PengFloat pengFloat = new PengFloat("浮点", 0, ConnectionPointType.In);
 
-        public PengString pengString = new PengString(null, "文本", 0, ConnectionPointType.Out);
+        public PengString pengString = new PengString("文本", 0, ConnectionPointType.Out);
         public ValueFloatToString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -1108,7 +1162,7 @@ namespace PengScript
 
     public class TransState : BaseScript
     {
-        public PengString stateName = new PengString(null, "状态名称", 0, ConnectionPointType.In);
+        public PengString stateName = new PengString("状态名称", 0, ConnectionPointType.In);
         public TransState(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
