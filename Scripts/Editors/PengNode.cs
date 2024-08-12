@@ -6,9 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 using PengVariables;
-using static UnityEditor.PlayerSettings;
 using System.Linq;
-using static UnityEngine.Rendering.VolumeComponent;
 using PengScript;
 
 public class PengNode
