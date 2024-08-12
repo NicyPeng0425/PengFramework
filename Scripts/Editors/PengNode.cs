@@ -24,6 +24,7 @@ public class PengNode
     public string nodeName = "默认";
     public PengScript.PengScriptType scriptType;
     public Vector2 pos;
+    public Vector2 posChange = Vector2.zero;
     Rect m_Rect;
     public Rect rect
     { 
@@ -35,6 +36,7 @@ public class PengNode
         {
             m_Rect = value;
             pos = m_Rect.position;
+            posChange = pos;
         }
     }
     public Rect rectSmall;
@@ -254,9 +256,8 @@ public class PengNode
         else
         {
             pos += change;
-
         }
-        
+
         rect = new Rect(pos.x, pos.y, rect.width, rect.height);
         rectSmall = new Rect(rect.x, rect.y + rect.height, rect.width, rect.height);
     }
@@ -1558,6 +1559,58 @@ public class ValueFloatToString : PengNode
         if (info != "")
         {
             pengFloat.value = float.Parse(info);
+        }
+    }
+}
+
+public class TransState : PengNode
+{
+    public PengString stateName;
+
+    public TransState(Vector2 pos, PengActorStateEditorWindow master, ref PengTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengVar[1];
+        outVars = new PengVar[0];
+        stateName = new PengString(this, "状态名称", 0, ConnectionPointType.In);
+        inVars[0] = stateName;
+
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.TransState;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        if (varInID[0].nodeID < 0)
+        {
+            Rect field = new Rect(inVars[0].varRect.x + 45, inVars[0].varRect.y, 65, 18);
+            stateName.value = EditorGUI.TextField(field, stateName.value);
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return stateName.value;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            stateName.value = info;
         }
     }
 }

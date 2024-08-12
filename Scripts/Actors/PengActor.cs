@@ -44,7 +44,171 @@ public class PengActor : MonoBehaviour
     [HideInInspector]
     public PengBlackBoard<PengActor> bb;
     [HideInInspector]
-    public PengBuffManager<PengActor> buff;
+    public PengBuffManager buff;
+
+    [HideInInspector]
+    float m_attackPower;
+    [HideInInspector]
+    public float attackPower
+    {
+        get 
+        {
+            if (buff.buffs.Count > 0)
+            {
+                float change = 0;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    change += buff.attackPowerPercent * m_attackPower;
+                    change += buff.attackPowerValue;
+                }
+                return m_attackPower + change;
+            }
+            else
+            {
+                return m_attackPower;
+            }
+        }
+        set { m_attackPower = value; }
+    }
+    [HideInInspector]
+    float m_defendPower;
+    [HideInInspector]
+    public float defendPower
+    {
+        get
+        {
+            if (buff.buffs.Count > 0)
+            {
+                float change = 0;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    change += buff.defendPowerPercent * m_defendPower;
+                    change += buff.defendPowerValue;
+                }
+                return m_defendPower + change;
+            }
+            else
+            {
+                return m_defendPower;
+            }
+        }
+        set { m_defendPower = value; }
+    }
+    [HideInInspector]
+    float m_criticalRate;
+    [HideInInspector]
+    public float criticalRate
+    {
+        get
+        {
+            if (buff.buffs.Count > 0)
+            {
+                float change = 0;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    change += buff.criticalRateValue;
+                }
+                return m_criticalRate + change;
+            }
+            else
+            {
+                return m_criticalRate;
+            }
+        }
+        set { m_criticalRate = value; }
+    }
+    float m_criticalDamageRatio;
+    [HideInInspector]
+    public float criticalDamageRatio
+    {
+        get
+        {
+            if (buff.buffs.Count > 0)
+            {
+                float change = 0;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    change += buff.criticalDamageRatioValue;
+                }
+                return m_criticalDamageRatio + change;
+            }
+            else
+            {
+                return m_criticalDamageRatio;
+            }
+        }
+        set { m_criticalDamageRatio = value; }
+    }
+    [HideInInspector]
+    float m_maxHP;
+    [HideInInspector]
+    float m_currentHP;
+    [HideInInspector]
+    public float currentHP
+    {
+        get { return m_currentHP; }
+        set {
+            bool yes = false;
+            if (buff.buffs.Count > 0)
+            {
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    if (buff.invincible) { yes = true; }
+                }
+            }
+            if (yes && value < currentHP)
+            {
+                currentHP = value;
+            }
+            else
+            {
+                if (value >= m_maxHP) { m_currentHP = m_maxHP; }
+                else if (value <= 0) { m_currentHP = 0; OnDie(); }
+                else { m_currentHP = value; }
+            }
+        }
+    }
+    [HideInInspector]
+    public bool underGravity
+    {
+        get {
+            if (buff.buffs.Count > 0)
+            {
+                bool yes = false;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    if (buff.notEffectedByGravity) { yes = true; }
+                }
+                return yes;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    [HideInInspector]
+    public bool unbreakable
+    {
+        get
+        {
+            if (buff.buffs.Count > 0)
+            {
+                bool yes = false;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    if (buff.unBreakable) { yes = true; }
+                }
+                return yes;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    [HideInInspector]
+    public bool isGrounded;
 
     private void Awake()
     {
@@ -52,8 +216,8 @@ public class PengActor : MonoBehaviour
         ctrl = this.GetComponent<CharacterController>();
         this.AddComponent<PengActorControl>();
         bb = new PengBlackBoard<PengActor>(this);
-        buff = this.AddComponent<PengBuffManager<PengActor>>();
-        buff.owner = this;
+        buff = this.AddComponent<PengBuffManager>();
+        buff.actorOwner = this;
         LoadActorState();
     }
     // Start is called before the first frame update
@@ -90,12 +254,13 @@ public class PengActor : MonoBehaviour
     public void ProcessStateChange(bool actively)
     {
         ProcessStateEnd();
+        buff.ProcessStateChange(actively);
     }
 
 
     public void ProcessStateEnd()
     {
-
+        buff.ProcessStateEnd();
     }
 
     public void LoadActorState()
@@ -121,19 +286,26 @@ public class PengActor : MonoBehaviour
                                 return;
                             }    
                         }
-                        
                         if (son.Name == "ActorName")
                         {
                             actorName = son.GetAttribute("ActorName");
                             continue;
                         }
-
                         if (son.Name == "Camp")
                         {
                             actorCamp = int.Parse(son.GetAttribute("Camp"));
                             continue;
                         }
-
+                        if (son.Name == "Attribute")
+                        {
+                            m_maxHP = float.Parse(son.GetAttribute("MaxHP"));
+                            currentHP = m_maxHP;
+                            attackPower = float.Parse(son.GetAttribute("AttackPower"));
+                            defendPower = float.Parse(son.GetAttribute("DefendPower"));
+                            criticalRate = float.Parse(son.GetAttribute("CriticalRate"));
+                            criticalDamageRatio = float.Parse(son.GetAttribute("CriticalDamageRatio"));
+                            continue;
+                        }
                     }
                     continue;
                 }
@@ -164,5 +336,10 @@ public class PengActor : MonoBehaviour
         {
             TransState(initalName, true);
         }
+    }
+
+    public void OnDie()
+    {
+
     }
 }

@@ -36,7 +36,7 @@ namespace PengScript
         DebugLog,
         [Description("1,播放动画,表现,B,高封装")]
         PlayAnimation,
-        [Description("0,切换状态,功能,Q,高封装")]
+        [Description("1,切换状态,功能,Q,高封装")]
         TransState,
         [Description("1,范围获取目标,功能,F,高封装")]
         GetTargetsByRange,
@@ -1102,6 +1102,70 @@ namespace PengScript
                     PengFloat pf1 = varSource as PengFloat;
                     pengFloat.value = pf1.value;
                     break;
+            }
+        }
+    }
+
+    public class TransState : BaseScript
+    {
+        public PengString stateName = new PengString(null, "状态名称", 0, ConnectionPointType.In);
+        public TransState(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                stateName.value = specialInfo;
+            }
+            type = PengScriptType.TransState;
+            scriptName = GetDescription(type);
+            inVars[0] = stateName;
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID[0].scriptID > 0)
+            {
+                PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID[0].scriptID, varInID[0].varID);
+                vari.script.GetValue();
+                SetValue(0, vari);
+            }
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengString ps = varSource as PengString;
+                    stateName.value = ps.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            if (actor.actorStates.ContainsKey(stateName.value))
+            {
+                actor.TransState(stateName.value, true);
+            }
+            else
+            {
+                Debug.Log("Actor" + actor.actorID.ToString() + "在" + actor.currentName + "状态的" + trackMaster.name + "轨道中调用了切换状态，但没有给定名称的状态。");
             }
         }
     }

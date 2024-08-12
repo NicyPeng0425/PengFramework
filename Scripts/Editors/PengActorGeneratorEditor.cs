@@ -251,6 +251,7 @@ public class PengActorGeneratorEditor : EditorWindow
                 AnimationClip clip1 = Resources.Load("Animations/" + actorID.ToString() + "/" + actorID + "@Idle") as AnimationClip;
                 List<PengTrack> track = new List<PengTrack>();
                 PengTrack enterTrack1 = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
+                InitialAnimation(ref enterTrack1, "Idle");
                 if (clip1 != null)
                 {
                     //如果能读取到片段，可以直接给enterTrack1附加一个播放动画的节点，并和轨道执行连接起来
@@ -278,9 +279,10 @@ public class PengActorGeneratorEditor : EditorWindow
 
                         List<PengTrack> track1 = new List<PengTrack>();
                         PengTrack enterTrack = new PengTrack(PengTrack.ExecTime.Enter, "OnEnter", 0, 0, null, true);
+                        InitialAnimation(ref enterTrack, statesLength.ElementAt(i).Key);
+
                         if (clip != null)
                         {
-                            //如果能读取到片段，可以直接给enterTrack附加一个播放动画的节点，并和轨道执行连接起来
                             state.motion = clip;
                             clip.frameRate = globalFrameRate;
                             statesLength[statesLength.ElementAt(i).Key] = Mathf.FloorToInt(clip.length * globalFrameRate);
@@ -327,6 +329,49 @@ public class PengActorGeneratorEditor : EditorWindow
 
         }
         EditorGUILayout.EndVertical();
+    }
+
+    public void InitialAnimation(ref PengTrack enterTrack, string stateName)
+    {
+        PengNode animNode = new PlayAnimation(enterTrack.nodes[0].pos + new Vector2(300, 0), null, ref enterTrack, 2,
+                            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                            PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), "");
+        PengNode.NodeIDConnectionID nici1 = PengNode.DefaultNodeIDConnectionID();
+        nici1.nodeID = 3;
+        nici1.connectionID = 0;
+        PengNode.NodeIDConnectionID nici2 = PengNode.DefaultNodeIDConnectionID();
+        nici2.nodeID = 4;
+        nici2.connectionID = 0;
+        PengNode.NodeIDConnectionID nici3 = PengNode.DefaultNodeIDConnectionID();
+        nici3.nodeID = 5; 
+        nici3.connectionID = 0;
+        animNode.varInID[0] = nici1;
+        animNode.varInID[1] = nici2;
+        animNode.varInID[4] = nici3;
+
+        ValuePengString stringNode = new ValuePengString(enterTrack.nodes[0].pos + new Vector2(0, 80), null, ref enterTrack, 3,
+            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
+        stringNode.pengString.value = stateName;
+
+        ValuePengBool boolNode = new ValuePengBool(enterTrack.nodes[0].pos + new Vector2(0, 160), null, ref enterTrack, 4,
+            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
+        boolNode.pengBool.value = true;
+
+        ValuePengInt intNode = new ValuePengInt(enterTrack.nodes[0].pos + new Vector2(0, 240), null, ref enterTrack, 5,
+            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
+        intNode.pengInt.value = 0;
+        enterTrack.nodes[0].outID[0] = 2;
+        enterTrack.nodes.Add(animNode);
+        enterTrack.nodes.Add(stringNode);
+        enterTrack.nodes.Add(boolNode);
+        enterTrack.nodes.Add(intNode);
     }
 
     public void DrawStates()

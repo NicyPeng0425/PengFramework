@@ -11,15 +11,16 @@ public class PengGameManager : MonoBehaviour
     
     public List<PengActor> actors;
     public PengBlackBoard<PengGameManager> bb;
-    public PengBuffManager<PengGameManager> buff;
+    public PengBuffManager buff;
 
     private void Awake()
     {
         ReadGlobalFrameRate();
+        Physics.gravity = Vector3.zero;
         this.tag = "PengGameManager";
         bb = new PengBlackBoard<PengGameManager>(this);
-        buff = this.AddComponent<PengBuffManager<PengGameManager>>();
-        buff.owner = this;
+        buff = this.AddComponent<PengBuffManager>();
+        buff.gameOwner = this;
     }
     // Start is called before the first frame update
     void Start()

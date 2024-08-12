@@ -104,9 +104,11 @@ public class PengEditorMain : EditorWindow
             CreateResourcesDirectory("/Animations");
             CreateResourcesDirectory("/GlobalConfiguration");
             CreateResourcesDirectory("/ActorData");
+            CreateResourcesDirectory("/BuffData");
 
             AddTag("PengGameManager");
             AddTag("PengActor");
+            AddTag("Temporary");
             AddLayer("PengActor", 30);
 
             GameObject gameManager = new GameObject();
