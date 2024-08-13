@@ -9,6 +9,7 @@ using PengVariables;
 using System.Linq;
 using PengScript;
 using System.Security.Cryptography.X509Certificates;
+using static PengScript.MathCompare;
 
 public class PengNode
 {
@@ -1241,8 +1242,6 @@ public class ValuePengBool : PengNode
 
 public class GetTargetsByRange : PengNode
 {
-    
-
     public PengEditorVariables.PengList<PengActor> result;
     public PengScript.GetTargetsByRange.RangeType rangeType = PengScript.GetTargetsByRange.RangeType.Cylinder;
     public PengEditorVariables.PengInt typeNum;
@@ -1838,6 +1837,88 @@ public class ValueIntToFloat : PengNode
         if (info != "")
         {
             pengInt.value = int.Parse(info);
+        }
+    }
+}
+
+public class SetBlackBoardVariables : PengNode
+{
+    public PengEditorVariables.PengString varName;
+    public PengEditorVariables.PengT value;
+    public PengEditorVariables.PengInt targetType;
+
+    public PengScript.BBTarget BBTarget;
+    public BBTargetCN BBTargetCN;
+
+    public SetBlackBoardVariables(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[3];
+        outVars = new PengEditorVariables.PengVar[0];
+        varName = new PengEditorVariables.PengString(this, "变量名", 0, ConnectionPointType.In);
+        value = new PengEditorVariables.PengT(this, "值", 1, ConnectionPointType.In);
+        targetType = new PengEditorVariables.PengInt(this, "目标类型", 2, ConnectionPointType.In);
+        inVars[0] = varName;
+        inVars[1] = value;
+        inVars[2] = targetType;
+        targetType.point = null;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.SetBlackBoardVariables;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 3;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 3; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        varName.value = EditorGUI.TextField(field, varName.value);
+                        break;
+                    case 1:
+                        
+                        break;
+                    case 2:
+                        BBTarget = (BBTarget)((int)(BBTargetCN)EditorGUI.EnumPopup(field, BBTargetCN));
+                        targetType.value = (int)BBTarget;
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return varName.value + "," + targetType.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            varName.value = str[0];
+            targetType.value = int.Parse(str[1]);
+            BBTarget = (PengScript.BBTarget)targetType.value;
+            BBTargetCN = (BBTargetCN)targetType.value;
         }
     }
 }

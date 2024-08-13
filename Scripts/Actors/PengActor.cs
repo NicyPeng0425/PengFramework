@@ -220,7 +220,8 @@ public class PengActor : MonoBehaviour
     {
         anim = this.GetComponent<Animator>();
         ctrl = this.GetComponent<CharacterController>();
-        this.AddComponent<PengActorControl>();
+        input = this.AddComponent<PengActorControl>();
+        input.actor = this;
         bb = new PengBlackBoard<PengActor>(this);
         buff = this.AddComponent<PengBuffManager>();
         buff.actorOwner = this;
@@ -364,4 +365,5 @@ public class PengActor : MonoBehaviour
     {
 
     }
+
 }

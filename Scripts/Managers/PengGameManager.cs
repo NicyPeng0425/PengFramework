@@ -8,11 +8,17 @@ using UnityEngine;
 public class PengGameManager : MonoBehaviour
 {
     public float globalFrameRate = 60;
-    
-    public List<PengActor> actors;
-    public PengBlackBoard<PengGameManager> bb;
-    public PengBuffManager buff;
 
+    [HideInInspector]
+    public List<PengActor> actors;
+    [HideInInspector]
+    public PengBlackBoard<PengGameManager> bb;
+    [HideInInspector]
+    public PengBuffManager buff;
+    [HideInInspector]
+    public PengActorInput input;
+    [HideInInspector]
+    public Camera main;
 
     public Coroutine globalTimeScaleCoroutine = null;
     private void Awake()
@@ -22,7 +28,10 @@ public class PengGameManager : MonoBehaviour
         this.tag = "PengGameManager";
         bb = new PengBlackBoard<PengGameManager>(this);
         buff = this.AddComponent<PengBuffManager>();
+        main = GameObject.FindWithTag("MainCamera").GetComponent<Camera>(); 
         buff.gameOwner = this;
+        input = new PengActorInput();
+        input.Enable();
     }
     // Start is called before the first frame update
     void Start()

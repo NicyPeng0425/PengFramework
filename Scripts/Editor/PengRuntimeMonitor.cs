@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -45,6 +46,10 @@ public class PengRuntimeMonitor : EditorWindow
         if (game.actors.Count > 0)
         {
             GUIStyle buffStyle = new GUIStyle("AnimationEventTooltip");
+            GUIStyle bbKeyStyle = new GUIStyle("ContentToolbar");
+            GUIStyle bbValueStyle = new GUIStyle("ContentToolbar");
+            bbKeyStyle.alignment = TextAnchor.MiddleLeft;
+            bbValueStyle.alignment = TextAnchor.MiddleLeft;
 
             EditorGUILayout.BeginVertical(GUILayout.Width(position.width - 10), GUILayout.Height(position.height - 10));
             GUILayout.Space(20);
@@ -78,6 +83,59 @@ public class PengRuntimeMonitor : EditorWindow
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.BeginVertical();
+                if (game.actors[i].bb.intBB.Count > 0)
+                {
+                    EditorGUILayout.BeginVertical();
+                    GUILayout.Label("整型黑板：", GUILayout.Width(80));
+                    for (int j = 0; j < game.actors[i].bb.intBB.Count; j++)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        GUILayout.Label(game.actors[i].bb.intBB.ElementAt(j).Key, bbKeyStyle, GUILayout.Width(80));
+                        GUILayout.Label(game.actors[i].bb.intBB.ElementAt(j).Value.ToString(), bbValueStyle, GUILayout.Width(80));
+                        EditorGUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (game.actors[i].bb.floatBB.Count > 0)
+                {
+                    EditorGUILayout.BeginVertical();
+                    GUILayout.Label("浮点黑板：", GUILayout.Width(80));
+                    for (int j = 0; j < game.actors[i].bb.floatBB.Count; j++)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        GUILayout.Label(game.actors[i].bb.floatBB.ElementAt(j).Key, bbKeyStyle, GUILayout.Width(80));
+                        GUILayout.Label(game.actors[i].bb.floatBB.ElementAt(j).Value.ToString(), bbValueStyle, GUILayout.Width(80));
+                        EditorGUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (game.actors[i].bb.stringBB.Count > 0)
+                {
+                    EditorGUILayout.BeginVertical();
+                    GUILayout.Label("字符串黑板：", GUILayout.Width(80));
+                    for (int j = 0; j < game.actors[i].bb.stringBB.Count; j++)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        GUILayout.Label(game.actors[i].bb.stringBB.ElementAt(j).Key, bbKeyStyle, GUILayout.Width(80));
+                        GUILayout.Label(game.actors[i].bb.stringBB.ElementAt(j).Value.ToString(), bbValueStyle, GUILayout.Width(80));
+                        EditorGUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (game.actors[i].bb.boolBB.Count > 0)
+                {
+                    EditorGUILayout.BeginVertical();
+                    GUILayout.Label("布尔黑板：", GUILayout.Width(80));
+                    for (int j = 0; j < game.actors[i].bb.boolBB.Count; j++)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        GUILayout.Label(game.actors[i].bb.boolBB.ElementAt(j).Key, bbKeyStyle, GUILayout.Width(80));
+                        GUILayout.Label(game.actors[i].bb.boolBB.ElementAt(j).Value.ToString(), bbValueStyle, GUILayout.Width(80));
+                        EditorGUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                GUILayout.Label("角色Buff：", GUILayout.Width(80));
                 string buffList = "";
                 if (game.actors[i].buff.buffs.Count > 0)
                 {
@@ -90,10 +148,8 @@ public class PengRuntimeMonitor : EditorWindow
                         }
                     }
                 }
-                GUILayout.Label("角色Buff：", GUILayout.Width(80));
                 GUILayout.Label(buffList, buffStyle, GUILayout.Width(80));
                 EditorGUILayout.EndVertical();
-
 
                 EditorGUILayout.EndVertical();
             }

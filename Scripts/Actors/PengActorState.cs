@@ -191,6 +191,8 @@ public class PengActorState : IPengActorState
                 return new MathCompare(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValueIntToFloat:
                 return new ValueIntToFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.SetBlackBoardVariables:
+                return new SetBlackBoardVariables(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

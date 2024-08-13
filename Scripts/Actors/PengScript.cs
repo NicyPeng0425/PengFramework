@@ -61,10 +61,10 @@ namespace PengScript
         SetVisibility,
         [Description("0,伤害流程,功能,S,高封装")]
         AttackDamage,
-        [Description("0,设置黑板变量,功能,S,低封装")]
+        [Description("1,设置黑板变量,功能,S,低封装")]
         SetBlackBoardVariables,
-        [Description("0,获取黑板变量,功能,H,低封装")]
-        GetBlackBoardVariables,
+        [Description("0,获取浮点黑板变量,值,H,低封装")]
+        GetFloatBlackBoardVariables,
         [Description("0,输入分歧,功能,S,高封装")]
         GetInput,
         [Description("1,条件分歧,分歧,T,低封装")]
@@ -1233,6 +1233,7 @@ namespace PengScript
             }
         }
     }
+
     public class BreakPoint : BaseScript
     {
         public BreakPoint(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
@@ -1498,6 +1499,160 @@ namespace PengScript
                 case 0:
                     PengInt pf1 = varSource as PengInt;
                     pengInt.value = pf1.value;
+                    break;
+            }
+        }
+    }
+
+    public enum BBTarget
+    {
+        Self = 0,
+        Global = 1,
+        Targets = 2,
+    }
+
+    public enum BBTargetCN
+    {
+        自身 = 0,
+        全局 = 1,
+        目标 = 2,
+    }
+
+    public class SetBlackBoardVariables : BaseScript
+    {
+        public PengString varName = new PengString("变量名", 0, ConnectionPointType.In);
+        public PengT value = new PengT("值", 1, ConnectionPointType.In);
+        public PengInt targetType = new PengInt("目标类型", 2, ConnectionPointType.In);
+
+        public BBTarget target;
+
+        public SetBlackBoardVariables(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.SetBlackBoardVariables;
+            scriptName = GetDescription(type);
+            inVars[0] = varName;
+            inVars[1] = value;
+            inVars[2] = targetType;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                varName.value = str[0];
+                targetType.value = int.Parse(str[1]);
+                target = (BBTarget)targetType.value;
+            }
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengString ps = varSource as PengString;
+                    varName.value = ps.value;
+                    break;
+                case 1:
+                    value.value = varSource;
+                    break;
+                case 2:
+                    PengInt pi = varSource as PengInt;
+                    targetType.value = pi.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            switch (target)
+            {
+                case BBTarget.Self:
+                    SetBBVar(varName.value, value, actor.bb);
+                    break;
+                case BBTarget.Global:
+                    SetBBVar(varName.value, value, actor.game.bb);
+                    break;
+                case BBTarget.Targets:
+                    if (actor.targets.Count > 0)
+                    {
+                        for (int i = 0; i < actor.targets.Count; i++)
+                        {
+                            SetBBVar(varName.value, value, actor.targets[i].bb);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        public void SetBBVar(string name, PengT var, PengBlackBoard<PengGameManager> bb)
+        {
+            switch (var.value.GetType().FullName)
+            {
+                case "PengInt":
+                    PengInt pi = var.value as PengInt;
+                    bb.SetBBVar(name, pi.value);
+                    break;
+                case "PengFloat":
+                    PengFloat pf = var.value as PengFloat;
+                    bb.SetBBVar(name, pf.value);
+                    break;
+                case "PengString":
+                    PengString ps = var.value as PengString;
+                    bb.SetBBVar(name, ps.value);
+                    break;
+                case "PengBool":
+                    PengBool pb = var.value as PengBool;
+                    bb.SetBBVar(name, pb.value);
+                    break;
+                case "PengActor":
+                    PengPengActor ppa = var.value as PengPengActor;
+                    bb.SetBBVar(name, ppa.value);
+                    break;
+                default:
+                    Debug.LogWarning("不支持的黑板变量类型。");
+                    break;
+            }
+        }
+
+        public void SetBBVar(string name, PengT var, PengBlackBoard<PengActor> bb)
+        {
+            switch (var.value.GetType().FullName)
+            {
+                case "PengVariables.PengInt":
+                    PengInt pi = var.value as PengInt;
+                    bb.SetBBVar(name, pi.value);
+                    break;
+                case "PengVariables.PengFloat":
+                    PengFloat pf = var.value as PengFloat;
+                    bb.SetBBVar(name, pf.value);
+                    break;
+                case "PengVariables.PengString":
+                    PengString ps = var.value as PengString;
+                    bb.SetBBVar(name, ps.value);
+                    break;
+                case "PengVariables.PengBool":
+                    PengBool pb = var.value as PengBool;
+                    bb.SetBBVar(name, pb.value);
+                    break;
+                case "PengVariables.PengActor":
+                    PengPengActor ppa = var.value as PengPengActor;
+                    bb.SetBBVar(name, ppa.value);
+                    break;
+                default:
+                    Debug.LogWarning("不支持的黑板变量类型。");
                     break;
             }
         }
