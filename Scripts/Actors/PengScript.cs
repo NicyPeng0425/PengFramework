@@ -63,8 +63,18 @@ namespace PengScript
         AttackDamage,
         [Description("1,设置黑板变量,功能,S,低封装")]
         SetBlackBoardVariables,
-        [Description("0,获取浮点黑板变量,值,H,低封装")]
-        GetFloatBlackBoardVariables,
+        [Description("0,获取整型变量,值,H,低封装")]
+        GetIntVariables,
+        [Description("0,获取浮点变量,值,H,低封装")]
+        GetFloatVariables,
+        [Description("0,获取字符变量,值,H,低封装")]
+        GetStringVariables,
+        [Description("0,获取布尔变量,值,H,低封装")]
+        GetBoolVariables,
+        [Description("0,获取Actor,值,H,低封装")]
+        GetPengActorVariables,
+        [Description("0,获取列表变量,值,H,低封装")]
+        GetListVariables,
         [Description("0,输入分歧,功能,S,高封装")]
         GetInput,
         [Description("1,条件分歧,分歧,T,低封装")]
@@ -119,6 +129,10 @@ namespace PengScript
         ValueIntToFloat,
         [Description("0,着地分歧,分歧,Z,高封装")]
         OnGround,
+        [Description("1,自定义事件,事件,Z,高封装")]
+        CustomEvent,
+        [Description("1,事件触发,事件,X,高封装")]
+        OnEvent,
     }
 
     public struct ScriptIDVarID
@@ -1655,6 +1669,141 @@ namespace PengScript
                     Debug.LogWarning("不支持的黑板变量类型。");
                     break;
             }
+        }
+    }
+
+    public class OnEvent : BaseScript
+    {
+        public PengString eventName = new PengString("事件名称", 0, ConnectionPointType.In);
+
+        public PengInt intMessage = new PengInt("整型参数", 0, ConnectionPointType.Out);
+        public PengFloat floatMessage = new PengFloat("浮点参数", 1, ConnectionPointType.Out);
+        public PengString stringMessage = new PengString("字符串参数", 2, ConnectionPointType.Out);
+        public PengBool boolMessage = new PengBool("布尔参数", 3 , ConnectionPointType.Out);
+        public OnEvent(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[4];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.OnEvent;
+            scriptName = GetDescription(type);
+            eventName.value = specialInfo;
+            if (eventName.value == "")
+            {
+                Debug.LogWarning("存在事件触发脚本，其事件名称为空。");
+            }
+            inVars[0] = eventName;
+            outVars[0] = intMessage;
+            outVars[1] = floatMessage;
+            outVars[2] = stringMessage;
+            outVars[3] = boolMessage;
+        }
+
+        public override void Initial()
+        {
+        }
+
+        public void EventTrigger(int intMsg, float floatMsg, string stringMsg, bool boolMsg)
+        {
+            intMessage.value = intMsg;
+            floatMessage.value = floatMsg;
+            stringMessage.value = stringMsg;
+            boolMessage.value = boolMsg;
+            Execute();
+        }
+    }
+
+    public class CustomEvent : BaseScript
+    {
+        public PengString eventName = new PengString("事件名称", 0, ConnectionPointType.In);
+
+        public PengInt intMessage = new PengInt("整型参数", 1, ConnectionPointType.In);
+        public PengFloat floatMessage = new PengFloat("浮点参数", 2, ConnectionPointType.In);
+        public PengString stringMessage = new PengString("字符串参数", 3, ConnectionPointType.In);
+        public PengBool boolMessage = new PengBool("布尔参数", 4, ConnectionPointType.In);
+        public CustomEvent(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.CustomEvent;
+            scriptName = GetDescription(type);
+            inVars[0] = eventName;
+            inVars[1] = intMessage;
+            inVars[2] = floatMessage;
+            inVars[3] = stringMessage;
+            inVars[4] = boolMessage;
+
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                eventName.value = str[0];
+                intMessage.value = int.Parse(str[1]);
+                floatMessage.value = float.Parse(str[2]);
+                stringMessage.value = str[3];
+                boolMessage.value = int.Parse(str[4]) > 0;
+            }
+        }
+
+        public override void Initial()
+        {
+            Debug.Log(11111);
+            base.Initial();
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengString ps = varSource as PengString;
+                    eventName.value = ps.value;
+                    break;
+                case 1:
+                    PengInt pb = varSource as PengInt;
+                    intMessage.value = pb.value;
+                    break;
+                case 2:
+                    PengFloat pf1 = varSource as PengFloat;
+                    floatMessage.value = pf1.value;
+                    break;
+                case 3:
+                    PengString pf2 = varSource as PengString;
+                    stringMessage.value = pf2.value;
+                    break;
+                case 4:
+                    PengBool pi = varSource as PengBool;
+                    boolMessage.value = pi.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            actor.game.eventManager.TriggerEvent(eventName.value, intMessage.value, floatMessage.value, stringMessage.value, boolMessage.value);
         }
     }
 }

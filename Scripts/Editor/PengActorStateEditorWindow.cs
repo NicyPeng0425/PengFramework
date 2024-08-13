@@ -1500,6 +1500,26 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
+            case PengScript.PengScriptType.OnEvent:
+                if (editGlobal)
+                {
+                    track.nodes.Add(new OnEvent(mousePos, this, ref track, id,
+                        PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                        PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(4)),
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("警告", "不允许在全局节点图以外的地方放置事件触发节点。", "确认");
+                }
+                break;
+            case PengScript.PengScriptType.CustomEvent:
+                track.nodes.Add(new CustomEvent(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
+                break;
+
         }
     }
 
@@ -1681,34 +1701,69 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void ProcessRemoveNode(PengNode node)
     {
-        if (tracks[currentSelectedTrack].nodes.Count > 1)
+        if (!editGlobal)
         {
-            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+            if (tracks[currentSelectedTrack].nodes.Count > 1)
             {
-                if (tracks[currentSelectedTrack].nodes[i].outID.Count > 0)
+                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
                 {
-                    for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].outID.Count; j++)
+                    if (tracks[currentSelectedTrack].nodes[i].outID.Count > 0)
                     {
-                        if (tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                        for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].outID.Count; j++)
                         {
-                            tracks[currentSelectedTrack].nodes[i].outID[j] = -1;
+                            if (tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                            {
+                                tracks[currentSelectedTrack].nodes[i].outID[j] = -1;
+                            }
                         }
                     }
-                }
 
-                if (tracks[currentSelectedTrack].nodes[i].varInID.Count > 0)
-                {
-                    for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].varInID.Count; j++)
+                    if (tracks[currentSelectedTrack].nodes[i].varInID.Count > 0)
                     {
-                        if (tracks[currentSelectedTrack].nodes[i].varInID.ElementAt(j).Value.nodeID == node.nodeID)
+                        for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].varInID.Count; j++)
                         {
-                            tracks[currentSelectedTrack].nodes[i].varInID[j] = PengNode.DefaultNodeIDConnectionID();
+                            if (tracks[currentSelectedTrack].nodes[i].varInID.ElementAt(j).Value.nodeID == node.nodeID)
+                            {
+                                tracks[currentSelectedTrack].nodes[i].varInID[j] = PengNode.DefaultNodeIDConnectionID();
+                            }
                         }
                     }
                 }
             }
+            tracks[currentSelectedTrack].nodes.Remove(node);
         }
-        tracks[currentSelectedTrack].nodes.Remove(node);
+        else
+        {
+            if (globalTrack.nodes.Count > 1)
+            {
+                for (int i = 0; i < globalTrack.nodes.Count; i++)
+                {
+                    if (globalTrack.nodes[i].outID.Count > 0)
+                    {
+                        for (int j = 0; j < globalTrack.nodes[i].outID.Count; j++)
+                        {
+                            if (globalTrack.nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                            {
+                                globalTrack.nodes[i].outID[j] = -1;
+                            }
+                        }
+                    }
+
+                    if (globalTrack.nodes[i].varInID.Count > 0)
+                    {
+                        for (int j = 0; j < globalTrack.nodes[i].varInID.Count; j++)
+                        {
+                            if (globalTrack.nodes[i].varInID.ElementAt(j).Value.nodeID == node.nodeID)
+                            {
+                                globalTrack.nodes[i].varInID[j] = PengNode.DefaultNodeIDConnectionID();
+                            }
+                        }
+                    }
+                }
+            }
+            globalTrack.nodes.Remove(node);
+        }
+        
     }
 
     private void DragAllNodes(Vector2 change)
@@ -1730,7 +1785,6 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             if (globalTrack.nodes.Count > 0)
             {
-                Debug.Log(2);
                 for (int i = 0; i < globalTrack.nodes.Count; i++)
                 {
                     
@@ -2087,6 +2141,10 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new ValueIntToFloat(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.SetBlackBoardVariables:
                 return new SetBlackBoardVariables(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.OnEvent:
+                return new OnEvent(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.CustomEvent:
+                return new CustomEvent(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 

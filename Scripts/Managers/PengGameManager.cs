@@ -21,6 +21,7 @@ public class PengGameManager : MonoBehaviour
     public Camera main;
 
     public Coroutine globalTimeScaleCoroutine = null;
+    public PengEventManager eventManager;
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -28,7 +29,9 @@ public class PengGameManager : MonoBehaviour
         this.tag = "PengGameManager";
         bb = new PengBlackBoard<PengGameManager>(this);
         buff = this.AddComponent<PengBuffManager>();
-        main = GameObject.FindWithTag("MainCamera").GetComponent<Camera>(); 
+        main = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+        eventManager = new PengEventManager();
+        eventManager.game = this;
         buff.gameOwner = this;
         input = new PengActorInput();
         input.Enable();

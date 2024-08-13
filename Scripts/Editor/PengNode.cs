@@ -10,6 +10,7 @@ using System.Linq;
 using PengScript;
 using System.Security.Cryptography.X509Certificates;
 using static PengScript.MathCompare;
+using Meryel.UnityCodeAssist.YamlDotNet.Core;
 
 public class PengNode
 {
@@ -1919,6 +1920,156 @@ public class SetBlackBoardVariables : PengNode
             targetType.value = int.Parse(str[1]);
             BBTarget = (PengScript.BBTarget)targetType.value;
             BBTargetCN = (BBTargetCN)targetType.value;
+        }
+    }
+}
+
+public class OnEvent : PengNode
+{
+    public PengEditorVariables.PengString eventName;
+
+    public PengEditorVariables.PengInt intMessage;
+    public PengEditorVariables.PengFloat floatMessage;
+    public PengEditorVariables.PengString stringMessage;
+    public PengEditorVariables.PengBool boolMessage;
+
+    public OnEvent(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[4];
+        intMessage = new PengEditorVariables.PengInt(this, "整型参数", 0, ConnectionPointType.Out);
+        floatMessage = new PengEditorVariables.PengFloat(this, "浮点参数", 1, ConnectionPointType.Out);
+        stringMessage = new PengEditorVariables.PengString(this, "字符串参数", 2, ConnectionPointType.Out);
+        boolMessage = new PengEditorVariables.PengBool(this, "布尔参数", 3, ConnectionPointType.Out);
+        eventName = new PengEditorVariables.PengString(this, "事件名称", 0, ConnectionPointType.In);
+
+        outVars[0] = intMessage;
+        outVars[1] = floatMessage;
+        outVars[2] = stringMessage;
+        outVars[3] = boolMessage;
+        eventName.point = null;
+        inVars[0] = eventName;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Event;
+        scriptType = PengScript.PengScriptType.OnEvent;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 4;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        Rect field = new Rect(inVars[0].varRect.x + 45, inVars[0].varRect.y, 65, 18);
+        eventName.value = EditorGUI.TextField(field, eventName.value);
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return eventName.value;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        eventName.value = info;
+    }
+}
+
+public class CustomEvent : PengNode
+{
+    public PengEditorVariables.PengString eventName;
+
+    public PengEditorVariables.PengInt intMessage;
+    public PengEditorVariables.PengFloat floatMessage;
+    public PengEditorVariables.PengString stringMessage;
+    public PengEditorVariables.PengBool boolMessage;
+
+    public CustomEvent(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[5];
+        outVars = new PengEditorVariables.PengVar[0];
+        intMessage = new PengEditorVariables.PengInt(this, "整型参数", 1, ConnectionPointType.In);
+        floatMessage = new PengEditorVariables.PengFloat(this, "浮点参数", 2, ConnectionPointType.In);
+        stringMessage = new PengEditorVariables.PengString(this, "字符串参数", 3, ConnectionPointType.In);
+        boolMessage = new PengEditorVariables.PengBool(this, "布尔参数", 4, ConnectionPointType.In);
+        eventName = new PengEditorVariables.PengString(this, "事件名称", 0, ConnectionPointType.In);
+        inVars[0] = eventName;
+        inVars[1] = intMessage;
+        inVars[2] = floatMessage;
+        inVars[3] = stringMessage;
+        inVars[4] = boolMessage;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.CustomEvent;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 5;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 5; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        eventName.value = EditorGUI.TextField(field, eventName.value);
+                        break;
+                    case 1:
+                        intMessage.value = EditorGUI.IntField(field, intMessage.value);
+                        break;
+                    case 2:
+                        floatMessage.value = EditorGUI.FloatField(field, floatMessage.value);
+                        break;
+                    case 3:
+                        stringMessage.value = EditorGUI.TextField(field, stringMessage.value);
+                        break;
+                    case 4:
+                        boolMessage.value = EditorGUI.Toggle(field, boolMessage.value);
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return eventName.value + "," + intMessage.value.ToString() + "," + floatMessage.value.ToString() + "," + stringMessage.value + "," + (boolMessage.value ? "1" : "0");
+    }
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            eventName.value = str[0];
+            intMessage.value = int.Parse(str[1]);
+            floatMessage.value = float.Parse(str[2]);
+            stringMessage.value = str[3];
+            boolMessage.value = int.Parse(str[4]) > 0;
         }
     }
 }

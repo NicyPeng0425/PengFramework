@@ -193,6 +193,10 @@ public class PengActorState : IPengActorState
                 return new ValueIntToFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.SetBlackBoardVariables:
                 return new SetBlackBoardVariables(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.OnEvent:
+                return new OnEvent(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.CustomEvent:
+                return new CustomEvent(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }
