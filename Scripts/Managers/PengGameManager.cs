@@ -13,6 +13,8 @@ public class PengGameManager : MonoBehaviour
     public PengBlackBoard<PengGameManager> bb;
     public PengBuffManager buff;
 
+
+    public Coroutine globalTimeScaleCoroutine = null;
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -66,6 +68,25 @@ public class PengGameManager : MonoBehaviour
             Application.Quit();
 #endif
         }
+    }
+
+    public void GloablTimeScaleFunc(float timeScale, float duration)
+    {
+        if (globalTimeScaleCoroutine != null)
+        {
+            StopCoroutine(globalTimeScaleCoroutine);
+            globalTimeScaleCoroutine = null;
+            Time.timeScale = 1;
+        }
+        globalTimeScaleCoroutine = StartCoroutine(GlobalTimeScale(timeScale, duration));
+    }
+
+    IEnumerator GlobalTimeScale(float timeScale, float duration)
+    {
+        Time.timeScale = timeScale;
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1;
+        yield break;
     }
 
     

@@ -308,7 +308,14 @@ public class PengActorGeneratorEditor : EditorWindow
                 actorNew.tag = "PengActor";
                 actorNew.layer = LayerMask.NameToLayer("PengActor");
                 actorNew.name = "Actor" + actorID.ToString();
-
+                foreach (SkinnedMeshRenderer smr in actorNew.GetComponentsInChildren<SkinnedMeshRenderer>())
+                {
+                    pa.smrs.Add(smr);
+                }
+                foreach (MeshRenderer mr in actorNew.GetComponentsInChildren<MeshRenderer>())
+                {
+                    pa.mrs.Add(mr);
+                }
 
                 PengActorStateEditorWindow.SaveActorData(actorID, actorCamp, actorName, stateGroup, stateTrack, statesLength, statesLoop, true);
 

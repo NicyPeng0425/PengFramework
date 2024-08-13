@@ -16,7 +16,10 @@ public class PengActor : MonoBehaviour
 
     [HideInInspector]
     public static string initalName = "Idle";
-
+    [HideInInspector]
+    public List<SkinnedMeshRenderer> smrs = new List<SkinnedMeshRenderer>();
+    [HideInInspector]
+    public List<MeshRenderer> mrs = new List<MeshRenderer>();
     //运行时动态数据
     [HideInInspector]
     public string currentName;

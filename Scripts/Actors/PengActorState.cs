@@ -185,6 +185,8 @@ public class PengActorState : IPengActorState
                 return new PengScript.TransState(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.BreakPoint:
                 return new PengScript.BreakPoint(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.GlobalTimeScale:
+                return new PengScript.GlobalTimeScale(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Xml;
 using System;
 using Unity.VisualScripting;
 using UnityEditor;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PengScript
 {
@@ -44,7 +45,7 @@ namespace PengScript
         TransState,
         [Description("1,范围获取目标,功能,F,高封装")]
         GetTargetsByRange,
-        [Description("0,全局时间变速,功能,Q,高封装")]
+        [Description("1,全局时间变速,功能,Q,高封装")]
         GlobalTimeScale,
         [Description("0,播放音频,表现,B,高封装")]
         PlayAudio,
@@ -149,7 +150,7 @@ namespace PengScript
         public Dictionary<int, int> flowOutInfo = new Dictionary<int, int>();
         public Dictionary<int, ScriptIDVarID> varInID = new Dictionary<int, ScriptIDVarID>();
 
-
+        //构造函数中调用，根据特殊信息对脚本进行初始化
         public virtual void Construct(string specialInfo)
         {
 
@@ -165,7 +166,7 @@ namespace PengScript
 
         public virtual void Initial()
         {
-            //执行前的初始化
+            //单次执行前的初始化
             if (varInID.Count > 0 && inVars.Length > 0)
             {
                 for (int i = 0; i < varInID.Count; i++)
@@ -180,11 +181,13 @@ namespace PengScript
             }
         }
 
+        //不执行也想获得该节点的计算值，则可以重写并调用此方法
         public virtual void GetValue()
         {
 
         }
 
+        //有值流入的都需要写
         public virtual void SetValue(int inVarID, PengVar varSource)
         {
 
@@ -197,7 +200,7 @@ namespace PengScript
 
         public virtual void ScriptFlowNext()
         {
-            //脚本流
+            //脚本流，除了分支和迭代，基本不需要重写
             if (trackMaster != null && trackMaster.scripts.Count > 0)
             {
                 if (flowOutInfo.Count > 0)
@@ -219,7 +222,7 @@ namespace PengScript
                 }
             }
         }
-
+        //不需要动
         public void InitialPengVars()
         {
             if (inVars.Length > 0)
@@ -1258,6 +1261,61 @@ namespace PengScript
                 EditorApplication.isPaused = true;
             }
 #endif
+        }
+    }
+
+    public class GlobalTimeScale : BaseScript
+    {
+        public PengFloat timeScale = new PengFloat("时间速度", 0, ConnectionPointType.In);
+        public PengFloat duration = new PengFloat("持续时间", 1, ConnectionPointType.In);
+
+        public GlobalTimeScale(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                timeScale.value = float.Parse(str[0]);
+                duration.value = float.Parse(str[1]);
+            }
+            inVars[0] = timeScale;
+            inVars[1] = duration;
+            type = PengScriptType.GlobalTimeScale;
+            scriptName = GetDescription(type);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf = varSource as PengFloat;
+                    timeScale.value = pf.value;
+                    break;
+                case 1:
+                    PengFloat pf1 = varSource as PengFloat;
+                    duration.value = pf1.value;
+                    break;
+            }
+        }
+
+        public override void Function()
+        {
+            base.Function();
+            actor.game.GloablTimeScaleFunc(timeScale.value, duration.value);
         }
     }
 }

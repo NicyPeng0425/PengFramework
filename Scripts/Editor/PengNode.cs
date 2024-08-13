@@ -8,6 +8,7 @@ using System.Reflection;
 using PengVariables;
 using System.Linq;
 using PengScript;
+using System.Security.Cryptography.X509Certificates;
 
 public class PengNode
 {
@@ -1627,5 +1628,74 @@ public class BreakPoint : PengNode
     public override void Draw()
     {
         base.Draw();
+    }
+}
+
+public class GlobalTimeScale : PengNode
+{
+    public PengEditorVariables.PengFloat timeScale;
+    public PengEditorVariables.PengFloat duration;
+    public GlobalTimeScale(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[2];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        timeScale = new PengEditorVariables.PengFloat(this, "时间速度", 0, ConnectionPointType.In);
+        duration = new PengEditorVariables.PengFloat(this, "持续时间", 1, ConnectionPointType.In);
+
+        inVars[0] = timeScale;
+        inVars[1] = duration;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.GlobalTimeScale;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 2;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 2; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        timeScale.value = EditorGUI.FloatField(field, timeScale.value);
+                        break;
+                    case 1:
+                        duration.value = EditorGUI.FloatField(field, duration.value);
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return timeScale.value.ToString() + "," + duration.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            timeScale.value = float.Parse(str[0]);
+            duration.value = float.Parse(str[1]);
+        }
     }
 }
