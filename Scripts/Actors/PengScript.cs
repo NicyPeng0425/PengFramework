@@ -93,7 +93,7 @@ namespace PengScript
         MathDivide,
         [Description("0,平方,运算,P,低封装")]
         MathSquare,
-        [Description("0,比较,运算,B,低封装")]
+        [Description("1,比较,运算,B,低封装")]
         MathCompare,
         [Description("0,布尔运算,运算,B,低封装")]
         MathBool,
@@ -115,6 +115,8 @@ namespace PengScript
         ValueFloatToString,
         [Description("1,断点,调试,D,低封装")]
         BreakPoint,
+        [Description("1,整型转浮点,值,Z,低封装")]
+        ValueIntToFloat,
     }
 
     public struct ScriptIDVarID
@@ -1316,6 +1318,186 @@ namespace PengScript
         {
             base.Function();
             actor.game.GloablTimeScaleFunc(timeScale.value, duration.value);
+        }
+    }
+
+    public class MathCompare : BaseScript
+    {
+        public enum CompareType
+        {
+            Less = 0,
+            NoLess = 1,
+            Larger = 2,
+            NoLarger = 3,
+            Equal = 4,
+            NotEqual = 5,
+        }
+
+        public enum CompareTypeCN
+        {
+            小于 = 0,
+            不小于 = 1,
+            大于 = 2,
+            不大于 = 3,
+            等于 = 4,
+            不等于 = 5,
+        }
+
+        public PengFloat compare1 = new PengFloat("比较数一", 0, ConnectionPointType.In);
+        public PengInt compareType = new PengInt("比较方式", 1, ConnectionPointType.In);
+        public PengFloat compare2 = new PengFloat("比较数二", 2, ConnectionPointType.In);
+
+        public CompareType compare;
+
+        public PengBool result = new PengBool("结果", 0, ConnectionPointType.Out);
+        public MathCompare(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.MathCompare;
+            scriptName = GetDescription(type);
+            inVars[0] = compare1;
+            inVars[1] = compareType;
+            inVars[2] = compare2;
+            outVars[0] = result;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                compare1.value = float.Parse(str[0]);
+                compareType.value = int.Parse(str[1]);
+                compare = (PengScript.MathCompare.CompareType)compareType.value;
+                compare2.value = float.Parse(str[2]);
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            switch (compare)
+            {
+                case CompareType.Less:
+                    result.value = compare1.value < compare2.value;
+                    break;
+                case CompareType.NoLess:
+                    result.value = compare1.value >= compare2.value;
+                    break;
+                case CompareType.Larger:
+                    result.value = compare1.value > compare2.value;
+                    break;
+                case CompareType.NoLarger:
+                    result.value = compare1.value <= compare2.value;
+                    break;
+                case CompareType.Equal:
+                    result.value = compare1.value == compare2.value;
+                    break;
+                case CompareType.NotEqual:
+                    result.value = compare1.value != compare2.value;
+                    break;
+            }
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf1 = varSource as PengFloat;
+                    compare1.value = pf1.value;
+                    break;
+                case 1:
+                    PengInt pf2 = varSource as PengInt;
+                    compareType.value = pf2.value;
+                    break;
+                case 2:
+                    PengFloat pf3 = varSource as PengFloat;
+                    compare2.value = pf3.value;
+                    break;
+            }
+        }
+    }
+
+    public class ValueIntToFloat : BaseScript
+    {
+        public PengFloat pengFloat = new PengFloat("浮点", 0, ConnectionPointType.Out);
+
+        public PengInt pengInt = new PengInt("整型", 0, ConnectionPointType.In);
+        public ValueIntToFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.ValueIntToFloat;
+            scriptName = GetDescription(type);
+            inVars[0] = pengInt;
+            outVars[0] = pengFloat;
+            if (specialInfo != "")
+            {
+                pengInt.value = int.Parse(specialInfo);
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            pengFloat.value = (float)pengInt.value;
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengInt pf1 = varSource as PengInt;
+                    pengInt.value = pf1.value;
+                    break;
+            }
         }
     }
 }

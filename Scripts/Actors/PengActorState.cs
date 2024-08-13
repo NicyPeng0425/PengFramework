@@ -158,35 +158,39 @@ public class PengActorState : IPengActorState
             default:
                 return null;
             case PengScriptType.OnTrackExecute:
-                return new PengScript.OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new OnTrackExecute(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.DebugLog:
-                return new PengScript.DebugLog(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new DebugLog(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.PlayAnimation:
-                return new PengScript.PlayAnimation(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new PlayAnimation(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.IfElse:
-                return new PengScript.IfElse(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new IfElse(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengInt:
-                return new PengScript.ValuePengInt(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValuePengInt(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengFloat:
-                return new PengScript.ValuePengFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValuePengFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengString:
-                return new PengScript.ValuePengString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValuePengString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengBool:
-                return new PengScript.ValuePengBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValuePengBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.GetTargetsByRange:
-                return new PengScript.GetTargetsByRange(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new GetTargetsByRange(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ForIterator:
-                return new PengScript.ForIterator(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ForIterator(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValuePengVector3:
-                return new PengScript.ValuePengVector3(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValuePengVector3(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.ValueFloatToString:
-                return new PengScript.ValueFloatToString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new ValueFloatToString(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.TransState:
-                return new PengScript.TransState(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new TransState(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.BreakPoint:
-                return new PengScript.BreakPoint(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new BreakPoint(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.GlobalTimeScale:
-                return new PengScript.GlobalTimeScale(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+                return new GlobalTimeScale(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.MathCompare:
+                return new MathCompare(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValueIntToFloat:
+                return new ValueIntToFloat(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

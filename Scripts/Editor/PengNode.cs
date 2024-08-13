@@ -1699,3 +1699,145 @@ public class GlobalTimeScale : PengNode
         }
     }
 }
+
+public class MathCompare : PengNode
+{
+    public PengScript.MathCompare.CompareType compare;
+    public PengScript.MathCompare.CompareTypeCN compareCN;
+
+    public PengEditorVariables.PengFloat compare1;
+    public PengEditorVariables.PengInt compareType;
+    public PengEditorVariables.PengFloat compare2;
+
+    public PengEditorVariables.PengBool result;
+
+    public MathCompare(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inVars = new PengEditorVariables.PengVar[3];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        compare1 = new PengEditorVariables.PengFloat(this, "比较数一", 0, ConnectionPointType.In);
+        compareType = new PengEditorVariables.PengInt(this, "比较方式", 1, ConnectionPointType.In);
+        compare2 = new PengEditorVariables.PengFloat(this, "比较数二", 2, ConnectionPointType.In);
+        result = new PengEditorVariables.PengBool(this, "结果", 0, ConnectionPointType.Out);
+        compare = PengScript.MathCompare.CompareType.Less;
+
+        inVars[0] = compare1;
+        inVars[1] = compareType;
+        inVars[2] = compare2;
+        outVars[0] = result;
+
+        compareType.point = null;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.MathCompare;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 3;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 3; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        compare1.value = EditorGUI.FloatField(field, compare1.value);
+                        break;
+                    case 1:
+                        compare = (PengScript.MathCompare.CompareType)((int)(PengScript.MathCompare.CompareTypeCN)EditorGUI.EnumPopup(field, compareCN));
+                        compareType.value = (int)compare;
+                        break;
+                    case 2:
+                        compare2.value = EditorGUI.FloatField(field, compare2.value);
+                        break;
+                }
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        string compareInt = ((int)compare).ToString();
+        return compare1.value.ToString() + "," + compareInt + "," + compare2.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            compare1.value = float.Parse(str[0]);
+            compareType.value = int.Parse(str[1]);
+            compareCN = (PengScript.MathCompare.CompareTypeCN)compareType.value;
+            compare = (PengScript.MathCompare.CompareType)compareType.value;
+            compare2.value = float.Parse(str[2]);
+        }
+    }
+}
+
+public class ValueIntToFloat : PengNode
+{
+    public PengEditorVariables.PengFloat pengFloat;
+
+    public PengEditorVariables.PengInt pengInt;
+
+    public ValueIntToFloat(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        pengFloat = new PengEditorVariables.PengFloat(this, "浮点", 0, ConnectionPointType.Out);
+        pengInt = new PengEditorVariables.PengInt(this, "整型", 0, ConnectionPointType.In);
+
+        inVars[0] = pengInt;
+        outVars[0] = pengFloat;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValueIntToFloat;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        if (varInID[0].nodeID < 0)
+        {
+            Rect field = new Rect(inVars[0].varRect.x + 45, inVars[0].varRect.y, 65, 18);
+            pengInt.value = EditorGUI.IntField(field, pengInt.value);
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return pengInt.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            pengInt.value = int.Parse(info);
+        }
+    }
+}
