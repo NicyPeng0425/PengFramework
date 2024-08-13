@@ -45,7 +45,6 @@ public class PengActor : MonoBehaviour
     public PengBlackBoard<PengActor> bb;
     [HideInInspector]
     public PengBuffManager buff;
-
     [HideInInspector]
     float m_attackPower;
     [HideInInspector]
