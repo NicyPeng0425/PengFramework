@@ -221,6 +221,8 @@ public class PengActor : MonoBehaviour
     }
     [HideInInspector]
     public bool isGrounded;
+    [HideInInspector]
+    public AudioSource speaker;
 
     private void Awake()
     {
@@ -231,6 +233,7 @@ public class PengActor : MonoBehaviour
         bb = new PengBlackBoard<PengActor>(this);
         buff = this.AddComponent<PengBuffManager>();
         buff.actorOwner = this;
+        speaker = this.AddComponent<AudioSource>();
         LoadActorState();
     }
     // Start is called before the first frame update

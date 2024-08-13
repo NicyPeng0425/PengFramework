@@ -33,7 +33,7 @@ public class PengTrack
     {
         if (scripts.Count > 0)
         {
-            scripts[0].Execute();
+            scripts[0].Execute(0);
         }
     }
 

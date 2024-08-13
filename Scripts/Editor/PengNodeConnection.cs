@@ -104,13 +104,19 @@ public class PengNodeConnection
                         case PengScript.ConnectionPointType.FlowIn:
                             if (node.master.selectingPoint.type == PengScript.ConnectionPointType.FlowOut && node.master.selectingPoint.lineNum == 0)
                             {
-                                node.master.selectingPoint.node.outID[node.master.selectingPoint.index] = node.nodeID;
+                                PengNode.NodeIDConnectionID nici = new PengNode.NodeIDConnectionID();
+                                nici.nodeID = node.nodeID;
+                                nici.connectionID = index;
+                                node.master.selectingPoint.node.outID[node.master.selectingPoint.index] = nici;
                             }
                             break;
                         case PengScript.ConnectionPointType.FlowOut:
                             if (node.master.selectingPoint.type == PengScript.ConnectionPointType.FlowIn && lineNum == 0)
                             {
-                                node.outID[index] = node.master.selectingPoint.node.nodeID;
+                                PengNode.NodeIDConnectionID nici = new PengNode.NodeIDConnectionID();
+                                nici.nodeID = node.master.selectingPoint.node.nodeID;
+                                nici.connectionID = node.master.selectingPoint.index;
+                                node.outID[index] = nici;
                             }
                             break;
                     }

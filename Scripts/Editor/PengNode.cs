@@ -58,14 +58,14 @@ public class PengNode
         public int connectionID;
     }
 
-    public PengNodeConnection inPoint;
+    public PengNodeConnection[] inPoints;
     public PengNodeConnection[] outPoints;
     public PengEditorVariables.PengVar[] inVars;
     public PengEditorVariables.PengVar[] outVars;
 
-    //第x个FlowOut连接点，链接到哪个节点的FlowIn节点。因为所有节点只有一个FlowIn，所以只需要记载节点ID
+    //第x个FlowOut连接点，链接到哪个节点的FlowIn节点
     //Value取值为-1时表示该点没有链接
-    public Dictionary<int, int> outID = new Dictionary<int, int>();
+    public Dictionary<int, NodeIDConnectionID> outID = new Dictionary<int, NodeIDConnectionID>();
     //第x个VarOut连接点，链接到哪些节点的哪一VarIn连接点。因为VarOut可以链接多个点，所以用List
     //List.Count为0时表示没有链接
     public Dictionary<int, List<NodeIDConnectionID>> varOutID = new Dictionary<int, List<NodeIDConnectionID>>();
@@ -94,7 +94,12 @@ public class PengNode
         Rect rectScale = new Rect();
         if (type != NodeType.Value)
         {
-            rect = new Rect(rect.x, rect.y, rect.width, 26 * outPoints.Length);
+            int i = outPoints.Length;
+            if (inPoints.Length > outPoints.Length)
+            {
+                i = inPoints.Length;
+            }
+            rect = new Rect(rect.x, rect.y, rect.width, 26 * i);
             rectScale = new Rect(rect.x, rect.y, rect.width * master.currentScale, rect.height * master.currentScale);
         }
         else
@@ -126,7 +131,14 @@ public class PengNode
                 GUIStyle style1 = new GUIStyle("flow node 1" + (isSelected ? " on" : ""));
                 style1.fontStyle = FontStyle.Bold;
                 GUI.Box(rectScale, nodeName, style1);
-                inPoint.Draw(rectScale);
+                if (inPoints.Length > 0)
+                {
+                    for (int i = 0; i < inPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
+                        inPoints[i].Draw(rectMulti);
+                    }
+                }
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
@@ -140,7 +152,14 @@ public class PengNode
                 GUIStyle style2 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
                 style2.fontStyle = FontStyle.Bold;
                 GUI.Box(rectScale, nodeName, style2);
-                inPoint.Draw(rectScale);
+                if (inPoints.Length > 0)
+                {
+                    for (int i = 0; i < inPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
+                        inPoints[i].Draw(rectMulti);
+                    }
+                }
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
@@ -154,7 +173,14 @@ public class PengNode
                 GUIStyle style5 = new GUIStyle("flow node 4" + (isSelected ? " on" : ""));
                 style5.fontStyle = FontStyle.Bold;
                 GUI.Box(rectScale, nodeName, style5);
-                inPoint.Draw(rectScale);
+                if (inPoints.Length > 0)
+                {
+                    for (int i = 0; i < inPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (26 + 52 * i) * master.currentScale);
+                        inPoints[i].Draw(rectMulti);
+                    }
+                }
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
@@ -201,16 +227,18 @@ public class PengNode
         {
             for (int i = 0; i < outID.Count; i++)
             {
-                if (outID.ElementAt(i).Value > 0)
+                if (outID.ElementAt(i).Value.nodeID > 0)
                 {
-                    Handles.DrawBezier(GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center, outPoints[i].rect.center, GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center + Vector2.left * 40f, outPoints[i].rect.center - Vector2.left * 40f, Color.white, null, 6f);
+                    Handles.DrawBezier(GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center, outPoints[i].rect.center, GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center + Vector2.left * 40f, outPoints[i].rect.center - Vector2.left * 40f, Color.white, null, 6f);
                     
                     Vector2 buttonSize = new Vector2(20, 20);
-                    Vector2 lineCenter = (GetNodeByNodeID(outID.ElementAt(i).Value).inPoint.rect.center + outPoints[i].rect.center) * 0.5f;
+                    Vector2 lineCenter = (GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center + outPoints[i].rect.center) * 0.5f;
 
                     if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "×"))
                     {
-                        outID[i] = -1;
+                        NodeIDConnectionID nici = new NodeIDConnectionID();
+                        nici.nodeID = -1;
+                        outID[i] = nici;
                     }
                 }
             }
@@ -691,17 +719,36 @@ public class PengNode
         Dictionary<int, NodeIDConnectionID> result = new Dictionary<int, NodeIDConnectionID> ();
         if(str == "")
             return result;
-        string[] strings = str.Split(";");
-        if (strings.Length > 0)
+        if (str.Contains("|"))
         {
-            for (int i = 0; i < strings.Length; i++)
+            string[] strings = str.Split(";");
+            if (strings.Length > 0)
             {
-                string[] s1 = strings[i].Split("|");
-                string[] s2 = s1[1].Split(":");
-                NodeIDConnectionID nici = new NodeIDConnectionID();
-                nici.nodeID = int.Parse(s2[0]);
-                nici.connectionID = int.Parse(s2[1]);
-                result.Add(int.Parse(s1[0]), nici);
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    string[] s1 = strings[i].Split("|");
+                    string[] s2 = s1[1].Split(":");
+                    NodeIDConnectionID nici = new NodeIDConnectionID();
+                    nici.nodeID = int.Parse(s2[0]);
+                    nici.connectionID = int.Parse(s2[1]);
+                    result.Add(int.Parse(s1[0]), nici);
+                }
+            }
+        }
+        else
+        {
+            string[] strings = str.Split(",");
+            if (strings.Length > 0)
+            {
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    string[] s1 = strings[i].Split(":");
+
+                    NodeIDConnectionID nici = new NodeIDConnectionID();
+                    nici.nodeID = int.Parse(s1[1]);
+                    nici.connectionID = 0;
+                    result.Add(int.Parse(s1[0]), nici);
+                }
             }
         }
         return result;
@@ -767,12 +814,12 @@ public class OnTrackExecute : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -809,11 +856,11 @@ public class PlayAnimation : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[5];
@@ -852,13 +899,13 @@ public class IfElse: PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
         this.ReadSpecialParaDescription(specialInfo);
 
-
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[this.outID.Count];
         inVars = new PengEditorVariables.PengVar[this.varInID.Count];
         paraNum = this.varInID.Count;
@@ -982,8 +1029,9 @@ public class IfElse: PengNode
         }
         newOutPoints[newOutPoints.Length - 1] = new PengNodeConnection(ConnectionPointType.FlowOut, inVars.Length - 1, this, null);
         outPoints = newOutPoints;
-
-        outID.Add(newInVars.Length - 1, -1);
+        NodeIDConnectionID nici = new NodeIDConnectionID();
+        nici.nodeID = -1;
+        outID.Add(newInVars.Length - 1, nici);
         varInID.Add(newInVars.Length - 1, DefaultNodeIDConnectionID());
         paraNum++;
         
@@ -1043,11 +1091,11 @@ public class ValuePengInt : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -1096,11 +1144,11 @@ public class ValuePengFloat : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -1149,11 +1197,11 @@ public class ValuePengString : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -1196,11 +1244,11 @@ public class ValuePengBool : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         //outPoints = new PengNodeConnection[1];
         //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -1255,11 +1303,12 @@ public class GetTargetsByRange : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
 
@@ -1340,15 +1389,16 @@ public class ForIterator : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
         this.ReadSpecialParaDescription(specialInfo);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[2];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        outPoints[1] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        outPoints[1] = new PengNodeConnection(ConnectionPointType.FlowOut, 1, this, null);
 
         inVars = new PengEditorVariables.PengVar[this.varInID.Count];
         paraNum = this.varInID.Count;
@@ -1394,7 +1444,7 @@ public class ValuePengVector3 : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
@@ -1468,11 +1518,11 @@ public class DebugLog : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[1];
@@ -1504,7 +1554,7 @@ public class ValueFloatToString : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
@@ -1557,11 +1607,11 @@ public class TransState : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[1];
@@ -1608,11 +1658,11 @@ public class BreakPoint : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -1640,11 +1690,11 @@ public class GlobalTimeScale : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[2];
@@ -1716,7 +1766,7 @@ public class MathCompare : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
@@ -1798,7 +1848,7 @@ public class ValueIntToFloat : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
@@ -1856,11 +1906,11 @@ public class SetBlackBoardVariables : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[3];
@@ -1938,11 +1988,11 @@ public class OnEvent : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[1];
@@ -1999,11 +2049,11 @@ public class CustomEvent : PengNode
         InitialDraw(pos, master);
         this.trackMaster = trackMaster;
         this.nodeID = nodeID;
-        this.outID = ParseStringToDictionaryIntInt(outID);
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoint = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[5];

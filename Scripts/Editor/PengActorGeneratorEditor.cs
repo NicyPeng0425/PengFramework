@@ -10,6 +10,7 @@ using System.IO;
 using static UnityEditor.VersionControl.Asset;
 using System.ComponentModel;
 using UnityEditor.Experimental.GraphView;
+using PengScript;
 
 public class PengActorGeneratorEditor : EditorWindow
 {
@@ -342,7 +343,7 @@ public class PengActorGeneratorEditor : EditorWindow
     public void InitialAnimation(ref PengEditorTrack enterTrack, string stateName)
     {
         PengNode animNode = new PlayAnimation(enterTrack.nodes[0].pos + new Vector2(300, 0), null, ref enterTrack, 2,
-                            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                             PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                             PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), "");
         PengNode.NodeIDConnectionID nici1 = PengNode.DefaultNodeIDConnectionID();
@@ -359,23 +360,26 @@ public class PengActorGeneratorEditor : EditorWindow
         animNode.varInID[4] = nici3;
 
         ValuePengString stringNode = new ValuePengString(enterTrack.nodes[0].pos + new Vector2(0, 80), null, ref enterTrack, 3,
-            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
             PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
             PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
         stringNode.pengString.value = stateName;
 
         ValuePengBool boolNode = new ValuePengBool(enterTrack.nodes[0].pos + new Vector2(0, 160), null, ref enterTrack, 4,
-            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
             PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
             PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
         boolNode.pengBool.value = true;
 
         ValuePengInt intNode = new ValuePengInt(enterTrack.nodes[0].pos + new Vector2(0, 240), null, ref enterTrack, 5,
-            PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+            PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
             PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
             PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), "");
         intNode.pengInt.value = 0;
-        enterTrack.nodes[0].outID[0] = 2;
+        PengNode.NodeIDConnectionID sivi = new PengNode.NodeIDConnectionID();
+        sivi.nodeID = 2;
+        sivi.connectionID = 0;
+        enterTrack.nodes[0].outID[0] = sivi;
         enterTrack.nodes.Add(animNode);
         enterTrack.nodes.Add(stringNode);
         enterTrack.nodes.Add(boolNode);
@@ -663,6 +667,8 @@ public class PengActorGeneratorEditor : EditorWindow
                     for (int j = 0; j < animOld.layers[i].stateMachine.states.Length; j++)
                     {
                         AnimatorState state = animOld.layers[i].stateMachine.states[j].state;
+                        AnimatorState newState = new AnimatorState();
+                        EditorUtility.CopySerialized(state, newState);
                         if ((File.Exists(Application.dataPath + "/Resources/Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name + ".anim")))
                         {
                             AnimationClip clip = Resources.Load("Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name) as AnimationClip;
@@ -677,9 +683,9 @@ public class PengActorGeneratorEditor : EditorWindow
                             }
                             AssetDatabase.CreateAsset(newClip, "Assets/Resources/Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name + ".anim");
                             AnimationClip clip1 = Resources.Load("Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name) as AnimationClip;
-                            state.motion = clip1;
+                            newState.motion = clip1;
                         }
-                        animNew.layers[i].stateMachine.AddState(state, animOld.layers[i].stateMachine.states[j].position);
+                        animNew.layers[i].stateMachine.AddState(newState, animOld.layers[i].stateMachine.states[j].position);
                     }
                 }
 

@@ -1400,103 +1400,103 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             case PengScript.PengScriptType.PlayAnimation:
                 track.nodes.Add(new PlayAnimation(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
                 break;
             case PengScript.PengScriptType.IfElse:
                 track.nodes.Add(new IfElse(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case PengScript.PengScriptType.ValuePengInt:
                 track.nodes.Add(new ValuePengInt(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case PengScript.PengScriptType.ValuePengFloat:
                 track.nodes.Add(new ValuePengFloat(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case PengScript.PengScriptType.ValuePengString:
                 track.nodes.Add(new ValuePengString(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case PengScript.PengScriptType.ValuePengBool:
                 track.nodes.Add(new ValuePengBool(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case PengScript.PengScriptType.GetTargetsByRange:
                 track.nodes.Add(new GetTargetsByRange(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(4)), ""));
                 break;
             case PengScript.PengScriptType.ForIterator:
                 track.nodes.Add(new ForIterator(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(2)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
                 break;
             case PengScript.PengScriptType.ValuePengVector3:
                 track.nodes.Add(new ValuePengVector3(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
             case PengScript.PengScriptType.DebugLog:
                 track.nodes.Add(new DebugLog(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case PengScript.PengScriptType.ValueFloatToString:
                 track.nodes.Add(new ValueFloatToString(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case PengScript.PengScriptType.TransState:
                 track.nodes.Add(new TransState(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case PengScript.PengScriptType.BreakPoint:
                 track.nodes.Add(new BreakPoint(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case PengScript.PengScriptType.GlobalTimeScale:
                 track.nodes.Add(new GlobalTimeScale(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
                 break;
             case PengScript.PengScriptType.MathCompare:
                 track.nodes.Add(new MathCompare(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
             case PengScript.PengScriptType.ValueIntToFloat:
                 track.nodes.Add(new ValueIntToFloat(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case PengScript.PengScriptType.SetBlackBoardVariables:
                 track.nodes.Add(new SetBlackBoardVariables(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
@@ -1504,7 +1504,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 if (editGlobal)
                 {
                     track.nodes.Add(new OnEvent(mousePos, this, ref track, id,
-                        PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                         PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(4)),
                         PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 }
@@ -1515,7 +1515,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 break;
             case PengScript.PengScriptType.CustomEvent:
                 track.nodes.Add(new CustomEvent(mousePos, this, ref track, id,
-                    PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(5)), ""));
                 break;
@@ -1711,9 +1711,11 @@ public class PengActorStateEditorWindow : EditorWindow
                     {
                         for (int j = 0; j < tracks[currentSelectedTrack].nodes[i].outID.Count; j++)
                         {
-                            if (tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                            if (tracks[currentSelectedTrack].nodes[i].outID.ElementAt(j).Value.nodeID == node.nodeID)
                             {
-                                tracks[currentSelectedTrack].nodes[i].outID[j] = -1;
+                                PengNode.NodeIDConnectionID nici = new PengNode.NodeIDConnectionID();
+                                nici.nodeID = -1;
+                                tracks[currentSelectedTrack].nodes[i].outID[j] = nici;
                             }
                         }
                     }
@@ -1742,9 +1744,11 @@ public class PengActorStateEditorWindow : EditorWindow
                     {
                         for (int j = 0; j < globalTrack.nodes[i].outID.Count; j++)
                         {
-                            if (globalTrack.nodes[i].outID.ElementAt(j).Value == node.nodeID)
+                            if (globalTrack.nodes[i].outID.ElementAt(j).Value.nodeID == node.nodeID)
                             {
-                                globalTrack.nodes[i].outID[j] = -1;
+                                PengNode.NodeIDConnectionID nici = new PengNode.NodeIDConnectionID();
+                                nici.nodeID = -1;
+                                globalTrack.nodes[i].outID[j] = nici;
                             }
                         }
                     }
@@ -2212,7 +2216,7 @@ public class PengActorStateEditorWindow : EditorWindow
                 node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
                 node.SetAttribute("Position", PengNode.ParseVector2ToString(pengNode.pos));
                 node.SetAttribute("ParaNum", pengNode.paraNum.ToString());
-                node.SetAttribute("OutID", PengNode.ParseDictionaryIntIntToString(pengNode.outID));
+                node.SetAttribute("OutID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.outID));
                 node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(pengNode.varOutID));
                 node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.varInID));
                 node.SetAttribute("SpecialInfo", pengNode.SpecialParaDescription());

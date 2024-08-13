@@ -9,7 +9,6 @@ using System.Xml;
 using System;
 using Unity.VisualScripting;
 using UnityEditor;
-using System.Security.Cryptography.X509Certificates;
 
 namespace PengScript
 {
@@ -165,7 +164,7 @@ namespace PengScript
         public PengVar[] outVars;
 
         public int ID;
-        public Dictionary<int, int> flowOutInfo = new Dictionary<int, int>();
+        public Dictionary<int, ScriptIDVarID> flowOutInfo = new Dictionary<int, ScriptIDVarID>();
         public Dictionary<int, ScriptIDVarID> varInID = new Dictionary<int, ScriptIDVarID>();
 
         //构造函数中调用，根据特殊信息对脚本进行初始化
@@ -175,10 +174,10 @@ namespace PengScript
         }
 
         //执行一次
-        public virtual void Execute()
+        public virtual void Execute(int functionIndex)
         {
             Initial();
-            Function();
+            Function(functionIndex);
             ScriptFlowNext();
         }
 
@@ -211,7 +210,7 @@ namespace PengScript
 
         }
 
-        public virtual void Function()
+        public virtual void Function(int functionIndex)
         {
             //具体功能
         }
@@ -225,15 +224,15 @@ namespace PengScript
                 {
                     for(int i = 0; i < flowOutInfo.Count; i++)
                     {
-                        if(flowOutInfo.ElementAt(i).Value >= 0)
+                        if(flowOutInfo.ElementAt(i).Value.scriptID >= 0)
                         {
-                            if(trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(i).Value) == null)
+                            if(trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(i).Value.scriptID) == null)
                             {
                                 continue;
                             }
                             else
                             {
-                                trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(i).Value).Execute();
+                                trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(i).Value.scriptID).Execute(flowOutInfo.ElementAt(i).Value.varID);
                             }
                         }
                     }
@@ -383,7 +382,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[2];
@@ -419,7 +418,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -472,9 +471,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             int stateId = Animator.StringToHash(pengAnimationName.value);
             if (!actor.anim.HasState(pengAnimationLayer.value, stateId)) 
             {
@@ -509,7 +508,7 @@ namespace PengScript
             this.actor = actor;
             trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengBool[varInID.Count];
             bools = new PengBool[varInID.Count];
@@ -556,9 +555,9 @@ namespace PengScript
             bools[inVarID].value = pb.value;
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             if (inVars.Length > 0)
             {
                 if (conditionTypes[conditionTypes.Count - 1] != IfElseIfElse.Else)
@@ -604,9 +603,9 @@ namespace PengScript
             {
                 if (flowOutInfo.Count > 0)
                 {
-                    if (flowOutInfo[executeNum] >= 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value) != null)
+                    if (flowOutInfo[executeNum].scriptID >= 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value.scriptID) != null)
                     {
-                        trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value).Execute();
+                        trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(executeNum).Value.scriptID).Execute(flowOutInfo.ElementAt(executeNum).Value.varID);
                     }
                 }
             }
@@ -621,7 +620,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -648,7 +647,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -674,7 +673,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -700,7 +699,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -742,7 +741,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -812,9 +811,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             result.value = new List<PengActor>();
             Vector3 pos = actor.transform.position + pengOffset.value.x * actor.transform.right + pengOffset.value.y * actor.transform.up + pengOffset.value.z * actor.transform.forward;
             Collider[] returns = new Collider[0];
@@ -876,7 +875,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -918,24 +917,24 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             for (int i = firstIndex.value; i <= lastIndex.value; i++)
             {
                 pengIndex.value = i;
-                if (flowOutInfo.ElementAt(0).Value > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value) != null)
+                if (flowOutInfo.ElementAt(0).Value.scriptID > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID) != null)
                 {
-                    trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value).Execute();
+                    trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID).Execute(flowOutInfo.ElementAt(0).Value.varID);
                 }
             }
         }
 
         public override void ScriptFlowNext()
         {
-            if (flowOutInfo.ElementAt(1).Value > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value) != null)
+            if (flowOutInfo.ElementAt(1).Value.scriptID > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value.scriptID) != null)
             {
-                trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value).Execute();
+                trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(1).Value.scriptID).Execute(flowOutInfo.ElementAt(1).Value.varID);
             }
         }
     }
@@ -952,7 +951,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -1025,7 +1024,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1109,9 +1108,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             if (str != "")
             {
                 Debug.Log(str);
@@ -1133,7 +1132,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -1192,7 +1191,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1234,9 +1233,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             if (actor.actorStates.ContainsKey(stateName.value))
             {
                 actor.TransState(stateName.value, true);
@@ -1255,7 +1254,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1271,9 +1270,9 @@ namespace PengScript
             scriptName = GetDescription(type);
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
 #if UNITY_EDITOR
             if (!EditorApplication.isPaused)
             {
@@ -1293,7 +1292,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1331,9 +1330,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             actor.game.GloablTimeScaleFunc(timeScale.value, duration.value);
         }
     }
@@ -1372,7 +1371,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -1467,7 +1466,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[1];
@@ -1545,7 +1544,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1588,9 +1587,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             switch (target)
             {
                 case BBTarget.Self:
@@ -1685,7 +1684,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[4];
@@ -1719,7 +1718,7 @@ namespace PengScript
             floatMessage.value = floatMsg;
             stringMessage.value = stringMsg;
             boolMessage.value = boolMsg;
-            Execute();
+            Execute(0);
         }
     }
 
@@ -1736,7 +1735,7 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
             this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
@@ -1800,9 +1799,9 @@ namespace PengScript
             }
         }
 
-        public override void Function()
+        public override void Function(int functionIndex)
         {
-            base.Function();
+            base.Function(functionIndex);
             actor.game.eventManager.TriggerEvent(eventName.value, intMessage.value, floatMessage.value, stringMessage.value, boolMessage.value);
         }
     }
