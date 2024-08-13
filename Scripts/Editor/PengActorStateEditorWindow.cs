@@ -53,6 +53,12 @@ public class PengActorStateEditorWindow : EditorWindow
         get { return m_currentSelectedTrack; }
         set { m_currentSelectedTrack = value; OnCurrentSelectedTrackChanged(); }
     }
+    public bool m_editGlobal = false;
+    public bool editGlobal
+    {
+        get { return m_editGlobal; }
+        set { m_editGlobal = value; OnCurrentSelectedTrackChanged(); }
+    }
     public int currentDeleteTrack = 0;
     public float mouseXDelta = 0;
     public bool isDragging = false;
@@ -73,6 +79,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public bool debug = false;
     public bool editorPlaying = false;
     private bool m_runTimeEdit = false;
+    
     public bool runTimeEdit
     {
         get { return m_runTimeEdit; }
@@ -90,6 +97,7 @@ public class PengActorStateEditorWindow : EditorWindow
     public Dictionary<string, int> statesLength = new Dictionary<string, int>();
     //所有状态及其对应的是否循环
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
+    public PengEditorTrack globalTrack;
     public string currentStateName;
     public PengActor runTimeSelectionPauseActor = null;
 
@@ -324,7 +332,7 @@ public class PengActorStateEditorWindow : EditorWindow
                     Rect rectLeftFrame = new Rect(rectLeft.x, rectLeft.y + rectLeft.height - 2, 80, 80);
                     Rect rectRightFrame = new Rect(rectRight.x, rectRight.y + rectRight.height - 2, 80, 80);
 
-                    if (i == currentSelectedTrack && currentSelectedTrack >= 2)
+                    if (i == currentSelectedTrack && currentSelectedTrack >= 2 && !editGlobal)
                     {
                         Rect currentSelected = new Rect(rectBG.x - 100, rectBG.y - 4, rectBG.width + 103, rectBG.height + 14);
                         GUI.Box(currentSelected, "", style8);
@@ -336,6 +344,7 @@ public class PengActorStateEditorWindow : EditorWindow
                         if (GUI.Button(rectButton, tracks[i].trackName))
                         {
                             currentSelectedTrack = i;
+                            editGlobal = false;
                         }
                         GUI.Box(rectTrack, "", style1);
                         GUI.Box(rectLeft, "", style2);
@@ -498,8 +507,6 @@ public class PengActorStateEditorWindow : EditorWindow
                             }
                             GUI.changed = true;
                         }
-
-
                     }
                 }
                 if (tracks[i].execTime == PengTrack.ExecTime.Enter || tracks[i].execTime == PengTrack.ExecTime.Exit)
@@ -525,10 +532,12 @@ public class PengActorStateEditorWindow : EditorWindow
             if (GUI.Button(onEnter, tracks[enterIndex].trackName, style10))
             {
                 currentSelectedTrack = enterIndex;
+                editGlobal = false;
             }
             if (GUI.Button(onExit, tracks[exitIndex].trackName, style10))
             {
                 currentSelectedTrack = exitIndex;
+                editGlobal = false;
             }
             GUI.changed = true;
         }
@@ -570,6 +579,23 @@ public class PengActorStateEditorWindow : EditorWindow
         Rect currentFrameIndex = new Rect(rect.x + currentSelectedFrame * 10 - 1, rect.y + 3, 40, 40);
         GUI.Box(currentFrame, "", style8);
         GUI.Box(currentFrameIndex, currentSelectedFrame.ToString(), style9);
+
+        Rect global = new Rect(position.width - 120, timelineHeight - 60, 100, 40);
+        if (globalTrack != null)
+        {
+            if (GUI.Button(global, "全局节点图", style10))
+            {
+                editGlobal = true;
+            }
+        }
+        else
+        {
+            if (GUI.Button(global, "创建全局节点图", style10))
+            {
+                globalTrack = new PengEditorTrack(PengTrack.ExecTime.Global, "全局", 0, 0, this, true);
+                editGlobal = true;
+            }
+        }
     }
 
     public void DeleteTrack()
@@ -792,6 +818,7 @@ public class PengActorStateEditorWindow : EditorWindow
                                     currentStateName = states.ElementAt(i).Value[j];
                                     tracks = statesTrack[currentStateName];
                                     currentSelectedTrack = 2;
+                                    editGlobal = false;
                                     currentFrameLength = statesLength[currentStateName];
                                     currentStateLoop = statesLoop[currentStateName];
                                     if (dragTrackIndex >= tracks.Count)
@@ -1231,7 +1258,7 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void ProcessEvents(Event e)
     {
-        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count && !editGlobal)
         {
             if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
@@ -1283,6 +1310,41 @@ public class PengActorStateEditorWindow : EditorWindow
                 }
             }
         }
+        if (editGlobal)
+        {
+            if (globalTrack.nodes.Count > 0)
+            {
+                for (int i = globalTrack.nodes.Count - 1; i >= 0; i--)
+                {
+                    bool dragged = globalTrack.nodes[i].ProcessEvents(e);
+                    if (dragged)
+                    {
+                        GUI.changed = true;
+                    }
+                }
+            }
+            switch (e.type)
+            {
+                case EventType.MouseDown:
+                    if (e.button == 1 && nodeMapRect.Contains(e.mousePosition))
+                    {
+                        RightMouseMenu(e.mousePosition);
+                    }
+                    if (e.button == 0)
+                    {
+                        selectingPoint = null;
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (e.button == 0 && nodeMapRect.Contains(e.mousePosition))
+                    {
+                        DragAllNodes(e.delta);
+                        gridOffset += e.delta;
+                        GUI.changed = true;
+                    }
+                    break;
+            }
+        }
     }
 
     private void RightMouseMenu(Vector2 mousePos)
@@ -1300,23 +1362,34 @@ public class PengActorStateEditorWindow : EditorWindow
     {
         if(PengNode.GetCodedDown(scriptType) && scriptType != PengScript.PengScriptType.OnTrackExecute)
         {
-            menu.AddItem(new GUIContent("添加节点/按类型分类/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
-            menu.AddItem(new GUIContent("添加节点/按首字母分类/" + PengNode.GetCatalogByName(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
-            menu.AddItem(new GUIContent("添加节点/按封装程度分类/" + PengNode.GetCatalogByPackage(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+            if (editGlobal)
+            {
+                menu.AddItem(new GUIContent("添加节点/按类型分类/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref globalTrack, mousePos, scriptType); });
+                menu.AddItem(new GUIContent("添加节点/按首字母分类/" + PengNode.GetCatalogByName(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref globalTrack, mousePos, scriptType); });
+                menu.AddItem(new GUIContent("添加节点/按封装程度分类/" + PengNode.GetCatalogByPackage(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref globalTrack, mousePos, scriptType); });
+            }
+            else
+            {
+                PengEditorTrack track = tracks[currentSelectedTrack];
+                menu.AddItem(new GUIContent("添加节点/按类型分类/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref track, mousePos, scriptType); });
+                menu.AddItem(new GUIContent("添加节点/按首字母分类/" + PengNode.GetCatalogByName(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref track, mousePos, scriptType); });
+                menu.AddItem(new GUIContent("添加节点/按封装程度分类/" + PengNode.GetCatalogByPackage(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(ref track, mousePos, scriptType); });
+            }
+            
         }
     }
 
-    private void ProcessAddNode(Vector2 mousePos, PengScript.PengScriptType type)
+    private void ProcessAddNode(ref PengEditorTrack track, Vector2 mousePos, PengScript.PengScriptType type)
     {
         int id = 1;
         bool idSame = true;
-        PengEditorTrack track = tracks[currentSelectedTrack];
+
         while (idSame)
         {
             idSame = false;
-            for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+            for (int i = 0; i < track.nodes.Count; i++)
             {
-                if (id == tracks[currentSelectedTrack].nodes[i].nodeID)
+                if (id == track.nodes[i].nodeID)
                 {
                     idSame = true;
                     id++;
@@ -1422,12 +1495,22 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
         }
-        tracks[currentSelectedTrack] = track;
     }
 
     private void DrawNodes()
     {
-        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        GUIStyle style = new GUIStyle("AnimLeftPaneSeparator");
+        style.alignment = TextAnchor.MiddleLeft;
+        style.fontStyle = FontStyle.Bold;
+        GUIStyle style1 = new GUIStyle("BoldTextField");
+        style1.alignment = TextAnchor.MiddleLeft;
+        style1.fontStyle = FontStyle.Bold;
+        style1.fontSize = 12;
+        GUIStyle style2 = new GUIStyle("dragtab");
+        style2.alignment = TextAnchor.MiddleLeft;
+        style2.fontStyle = FontStyle.Bold;
+        style2.fontSize = 12;
+        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count && !editGlobal)
         {
             if (tracks[currentSelectedTrack].nodes.Count > 0)
             {
@@ -1439,22 +1522,9 @@ public class PengActorStateEditorWindow : EditorWindow
 
             DrawConnectionLines();
 
-            GUIStyle style = new GUIStyle("AnimLeftPaneSeparator");
-            style.alignment = TextAnchor.MiddleLeft;
-            style.fontStyle = FontStyle.Bold;
-            GUIStyle style1 = new GUIStyle("BoldTextField");
-            style1.alignment = TextAnchor.MiddleLeft;
-            style1.fontStyle = FontStyle.Bold;
-            style1.fontSize = 12;
-            GUIStyle style2 = new GUIStyle("dragtab");
-            style2.alignment = TextAnchor.MiddleLeft;
-            style2.fontStyle = FontStyle.Bold;
-            style2.fontSize = 12;
-
             Rect box = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, 30);
             Rect label1 = new Rect(box.x + 8, box.y + 3, 80, 20);
             Rect text1 = new Rect(box.x + 88, box.y + 3, 120, 20);
-
 
             GUI.Box(box, "", style);
             GUI.Box(label1, "轨道名称：", style);
@@ -1525,17 +1595,64 @@ public class PengActorStateEditorWindow : EditorWindow
 
             }
         }
+        if (editGlobal)
+        {
+            if (globalTrack.nodes.Count > 0)
+            {
+                for (int i = 0; i < globalTrack.nodes.Count; i++)
+                {
+                    globalTrack.nodes[i].Draw();
+                }
+            }
+            DrawConnectionLines();
+
+            Rect box = new Rect(sideBarWidth, timelineHeight, position.width - sideBarWidth, 30);
+            Rect label1 = new Rect(box.x + 8, box.y + 3, 80, 20);
+            Rect text1 = new Rect(box.x + 88, box.y + 3, 120, 20);
+
+
+            GUI.Box(box, "", style);
+            GUI.Box(label1, "轨道名称：", style);
+            GUI.Box(text1, "全局节点图", style);
+
+            Rect recovery = new Rect(box.x + 620, box.y + 3, 80, 20);
+            if (GUI.Button(recovery, "回正"))
+            {
+                if (tracks[currentSelectedTrack].nodes.Count > 0)
+                {
+                    Vector2 currentPos = tracks[currentSelectedTrack].nodes[0].pos;
+                    Vector2 targetPos = new Vector2(300f, 415f) - currentPos;
+                    DragAllNodes(targetPos);
+                }
+            }
+
+            Rect debugRect = new Rect(box.x + 720, box.y + 3, 80, 20);
+            debug = GUI.Toggle(debugRect, debug, "Debug");
+        }
     }
 
     private void DrawConnectionLines()
     {
-        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (!editGlobal)
         {
-            if (tracks[currentSelectedTrack].nodes.Count > 0)
+            if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
             {
-                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                if (tracks[currentSelectedTrack].nodes.Count > 0)
                 {
-                    tracks[currentSelectedTrack].nodes[i].DrawLines();
+                    for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                    {
+                        tracks[currentSelectedTrack].nodes[i].DrawLines();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (globalTrack.nodes.Count > 0)
+            {
+                for (int i = 0; i < globalTrack.nodes.Count; i++)
+                {
+                    globalTrack.nodes[i].DrawLines();
                 }
             }
         }
@@ -1590,13 +1707,28 @@ public class PengActorStateEditorWindow : EditorWindow
 
     private void DragAllNodes(Vector2 change)
     {
-        if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
+        if (!editGlobal)
         {
-            if (tracks[currentSelectedTrack].nodes.Count > 0)
+            if (tracks.Count > 0 && currentSelectedTrack < tracks.Count)
             {
-                for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                if (tracks[currentSelectedTrack].nodes.Count > 0)
                 {
-                    tracks[currentSelectedTrack].nodes[i].ProcessDrag(change);
+                    for (int i = 0; i < tracks[currentSelectedTrack].nodes.Count; i++)
+                    {
+                        tracks[currentSelectedTrack].nodes[i].ProcessDrag(change);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (globalTrack.nodes.Count > 0)
+            {
+                Debug.Log(2);
+                for (int i = 0; i < globalTrack.nodes.Count; i++)
+                {
+                    
+                    globalTrack.nodes[i].ProcessDrag(change);
                 }
             }
         }
@@ -1651,16 +1783,20 @@ public class PengActorStateEditorWindow : EditorWindow
 
     public void Save(bool showMsg)
     {
-        SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, showMsg);
+        SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, showMsg, globalTrack);
     }
 
-    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, bool showMsg)
+    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, bool showMsg, PengEditorTrack globalTrack)
     {
         //Actor数据结构：
         //<Actor>
         //  <ActorInfo>
         //      <ActorID ActorID = "..." />
         //      <Camp Camp = "..." />
+        //      <GlobalTrack Name = "..." Start = "..." End = "..." ExecTime = "...">
+        //          <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //          <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
+        //      </GlobalTrack>
         //  </ActorInfo>
         //  <ActorState>
         //      <StateGroup Name = "...">
@@ -1692,6 +1828,7 @@ public class PengActorStateEditorWindow : EditorWindow
         XmlElement info = doc.CreateElement("ActorInfo");
         XmlElement states = doc.CreateElement("ActorState");
 
+
         //info下的三级结构
         XmlElement ID = doc.CreateElement("ActorID");
         ID.SetAttribute("ActorID", actorID.ToString());
@@ -1699,11 +1836,14 @@ public class PengActorStateEditorWindow : EditorWindow
         camp.SetAttribute("Camp", actorCamp.ToString());
         XmlElement name = doc.CreateElement("ActorName");
         name.SetAttribute("ActorName", actorName.ToString());
-
+        if (globalTrack != null)
+        {
+            info.AppendChild(GenerateTrackInfo(ref doc, globalTrack));
+        }
         info.AppendChild(ID);
         info.AppendChild(camp);
         info.AppendChild(name);
-
+        
         //states下的三级结构
         //死亡迭代
         if (stateGroup.Count > 0)
@@ -1830,6 +1970,11 @@ public class PengActorStateEditorWindow : EditorWindow
             {
                 currentActorName = ele.GetAttribute("ActorName");
             }
+            if (ele.Name == "Track")
+            {
+                globalTrack = GenerateTrack(ele);
+                globalTrack.master = this;
+            }
         }
 
         XmlNodeList stateGroupChild = actorState.ChildNodes;
@@ -1864,6 +2009,7 @@ public class PengActorStateEditorWindow : EditorWindow
         currentStateLoop = statesLoop[currentStateName];
         tracks = statesTrack[currentStateName];
         currentSelectedTrack = 2;
+        editGlobal = false;
         currentSelectedFrame = 0;
         dragTrackIndex = 0;
         currentScale = 1;

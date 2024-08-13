@@ -30,7 +30,6 @@ public class PengEditorTrack
         }
     }
     public List<PengNode> nodes = new List<PengNode>();
-    public List<BaseScript> scripts = new List<BaseScript>();
 
     public PengEditorTrack(PengTrack.ExecTime time, string name, int start, int end, PengActorStateEditorWindow master, bool isNew)
     {
@@ -40,7 +39,7 @@ public class PengEditorTrack
         this.end = end;
         this.master = master;
         PengEditorTrack track = this;
-        if (isNew)
+        if (isNew && time != PengTrack.ExecTime.Global)
         {
             nodes.Add(new OnTrackExecute(Vector2.zero, master, ref track, 1,
                     PengNode.ParseDictionaryIntIntToString(PengNode.DefaultDictionaryIntInt(1)),
@@ -51,35 +50,4 @@ public class PengEditorTrack
         }
     }
 
-    public void ExecuteOnce()
-    {
-        if (scripts.Count > 0)
-        {
-            scripts[0].Execute();
-        }
-    }
-
-    public BaseScript GetScriptByScriptID(int id)
-    {
-        if (scripts.Count > 0)
-        {
-            for (int i = 0; i < scripts.Count; i++)
-            {
-                if (scripts[i].ID == id)
-                {
-                    return scripts[i];
-                }
-            }
-            return null;
-        }
-        return null;
-    }
-
-    public PengVariables.PengVar GetOutPengVarByScriptIDPengVarID(int scriptID, int varOutID)
-    {
-        if (GetScriptByScriptID(scriptID) == null)
-        { return null; }
-        else
-        { return GetScriptByScriptID(scriptID).outVars[varOutID]; }
-    }
 }

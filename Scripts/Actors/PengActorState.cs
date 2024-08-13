@@ -139,7 +139,7 @@ public class PengActorState : IPengActorState
             for(int j = 0; j < trackEle.ChildNodes.Count; j++)
             {
                 XmlElement scriptEle = trackEle.ChildNodes[j] as XmlElement;
-                BaseScript script = this.ConstructRunTimePengScript(scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"), scriptEle.GetAttribute("SpecialInfo"));
+                BaseScript script = ConstructRunTimePengScript(actor, scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"), scriptEle.GetAttribute("SpecialInfo"));
                 if(script != null)
                 {
                     track.scripts.Add(script);
@@ -150,7 +150,7 @@ public class PengActorState : IPengActorState
         return result;
     }
 
-    public BaseScript ConstructRunTimePengScript(XmlElement scriptEle, ref PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+    public static BaseScript ConstructRunTimePengScript(PengActor actor, XmlElement scriptEle, ref PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
     {
         PengScriptType scriptType = (PengScriptType)Enum.Parse(typeof(PengScriptType), scriptEle.GetAttribute("ScriptType"));
         switch (scriptType)

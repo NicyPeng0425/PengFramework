@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using PengScript;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -14,6 +16,8 @@ public class PengActor : MonoBehaviour
     public string actorName;
     public int actorCamp;
 
+    [HideInInspector]
+    public PengTrack globalTrack;
     [HideInInspector]
     public static string initalName = "Idle";
     [HideInInspector]
@@ -307,6 +311,22 @@ public class PengActor : MonoBehaviour
                             criticalRate = float.Parse(son.GetAttribute("CriticalRate"));
                             criticalDamageRatio = float.Parse(son.GetAttribute("CriticalDamageRatio"));
                             continue;
+                        }
+                        if (son.Name == "Track")
+                        {
+                            PengTrack track = new PengTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), son.GetAttribute("ExecTime")), son.GetAttribute("Name"), int.Parse(son.GetAttribute("Start")),
+                                int.Parse(son.GetAttribute("End")));
+
+                            for (int j = 0; j < son.ChildNodes.Count; j++)
+                            {
+                                XmlElement scriptEle = son.ChildNodes[j] as XmlElement;
+                                BaseScript script = PengActorState.ConstructRunTimePengScript(this, scriptEle, ref track, int.Parse(scriptEle.GetAttribute("ScriptID")), scriptEle.GetAttribute("OutID"), scriptEle.GetAttribute("VarInID"), scriptEle.GetAttribute("SpecialInfo"));
+                                if (script != null)
+                                {
+                                    track.scripts.Add(script);
+                                }
+                            }
+                            globalTrack = track;
                         }
                     }
                     continue;

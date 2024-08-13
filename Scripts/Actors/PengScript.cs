@@ -117,6 +117,8 @@ namespace PengScript
         BreakPoint,
         [Description("1,整型转浮点,值,Z,低封装")]
         ValueIntToFloat,
+        [Description("0,着地分歧,分歧,Z,高封装")]
+        OnGround,
     }
 
     public struct ScriptIDVarID

@@ -10,6 +10,7 @@ public class PengTrack
         Enter,
         Update,
         Exit,
+        Global,
     }
     public string name;
     public ExecTime execTime;

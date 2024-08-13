@@ -316,8 +316,9 @@ public class PengActorGeneratorEditor : EditorWindow
                 {
                     pa.mrs.Add(mr);
                 }
+                PengEditorTrack globalTrack = new PengEditorTrack(PengTrack.ExecTime.Global, "Global", 0, 0, null, true);
 
-                PengActorStateEditorWindow.SaveActorData(actorID, actorCamp, actorName, stateGroup, stateTrack, statesLength, statesLoop, true);
+                PengActorStateEditorWindow.SaveActorData(actorID, actorCamp, actorName, stateGroup, stateTrack, statesLength, statesLoop, true, globalTrack);
 
                 if(!Directory.Exists(Application.dataPath + "/Resources/Actors/" + actorID.ToString()))
                 {
