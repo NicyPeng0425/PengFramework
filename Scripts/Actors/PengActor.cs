@@ -6,14 +6,20 @@ using System.Linq;
 using System.Xml;
 using Unity.VisualScripting;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PengActor : MonoBehaviour
 {
     [HideInInspector]
     public PengGameManager game;
 
+    [ReadOnly]
     public int actorID;
+    [ReadOnly]
     public string actorName;
+    [ReadOnly]
     public int actorCamp;
 
     [HideInInspector]
@@ -368,3 +374,27 @@ public class PengActor : MonoBehaviour
 
     
 }
+
+public class ReadOnlyAttribute : PropertyAttribute
+{
+
+}
+
+#if UNITY_EDITOR
+
+[CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+public class ReadOnlyDrawer : PropertyDrawer
+{
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    {
+        return EditorGUI.GetPropertyHeight(property, label, true);
+    }
+
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        GUI.enabled = false;
+        EditorGUI.PropertyField(position, property, label, true);
+        GUI.enabled = true;
+    }
+}
+#endif

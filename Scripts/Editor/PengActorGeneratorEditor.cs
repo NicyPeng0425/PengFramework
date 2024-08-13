@@ -663,13 +663,21 @@ public class PengActorGeneratorEditor : EditorWindow
                     for (int j = 0; j < animOld.layers[i].stateMachine.states.Length; j++)
                     {
                         AnimatorState state = animOld.layers[i].stateMachine.states[j].state;
-                        if ((File.Exists(Application.dataPath + "/Resources" + "Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name + ".anim")))
+                        if ((File.Exists(Application.dataPath + "/Resources/Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name + ".anim")))
                         {
                             AnimationClip clip = Resources.Load("Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name) as AnimationClip;
-                            AssetDatabase.CreateAsset(clip, "Assets/" + "Animators/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name);
-                            AnimationClip clip1 = Resources.Load("Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name) as AnimationClip;
-                            state.motion = clip;
+                            //string path = Application.dataPath + "/Resources/Animations/" + copyID.ToString() + "/" + copyID.ToString() + "@" + state.name + ".anim";
+                            //string newPath = Application.dataPath + "/Resources/Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name + ".anim";
+                            AnimationClip newClip = new AnimationClip();
+                            EditorUtility.CopySerialized(clip, newClip);
 
+                            if (!Directory.Exists(Application.dataPath + "/Resources/Animations/" + pasteID.ToString()))
+                            {
+                                Directory.CreateDirectory(Application.dataPath + "/Resources/Animations/" + pasteID.ToString());
+                            }
+                            AssetDatabase.CreateAsset(newClip, "Assets/Resources/Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name + ".anim");
+                            AnimationClip clip1 = Resources.Load("Animations/" + pasteID.ToString() + "/" + pasteID.ToString() + "@" + state.name) as AnimationClip;
+                            state.motion = clip1;
                         }
                         animNew.layers[i].stateMachine.AddState(state, animOld.layers[i].stateMachine.states[j].position);
                     }
