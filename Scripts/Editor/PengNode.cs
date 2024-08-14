@@ -1339,30 +1339,84 @@ public class GetTargetsByRange : PengNode
     public override void Draw()
     {
         base.Draw();
-        Rect field = new Rect(typeNum.varRect.x + 40, typeNum.varRect.y, 70, 18);
-        rangeType = (PengScript.GetTargetsByRange.RangeType)EditorGUI.EnumPopup(field, rangeType);
+        
 
+        for (int i = 0; i < 4; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                Rect vec3Field = new Rect(field.x, field.y, field.width + 115, field.height);
+                switch (i)
+                {
+                    case 0:
+                        rangeType = (PengScript.GetTargetsByRange.RangeType)EditorGUI.EnumPopup(field, rangeType);
+                        typeNum.value = (int)rangeType;
+                        break;
+                    case 1:
+                        pengCamp.value = EditorGUI.IntField(field, pengCamp.value);
+                        break;
+                    case 2:
+                        pengPara.value = EditorGUI.Vector3Field(vec3Field, "", pengPara.value);
+                        if(rangeType == PengScript.GetTargetsByRange.RangeType.Cylinder)
+                        {
+                            if (pengPara.value.z >= 180)
+                            {
+                                pengPara.value.z = 180;
+                            }
+                        }
+                        break;
+                    case 3:
+                        pengOffset.value = EditorGUI.Vector3Field(vec3Field, "", pengOffset.value);
+                        break;
+                }
+                
+            }
+        }
+        if (pengPara.value.x <= 0)
+        {
+            pengPara.value.x = 0;
+        }
+        if (pengPara.value.y <= 0)
+        {
+            pengPara.value.y = 0;
+        }
+        if (pengPara.value.z <= 0)
+        {
+            pengPara.value.z = 0;
+        }
     }
     public override string SpecialParaDescription()
     {
+        string info = "";
         switch (rangeType)
         {
             default:
-                return "";
+                info = "";
+                break;
             case PengScript.GetTargetsByRange.RangeType.Cylinder:
-                return "1";
+                info = "1";
+                break;
             case PengScript.GetTargetsByRange.RangeType.Sphere:
-                return "2";
+                info = "2";
+                break;
             case PengScript.GetTargetsByRange.RangeType.Box:
-                return "3";
+                info = "3";
+                break;
         }
+        info += ";";
+        info += pengPara.value.x.ToString() + "," + pengPara.value.y.ToString() + "," + pengPara.value.z.ToString() + ";";
+        info += pengOffset.value.x.ToString() + "," + pengOffset.value.y.ToString() + "," + pengOffset.value.z.ToString() + ";";
+        info += pengCamp.value.ToString();
+        return info;
     }
 
     public override void ReadSpecialParaDescription(string info)
     {
         if (info != "")
         {
-            switch (int.Parse(info))
+            string[] strFirst = info.Split(";");
+            switch (int.Parse(strFirst[0]))
             {
                 case 1:
                     rangeType = PengScript.GetTargetsByRange.RangeType.Cylinder;
@@ -1374,6 +1428,12 @@ public class GetTargetsByRange : PengNode
                     rangeType = PengScript.GetTargetsByRange.RangeType.Box;
                     break;
             }
+            typeNum.value = (int)rangeType;
+            string[] strSecond = strFirst[1].Split(",");
+            pengPara.value = new Vector3(float.Parse(strSecond[0]), float.Parse(strSecond[1]), float.Parse(strSecond[2]));
+            string[] strThird = strFirst[2].Split(",");
+            pengOffset.value = new Vector3(float.Parse(strThird[0]), float.Parse(strThird[1]), float.Parse(strThird[2]));
+            pengCamp.value = int.Parse(strFirst[3]);
         }
     }
 }
@@ -1394,8 +1454,9 @@ public class ForIterator : PengNode
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
         this.ReadSpecialParaDescription(specialInfo);
 
-        inPoints = new PengNodeConnection[1];
+        inPoints = new PengNodeConnection[2];
         inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints[1] = new PengNodeConnection(ConnectionPointType.FlowIn, 1, this, null);
         outPoints = new PengNodeConnection[2];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         outPoints[1] = new PengNodeConnection(ConnectionPointType.FlowOut, 1, this, null);
@@ -1423,11 +1484,23 @@ public class ForIterator : PengNode
         style.alignment = TextAnchor.UpperRight;
         style.fontStyle = FontStyle.Bold;
         style.normal.textColor = Color.white;
+
+        GUIStyle style2 = new GUIStyle("CN EntryInfo");
+        style2.fontSize = 12;
+        style2.alignment = TextAnchor.UpperLeft;
+        style2.fontStyle = FontStyle.Bold;
+        style2.normal.textColor = Color.white;
+
         Rect loopBody = new Rect(outPoints[0].rect.x - 80, outPoints[0].rect.y, 70, 20);
         Rect completed = new Rect(outPoints[1].rect.x - 80, outPoints[1].rect.y, 70, 20);
 
+        Rect enter = new Rect(inPoints[0].rect.x - 10, inPoints[0].rect.y, 70, 20);
+        Rect breakin = new Rect(inPoints[1].rect.x - 10, inPoints[1].rect.y, 70, 20);
+
         GUI.Box(loopBody, "循环体", style);
         GUI.Box(completed, "完成后", style);
+        GUI.Box(enter, "进入", style2);
+        GUI.Box(breakin, "打断", style2) ;
     }
 }
 
@@ -1808,6 +1881,7 @@ public class MathCompare : PengNode
                         break;
                     case 1:
                         compare = (PengScript.MathCompare.CompareType)((int)(PengScript.MathCompare.CompareTypeCN)EditorGUI.EnumPopup(field, compareCN));
+                        compareCN = (CompareTypeCN)(int)compare;
                         compareType.value = (int)compare;
                         break;
                     case 2:
@@ -1949,6 +2023,7 @@ public class SetBlackBoardVariables : PengNode
                         break;
                     case 2:
                         BBTarget = (BBTarget)((int)(BBTargetCN)EditorGUI.EnumPopup(field, BBTargetCN));
+                        BBTargetCN = (BBTargetCN)(int)BBTarget;
                         targetType.value = (int)BBTarget;
                         break;
                 }

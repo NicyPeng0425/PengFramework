@@ -176,12 +176,12 @@ namespace PengScript
         //执行一次
         public virtual void Execute(int functionIndex)
         {
-            Initial();
+            Initial(functionIndex);
             Function(functionIndex);
             ScriptFlowNext();
         }
 
-        public virtual void Initial()
+        public virtual void Initial(int functionIndex)
         {
             //单次执行前的初始化
             if (varInID.Count > 0 && inVars.Length > 0)
@@ -399,7 +399,7 @@ namespace PengScript
             outVars[1] = pengStateExecuteFrame;
         }
 
-        public override void Initial()
+        public override void Initial(int functionIndex)
         {
             pengTrackExecuteFrame.value = actor.currentStateFrame - trackMaster.start;
             pengStateExecuteFrame.value = actor.currentStateFrame;
@@ -439,9 +439,9 @@ namespace PengScript
             inVars[4] = pengAnimationLayer;
         }
 
-        public override void Initial()
+        public override void Initial(int functionIndex)
         {
-            base.Initial();
+            base.Initial(functionIndex);
         }
 
         public override void SetValue(int inVarID, PengVar varSource)
@@ -543,9 +543,9 @@ namespace PengScript
             }
         }
 
-        public override void Initial()
+        public override void Initial(int functionIndex)
         {
-            base.Initial();
+            base.Initial(functionIndex);
             executeNum = -1;
         }
 
@@ -758,21 +758,25 @@ namespace PengScript
 
             if (specialInfo != "")
             {
-                switch (int.Parse(specialInfo))
+                string[] strFirst = specialInfo.Split(";");
+                switch (int.Parse(strFirst[0]))
                 {
                     case 1:
                         rangeType = RangeType.Cylinder;
-                        typeNum.value = 1;
                         break;
                     case 2:
                         rangeType = RangeType.Sphere;
-                        typeNum.value = 2;
                         break;
                     case 3:
                         rangeType = RangeType.Box;
-                        typeNum.value = 3;
                         break;
                 }
+                typeNum.value = (int) rangeType;
+                string[] strSecond = strFirst[1].Split(",");
+                pengPara.value = new Vector3(float.Parse(strSecond[0]), float.Parse(strSecond[1]), float.Parse(strSecond[2]));
+                string[] strThird = strFirst[2].Split(",");
+                pengOffset.value = new Vector3(float.Parse(strThird[0]), float.Parse(strThird[1]), float.Parse(strThird[2]));
+                pengCamp.value = int.Parse(strFirst[3]);
             }
 
             outVars[0] = result;
@@ -781,11 +785,6 @@ namespace PengScript
             inVars[1] = pengCamp;
             inVars[2] = pengPara;
             inVars[3] = pengOffset;
-        }
-
-        public override void Initial()
-        {
-            base.Initial();
         }
 
         public override void SetValue(int inVarID, PengVar varSource)
@@ -870,6 +869,7 @@ namespace PengScript
         public PengInt lastIndex = new PengInt("末个指数", 1, ConnectionPointType.In);
 
         public PengInt pengIndex = new PengInt("指数", 0, ConnectionPointType.Out);
+        public bool breakOrNot = false;
         public ForIterator(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -897,9 +897,13 @@ namespace PengScript
             inVars[1] = lastIndex;
         }
 
-        public override void Initial()
+        public override void Initial(int functionIndex)
         {
-            base.Initial();
+            base.Initial(functionIndex);
+            if (functionIndex == 0)
+            {
+                breakOrNot = false;
+            }
         }
 
         public override void SetValue(int inVarID, PengVar varSource)
@@ -920,12 +924,23 @@ namespace PengScript
         public override void Function(int functionIndex)
         {
             base.Function(functionIndex);
-            for (int i = firstIndex.value; i <= lastIndex.value; i++)
+            if (functionIndex == 1)
             {
-                pengIndex.value = i;
-                if (flowOutInfo.ElementAt(0).Value.scriptID > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID) != null)
+                breakOrNot = true;
+            }
+            if (!breakOrNot)
+            {
+                for (int i = firstIndex.value; i <= lastIndex.value; i++)
                 {
-                    trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID).Execute(flowOutInfo.ElementAt(0).Value.varID);
+                    pengIndex.value = i;
+                    if (flowOutInfo.ElementAt(0).Value.scriptID > 0 && trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID) != null)
+                    {
+                        trackMaster.GetScriptByScriptID(flowOutInfo.ElementAt(0).Value.scriptID).Execute(flowOutInfo.ElementAt(0).Value.varID);
+                        if (breakOrNot)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1708,10 +1723,6 @@ namespace PengScript
             outVars[3] = boolMessage;
         }
 
-        public override void Initial()
-        {
-        }
-
         public void EventTrigger(int intMsg, float floatMsg, string stringMsg, bool boolMsg)
         {
             intMessage.value = intMsg;
@@ -1764,12 +1775,6 @@ namespace PengScript
                 stringMessage.value = str[3];
                 boolMessage.value = int.Parse(str[4]) > 0;
             }
-        }
-
-        public override void Initial()
-        {
-            Debug.Log(11111);
-            base.Initial();
         }
 
         public override void SetValue(int inVarID, PengVar varSource)

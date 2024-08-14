@@ -12,6 +12,7 @@ using Unity.VisualScripting;
 using System.Threading.Tasks;
 using UnityEditor.Animations;
 using UnityEditorInternal.VersionControl;
+using static PengScript.GetTargetsByRange;
 
 public class PengActorStateEditorWindow : EditorWindow
 {
@@ -117,6 +118,12 @@ public class PengActorStateEditorWindow : EditorWindow
     private void OnEnable()
     {
         editorPlaying = EditorApplication.isPlaying;
+        SceneView.duringSceneGui += this.OnSceneGUI;
+    }
+
+    private void OnDisable()
+    {
+        SceneView.duringSceneGui -= this.OnSceneGUI;
     }
 
     private void OnGUI()
@@ -2278,6 +2285,78 @@ public class PengActorStateEditorWindow : EditorWindow
         {
             EditorGUILayout.HelpBox("没有全局配置，请使用启动器修复！", MessageType.Warning);
             return false;
+        }
+    }
+
+    void OnSceneGUI(SceneView sv)
+    {
+        if (tracks.Count > 0 && Selection.activeTransform != null)
+        {
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                if (tracks[i].execTime == PengTrack.ExecTime.Update && currentSelectedFrame >= tracks[i].start && currentSelectedFrame <= tracks[i].end && tracks[i].nodes.Count > 0)
+                {
+                    for (int j = 0; j < tracks[i].nodes.Count; j++)
+                    {
+                        if (tracks[i].nodes[j].scriptType == PengScript.PengScriptType.GetTargetsByRange)
+                        {
+                            GetTargetsByRange gtbr = tracks[i].nodes[j] as GetTargetsByRange;
+                            switch (gtbr.rangeType)
+                            {
+                                case RangeType.Cylinder:
+                                    Handles.color = Color.red;
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.up, Selection.activeTransform.forward, gtbr.pengPara.value.z, gtbr.pengPara.value.x);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.up, Selection.activeTransform.forward, - gtbr.pengPara.value.z, gtbr.pengPara.value.x);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, gtbr.pengPara.value.z, gtbr.pengPara.value.x);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, - gtbr.pengPara.value.z, gtbr.pengPara.value.x);
+                                    Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x + gtbr.pengOffset.value, Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+                                    Vector3 pos1 = Quaternion.Euler(0, gtbr.pengPara.value.z, 0) * (Selection.activeTransform.forward * gtbr.pengPara.value.x);
+                                    pos1 = Selection.activeTransform.position + gtbr.pengOffset.value + pos1;
+                                    Vector3 pos3 = pos1 + gtbr.pengPara.value.y * Vector3.up;
+                                    Vector3 pos2 = Quaternion.Euler(0, - gtbr.pengPara.value.z, 0) * (Selection.activeTransform.forward * gtbr.pengPara.value.x);
+                                    pos2 = Selection.activeTransform.position + gtbr.pengOffset.value + pos2;
+                                    Vector3 pos4 = pos2 + gtbr.pengPara.value.y * Vector3.up;
+                                    Handles.DrawLine(pos1, pos3);
+                                    Handles.DrawLine(pos2, pos4);
+                                    Handles.DrawLine(pos1, Selection.activeTransform.position + gtbr.pengOffset.value);
+                                    Handles.DrawLine(pos2, Selection.activeTransform.position + gtbr.pengOffset.value);
+                                    Handles.DrawLine(pos3, Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+                                    Handles.DrawLine(pos4, Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+                                    Handles.DrawLine(Selection.activeTransform.position + gtbr.pengOffset.value, Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+                                    Handles.DrawLine(Selection.activeTransform.position + gtbr.pengOffset.value, Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x + gtbr.pengOffset.value);
+                                    Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up, Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.up, Selection.activeTransform.forward, gtbr.pengPara.value.z, gtbr.pengPara.value.x * 0.5f);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.up, Selection.activeTransform.forward, -gtbr.pengPara.value.z, gtbr.pengPara.value.x * 0.5f);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, gtbr.pengPara.value.z, gtbr.pengPara.value.x * 0.5f);
+                                    Handles.DrawWireArc(Selection.activeTransform.position + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, -gtbr.pengPara.value.z, gtbr.pengPara.value.x * 0.5f);
+                                    Vector3 pos5 = Quaternion.Euler(0, gtbr.pengPara.value.z, 0) * (Selection.activeTransform.forward * gtbr.pengPara.value.x * 0.5f);
+                                    pos5 = Selection.activeTransform.position + gtbr.pengOffset.value + pos5;
+                                    Vector3 pos7 = pos5 + gtbr.pengPara.value.y * Vector3.up;
+                                    Vector3 pos6 = Quaternion.Euler(0, -gtbr.pengPara.value.z, 0) * (Selection.activeTransform.forward * gtbr.pengPara.value.x * 0.5f);
+                                    pos6 = Selection.activeTransform.position + gtbr.pengOffset.value + pos6;
+                                    Vector3 pos8 = pos6 + gtbr.pengPara.value.y * Vector3.up;
+                                    Handles.DrawLine(pos5, pos7);
+                                    Handles.DrawLine(pos6, pos8);
+                                    Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x * 0.5f + gtbr.pengOffset.value, Selection.activeTransform.position + Selection.activeTransform.forward * gtbr.pengPara.value.x * 0.5f + gtbr.pengOffset.value + gtbr.pengPara.value.y * Vector3.up);
+
+                                    break;
+                                case RangeType.Sphere:
+                                    Handles.color = Color.red;
+                                    Handles.DrawWireDisc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.up, gtbr.pengPara.value.x);
+                                    Handles.DrawWireDisc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.forward, gtbr.pengPara.value.x);
+                                    Handles.DrawWireDisc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.right, gtbr.pengPara.value.x);
+                                    Handles.DrawWireDisc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.forward - Vector3.right, gtbr.pengPara.value.x);
+                                    Handles.DrawWireDisc(Selection.activeTransform.position + gtbr.pengOffset.value, Vector3.forward + Vector3.right, gtbr.pengPara.value.x);
+                                    break;
+                                case RangeType.Box:
+                                    Handles.color = Color.red;
+                                    Handles.DrawWireCube(Selection.activeTransform.position + gtbr.pengOffset.value, gtbr.pengPara.value);
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
