@@ -152,7 +152,7 @@ public class PengActor : MonoBehaviour
         set { m_criticalDamageRatio = value; }
     }
     [HideInInspector]
-    float m_maxHP;
+    public float m_maxHP;
     [HideInInspector]
     float m_currentHP;
     [HideInInspector]

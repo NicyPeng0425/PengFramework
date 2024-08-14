@@ -197,6 +197,8 @@ public class PengActorState : IPengActorState
                 return new OnEvent(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.CustomEvent:
                 return new CustomEvent(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.GetVariables:
+                return new GetVariables(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }
