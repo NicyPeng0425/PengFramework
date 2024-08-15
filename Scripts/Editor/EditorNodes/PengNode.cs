@@ -5,13 +5,9 @@ using UnityEditor;
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using PengVariables;
 using System.Linq;
 using PengScript;
-using System.Security.Cryptography.X509Certificates;
 using static PengScript.MathCompare;
-using Meryel.UnityCodeAssist.YamlDotNet.Core;
-using Codice.CM.Common.Tree;
 
 public class PengNode
 {
@@ -2606,5 +2602,38 @@ public class MathBool : PengNode
             inVars[2] = bool2;
             paraNum = 3;
         }
+    }
+}
+
+public class ValueGetListCount : PengNode
+{
+    public PengEditorVariables.PengList<PengActor> list;
+
+    public PengEditorVariables.PengInt count;
+
+    public ValueGetListCount(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        list = new PengEditorVariables.PengList<PengActor>(this, "Actor列表", 0, ConnectionPointType.In);
+        count = new PengEditorVariables.PengInt(this, "元素个数", 0, ConnectionPointType.Out);
+
+        inVars[0] = count;
+        outVars[0] = list;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.ValueGetListCount;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
     }
 }

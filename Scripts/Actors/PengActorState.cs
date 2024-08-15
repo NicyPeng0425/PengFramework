@@ -201,6 +201,8 @@ public class PengActorState : IPengActorState
                 return new GetVariables(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.MathBool:
                 return new MathBool(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.ValueGetListCount:
+                return new ValueGetListCount(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

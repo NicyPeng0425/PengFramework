@@ -114,9 +114,9 @@ namespace PengEditorVariables
         }
     }
 
-    public class PengList<T> : PengVar
+    public class PengList<PengActor> : PengVar
     {
-        public List<T> value = new List<T>();
+        public List<PengActor> value = new List<PengActor>();
 
         public PengList() { }
 
