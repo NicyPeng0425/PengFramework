@@ -95,7 +95,7 @@ namespace PengScript
         MathSquare,
         [Description("1,比较,运算,B,低封装")]
         MathCompare,
-        [Description("0,布尔运算,运算,B,低封装")]
+        [Description("1,布尔运算,运算,B,低封装")]
         MathBool,
         [Description("1,整型,值,Z,低封装")]
         ValuePengInt,
@@ -2116,6 +2116,104 @@ namespace PengScript
                 case 3:
                     PengString ps2 = varSource as PengString;
                     varName.value = ps2.value;
+                    break;
+            }
+        }
+    }
+
+    public class MathBool : BaseScript
+    {
+        public enum BoolType
+        {
+            AND = 0,
+            OR = 1,
+            NOT = 2,
+        }
+
+        public PengBool bool1 = new PengBool("布尔值一", 0, ConnectionPointType.In);
+        public PengInt boolInt = new PengInt("运算方式", 1, ConnectionPointType.In);
+        public PengBool bool2 = new PengBool("布尔值二", 2, ConnectionPointType.In);
+
+        public BoolType boolType;
+
+        public PengBool result = new PengBool("结果", 0, ConnectionPointType.Out);
+        public MathBool(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.MathBool;
+            scriptName = GetDescription(type);
+            inVars[0] = bool1;
+            inVars[1] = boolInt;
+            inVars[2] = bool2;
+            outVars[0] = result;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                bool1.value = int.Parse(str[0]) > 0;
+                boolInt.value = int.Parse(str[1]);
+                boolType = (BoolType)boolInt.value;
+                bool2.value = int.Parse(str[2]) > 0;
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            switch (boolType)
+            {
+                case BoolType.AND:
+                    result.value = bool1.value & bool2.value;
+                    break;
+                case BoolType.OR:
+                    result.value = bool1.value | bool2.value;
+                    break;
+                case BoolType.NOT:
+                    result.value = !bool1.value;
+                    break;
+            }
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengBool pb1 = varSource as PengBool;
+                    bool1.value = pb1.value;
+                    break;
+                case 1:
+                    PengInt pi = varSource as PengInt;
+                    boolInt.value = pi.value;
+                    boolType = (BoolType)boolInt.value;
+                    break;
+                case 2:
+                    PengBool pb2 = varSource as PengBool;
+                    bool2.value = pb2.value;
                     break;
             }
         }

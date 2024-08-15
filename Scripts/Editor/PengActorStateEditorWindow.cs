@@ -1532,6 +1532,12 @@ public class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(4)), ""));
                 break;
+            case PengScript.PengScriptType.MathBool:
+                track.nodes.Add(new MathBool(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
+                break;
         }
     }
 
@@ -2163,6 +2169,8 @@ public class PengActorStateEditorWindow : EditorWindow
                 return new CustomEvent(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GetVariables:
                 return new GetVariables(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.MathBool:
+                return new MathBool(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
