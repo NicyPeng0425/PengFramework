@@ -20,15 +20,19 @@ A framework for the development of action games.
 
 # 后续开发计划
 1. 配套AI插件
-2. 黑板
-3. 更多事件
-4. 配套关卡编辑器
-5. 断点
-6. 运行时数据监控
-7. 更多节点
+2. 更多事件
+3. 配套关卡编辑器
+4. 更多节点
 
 # 联系我
 
 B站：@Nicy彭彭
 
 个人博客：https://nicypeng.notion.site/54d5ce6ed8e2451fa36eb31b9c0e6efa?v=1167ad1ba4a24daaa0104f14f2d07e60&pvs=25
+
+# 添加新节点
+1. PengScript.cs里，添加新的脚本类别，并标注描述：(开发完毕？1：0),脚本中文名,类别,首字母,封装程度
+2. EditorNodes文件夹下，根据脚本类别，在对应的脚本文件里写新的节点形式
+3. PengAddNode里的两个方法里，补充新的脚本类别添加方法
+4. RuntimeScripts文件夹下，根据脚本类别，在对应的脚本文件里写新的运行时功能
+5. PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法

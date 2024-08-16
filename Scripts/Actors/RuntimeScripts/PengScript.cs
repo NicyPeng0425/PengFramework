@@ -16,13 +16,6 @@ namespace PengScript
     /// <summary>
     /// 伟大的彭脚本！
     /// 
-    /// 添加新脚本的关注点：
-    /// 1. PengScriptType里添加新脚本的类型
-    /// 2. 在PengNode.cs里添加新脚本的节点形式
-    /// 3. 在PengActorStateEditorWindow.cs的ProcessAddNode()里写添加新脚本的节点的方法
-    /// 4. 在PengActorStateEditorWindow.cs的ReadPengNode()里写读取新脚本的节点的方法
-    /// 5. 在PengScript.cs里添加新脚本的运行时形式，包括构造函数及具体方法
-    /// 6. 在PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法
     /// </summary>
 
     public enum ConnectionPointType
@@ -49,7 +42,7 @@ namespace PengScript
         GlobalTimeScale,
         [Description("0,播放音频,表现,B,高封装")]
         PlayAudio,
-        [Description("0,播放特效,表现,B,高封装")]
+        [Description("1,播放特效,表现,B,高封装")]
         PlayEffects,
         [Description("0,清空目标,功能,Q,高封装")]
         ClearTargets,

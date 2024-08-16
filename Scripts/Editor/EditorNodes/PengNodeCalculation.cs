@@ -139,6 +139,7 @@ public class MathBool : PengNode
     public override void Draw()
     {
         base.Draw();
+        ChangeNode();
         for (int i = 0; i < paraNum; i++)
         {
             if (varInID[i].nodeID < 0)
@@ -159,7 +160,6 @@ public class MathBool : PengNode
                 }
             }
         }
-        ChangeNode();
     }
     public override string SpecialParaDescription()
     {

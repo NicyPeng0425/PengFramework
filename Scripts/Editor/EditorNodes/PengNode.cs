@@ -85,7 +85,6 @@ public class PengNode
 
     public NodeType type;
 
-
     public virtual void Draw()
     {
         Rect rectScale = new Rect();
