@@ -1,4 +1,4 @@
-using PengVariables;
+ï»¿using PengVariables;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ namespace PengScript
 {
     public class ValuePengInt : BaseScript
     {
-        public PengInt pengInt = new PengInt("Öµ", 0, ConnectionPointType.Out);
+        public PengInt pengInt = new PengInt("å€¼", 0, ConnectionPointType.Out);
         public ValuePengInt(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -35,7 +35,7 @@ namespace PengScript
 
     public class ValuePengFloat : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat("Öµ", 0, ConnectionPointType.Out);
+        public PengFloat pengFloat = new PengFloat("å€¼", 0, ConnectionPointType.Out);
         public ValuePengFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -61,7 +61,7 @@ namespace PengScript
 
     public class ValuePengString : BaseScript
     {
-        public PengString pengString = new PengString("Öµ", 0, ConnectionPointType.Out);
+        public PengString pengString = new PengString("å€¼", 0, ConnectionPointType.Out);
         public ValuePengString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -87,7 +87,7 @@ namespace PengScript
 
     public class ValuePengBool : BaseScript
     {
-        public PengBool pengBool = new PengBool("Öµ", 0, ConnectionPointType.Out);
+        public PengBool pengBool = new PengBool("å€¼", 0, ConnectionPointType.Out);
         public ValuePengBool(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -113,11 +113,11 @@ namespace PengScript
 
     public class ValuePengVector3 : BaseScript
     {
-        public PengFloat pengX = new PengFloat("Öµ", 0, ConnectionPointType.In);
-        public PengFloat pengY = new PengFloat("Öµ", 1, ConnectionPointType.In);
-        public PengFloat pengZ = new PengFloat("Öµ", 2, ConnectionPointType.In);
+        public PengFloat pengX = new PengFloat("å€¼", 0, ConnectionPointType.In);
+        public PengFloat pengY = new PengFloat("å€¼", 1, ConnectionPointType.In);
+        public PengFloat pengZ = new PengFloat("å€¼", 2, ConnectionPointType.In);
 
-        public PengVector3 pengVector3 = new PengVector3("Öµ", 0, ConnectionPointType.Out);
+        public PengVector3 pengVector3 = new PengVector3("å€¼", 0, ConnectionPointType.Out);
         public ValuePengVector3(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -189,9 +189,9 @@ namespace PengScript
 
     public class ValueFloatToString : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat("¸¡µã", 0, ConnectionPointType.In);
+        public PengFloat pengFloat = new PengFloat("æµ®ç‚¹", 0, ConnectionPointType.In);
 
-        public PengString pengString = new PengString("ÎÄ±¾", 0, ConnectionPointType.Out);
+        public PengString pengString = new PengString("æ–‡æœ¬", 0, ConnectionPointType.Out);
         public ValueFloatToString(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -251,9 +251,9 @@ namespace PengScript
 
     public class ValueIntToFloat : BaseScript
     {
-        public PengFloat pengFloat = new PengFloat("¸¡µã", 0, ConnectionPointType.Out);
+        public PengFloat pengFloat = new PengFloat("æµ®ç‚¹", 0, ConnectionPointType.Out);
 
-        public PengInt pengInt = new PengInt("ÕûĞÍ", 0, ConnectionPointType.In);
+        public PengInt pengInt = new PengInt("æ•´å‹", 0, ConnectionPointType.In);
         public ValueIntToFloat(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
@@ -321,9 +321,9 @@ namespace PengScript
 
         public enum VariableSourceCN
         {
-            ½ÇÉ«ºÚ°å = 0,
-            È«¾ÖºÚ°å = 1,
-            ½ÇÉ«ÊôĞÔ = 2,
+            è§’è‰²é»‘æ¿ = 0,
+            å…¨å±€é»‘æ¿ = 1,
+            è§’è‰²å±æ€§ = 2,
         }
 
         public enum BlackBoardType
@@ -337,11 +337,11 @@ namespace PengScript
 
         public enum BlackBoardTypeCN
         {
-            ÕûĞÍºÚ°å = 0,
-            ¸¡µãºÚ°å = 1,
-            ×Ö·û´®ºÚ°å = 2,
-            ²¼¶ûºÚ°å = 3,
-            ActorºÚ°å = 4,
+            æ•´å‹é»‘æ¿ = 0,
+            æµ®ç‚¹é»‘æ¿ = 1,
+            å­—ç¬¦ä¸²é»‘æ¿ = 2,
+            å¸ƒå°”é»‘æ¿ = 3,
+            Actoré»‘æ¿ = 4,
         }
 
         public enum VariableType
@@ -361,26 +361,26 @@ namespace PengScript
         public enum VariableTypeCN
         {
             ActorID = 0,
-            ActorÃû×Ö = 1,
-            ActorÕóÓª = 2,
-            ¹¥»÷Á¦ = 3,
-            ·ÀÓùÁ¦ = 4,
-            ±©»÷ÂÊ = 5,
-            ±©ÉË±¶ÂÊ = 6,
-            µ±Ç°ÉúÃüÖµ = 7,
-            ×î´óÉúÃüÖµ = 8,
-            Î»ÖÃ = 9,
+            Actoråå­— = 1,
+            Actoré˜µè¥ = 2,
+            æ”»å‡»åŠ› = 3,
+            é˜²å¾¡åŠ› = 4,
+            æš´å‡»ç‡ = 5,
+            æš´ä¼¤å€ç‡ = 6,
+            å½“å‰ç”Ÿå‘½å€¼ = 7,
+            æœ€å¤§ç”Ÿå‘½å€¼ = 8,
+            ä½ç½® = 9,
         }
 
-        public PengInt int1 = new PengInt("Õ¼Î»", 0, ConnectionPointType.In);
-        public PengInt int2 = new PengInt("Õ¼Î»", 1, ConnectionPointType.In);
+        public PengInt int1 = new PengInt("å ä½", 0, ConnectionPointType.In);
+        public PengInt int2 = new PengInt("å ä½", 1, ConnectionPointType.In);
 
-        public PengInt intOut = new PengInt("ÕûĞÍÊä³ö", 0, ConnectionPointType.Out);
-        public PengFloat floatOut = new PengFloat("¸¡µãÊä³ö", 0, ConnectionPointType.Out);
-        public PengString stringOut = new PengString("×Ö·û´®Êä³ö", 0, ConnectionPointType.Out);
-        public PengBool boolOut = new PengBool("²¼¶ûÊä³ö", 0, ConnectionPointType.Out);
-        public PengPengActor actorOut = new PengPengActor("½ÇÉ«Êä³ö", 0, ConnectionPointType.Out);
-        public PengVector3 vec3Out = new PengVector3("ÏòÁ¿Êä³ö", 0, ConnectionPointType.Out);
+        public PengInt intOut = new PengInt("æ•´å‹è¾“å‡º", 0, ConnectionPointType.Out);
+        public PengFloat floatOut = new PengFloat("æµ®ç‚¹è¾“å‡º", 0, ConnectionPointType.Out);
+        public PengString stringOut = new PengString("å­—ç¬¦ä¸²è¾“å‡º", 0, ConnectionPointType.Out);
+        public PengBool boolOut = new PengBool("å¸ƒå°”è¾“å‡º", 0, ConnectionPointType.Out);
+        public PengPengActor actorOut = new PengPengActor("è§’è‰²è¾“å‡º", 0, ConnectionPointType.Out);
+        public PengVector3 vec3Out = new PengVector3("å‘é‡è¾“å‡º", 0, ConnectionPointType.Out);
 
         public VariableSource variableSource;
         public BlackBoardType bbType;
@@ -435,9 +435,9 @@ namespace PengScript
                                 outVars[0] = actorOut;
                                 break;
                         }
-                        ppa = new PengPengActor("½ÇÉ«", 2, ConnectionPointType.In);
+                        ppa = new PengPengActor("è§’è‰²", 2, ConnectionPointType.In);
                         inVars[2] = ppa;
-                        varName = new PengString("±äÁ¿Ãû", 3, ConnectionPointType.In);
+                        varName = new PengString("å˜é‡å", 3, ConnectionPointType.In);
                         if (str.Length > 3)
                         {
                             varName.value = str[3];
@@ -464,7 +464,7 @@ namespace PengScript
                                 outVars[0] = actorOut;
                                 break;
                         }
-                        varName = new PengString("±äÁ¿Ãû", 2, ConnectionPointType.In);
+                        varName = new PengString("å˜é‡å", 2, ConnectionPointType.In);
                         if (str.Length > 3)
                         {
                             varName.value = str[3];
@@ -491,7 +491,7 @@ namespace PengScript
                         {
                             outVars[0] = vec3Out;
                         }
-                        ppa = new PengPengActor("½ÇÉ«", 2, ConnectionPointType.In);
+                        ppa = new PengPengActor("è§’è‰²", 2, ConnectionPointType.In);
                         inVars[2] = ppa;
                         break;
                 }
@@ -517,7 +517,7 @@ namespace PengScript
                 (variableSource == VariableSource.GlobalBlackBoard && varName.value == "") ||
                 (variableSource == VariableSource.ActorAttribute && ppa.value == null))
             {
-                Debug.Log("¿ÉÄÜÈ¡²»µ½±äÁ¿£¡PengActorÎ´ÒıÓÃÊ±£¬Ä¬ÈÏÉèÎª×ÔÉí¡£");
+                Debug.Log("å¯èƒ½å–ä¸åˆ°å˜é‡ï¼PengActoræœªå¼•ç”¨æ—¶ï¼Œé»˜è®¤è®¾ä¸ºè‡ªèº«ã€‚");
             }
             if (ppa.value == null)
             {
@@ -631,9 +631,9 @@ namespace PengScript
 
     public class ValueGetListCount : BaseScript
     {
-        public PengList<PengActor> pengList = new PengList<PengActor>("ActorÁĞ±í", 0, ConnectionPointType.In);
+        public PengList<PengActor> pengList = new PengList<PengActor>("Actoråˆ—è¡¨", 0, ConnectionPointType.In);
 
-        public PengInt pengInt = new PengInt("ÔªËØ¸öÊı", 0, ConnectionPointType.Out);
+        public PengInt pengInt = new PengInt("å…ƒç´ ä¸ªæ•°", 0, ConnectionPointType.Out);
         public ValueGetListCount(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.actor = actor;
