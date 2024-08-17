@@ -29,7 +29,7 @@ namespace PengScript
         {
             base.Construct(specialInfo);
 
-            type = PengScriptType.OnTrackExecute;
+            type = PengScriptType.PlayAnimation;
             scriptName = GetDescription(type);
             inVars[0] = pengAnimationName;
             inVars[1] = pengHardCut;
@@ -90,6 +90,71 @@ namespace PengScript
         }
     }
 
+    public class PlayEffects : BaseScript
+    {
+        public PengString effectPath = new PengString("特效路径", 0, ConnectionPointType.In);
+        public PengBool follow = new PengBool("跟随", 1, ConnectionPointType.In);
+        public PengVector3 posOffset = new PengVector3("位置偏移", 2, ConnectionPointType.In);
+        public PengVector3 rotOffset = new PengVector3("旋转偏移", 3, ConnectionPointType.In);
+        public PengVector3 scaleOffset = new PengVector3("缩放偏移", 4, ConnectionPointType.In);
+        public PengFloat deleteTime = new PengFloat("停止时间", 5, ConnectionPointType.In);
 
+        public ParticleSystem ps;
+        public PlayEffects(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.PlayEffects;
+            scriptName = GetDescription(type);
+            inVars[0] = effectPath;
+            inVars[1] = follow;
+            inVars[2] = posOffset;
+            inVars[3] = rotOffset;
+            inVars[4] = scaleOffset;
+            inVars[5] = deleteTime;
+
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(';');
+                effectPath.value = str[0];
+                follow.value = int.Parse(str[1]) > 0;
+                posOffset.value = BaseScript.ParseStringToVector3(str[2]);
+                rotOffset.value = BaseScript.ParseStringToVector3(str[3]);
+                scaleOffset.value = BaseScript.ParseStringToVector3(str[4]);
+                deleteTime.value = float.Parse(str[5]);
+            }
+        }
+
+        public override void Initial(int functionIndex)
+        {
+            base.Initial(functionIndex);
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            if (functionIndex == 0)
+            {
+                ps = actor.game.GenerateVFX(effectPath.value, posOffset.value, rotOffset.value, scaleOffset.value, actor, follow.value, deleteTime.value);
+            }
+            else if (functionIndex == 1)
+            {
+                ps.Stop();
+            }
+        }
+    }
 
 }

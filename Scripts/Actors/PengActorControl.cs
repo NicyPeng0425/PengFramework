@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class PengActorControl : MonoBehaviour
+public partial class PengActorControl : MonoBehaviour
 {
     [HideInInspector]
     public bool aiCtrl = true;
@@ -14,6 +15,9 @@ public class PengActorControl : MonoBehaviour
     //处理后的输入，一般直接用来指示AI的前进方向，或者表示玩家的原始输入在经过相机的变换后的前进方向
     [HideInInspector]
     public Vector3 processedInputDir;
+    [HideInInspector]
+    public bool acceptInput = true;
+    public Dictionary<int, List<ActionType>> actions = new Dictionary<int, List<ActionType>>();
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +28,17 @@ public class PengActorControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if ((actions.Count > 0))
+        {
+            for (int i = actions.Count - 1; i >= 0; i++)
+            {
+                if (actor.game.currentFrame - actions.ElementAt(i).Key >= 2)
+                {
+                    actions.Remove(actions.ElementAt(i).Key);
+                }
+            }
+        }
+
         if (aiCtrl)
         {
             AIControlLogic();

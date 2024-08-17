@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using UnityEditor.Animations;
 using UnityEditorInternal.VersionControl;
 using static PengScript.GetTargetsByRange;
+using PengScript;
 
 public partial class PengActorStateEditorWindow : EditorWindow
 {
@@ -99,11 +100,17 @@ public partial class PengActorStateEditorWindow : EditorWindow
     //所有状态及其对应的是否循环
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
     public PengEditorTrack globalTrack;
-    public string currentStateName;
+    string m_currentStateName;    
+    public string currentStateName
+    {
+        get{ return m_currentStateName; }
+        set { OnCurrentStateChanged(); m_currentStateName = value; }
+    }
     public PengActor runTimeSelectionPauseActor = null;
 
     public XmlElement copyInfo = null;
     XmlDocument copyInternalDoc = null;
+    public List<ParticleSystem> psList = new List<ParticleSystem>();
     //
 
 
@@ -119,11 +126,29 @@ public partial class PengActorStateEditorWindow : EditorWindow
     {
         editorPlaying = EditorApplication.isPlaying;
         SceneView.duringSceneGui += this.OnSceneGUI;
+        EditorApplication.playModeStateChanged += EnterPlayModeClearVFX;
     }
 
     private void OnDisable()
     {
         SceneView.duringSceneGui -= this.OnSceneGUI;
+        EditorApplication.playModeStateChanged -= EnterPlayModeClearVFX;
+        if (psList.Count > 0)
+        {
+            for (int i = psList.Count - 1; i >= 0; i--)
+            {
+                DestroyImmediate(psList[i].gameObject);
+            }
+            psList.Clear();
+        }
+        GameObject[] temp = GameObject.FindGameObjectsWithTag("Temporary");
+        if (temp.Length > 0)
+        {
+            for (int i = temp.Length - 1; i >= 0; i--)
+            {
+                GameObject.DestroyImmediate(temp[i]);
+            }
+        }
     }
 
     private void OnGUI()
@@ -147,6 +172,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
         if (Selection.activeGameObject.GetComponent<PengActor>().actorID != currentActorID)
         {
+            OnCurrentStateChanged();
             ReadActorData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
         }
 
@@ -1597,6 +1623,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     }
                 }
             }
+            if (node.scriptType == PengScriptType.PlayEffects)
+            {
+                PlayEffects pe = node as PlayEffects;
+                GameObject.DestroyImmediate(pe.ps.gameObject);
+            }
             tracks[currentSelectedTrack].nodes.Remove(node);
         }
         else
@@ -1629,6 +1660,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
                         }
                     }
                 }
+            }
+            if (node.scriptType == PengScriptType.PlayEffects)
+            {
+                PlayEffects pe = node as PlayEffects;
+                GameObject.DestroyImmediate(pe.ps.gameObject);
             }
             globalTrack.nodes.Remove(node);
         }
@@ -2149,9 +2185,92 @@ public partial class PengActorStateEditorWindow : EditorWindow
                         }
                     }
                 }
+
+                if (tracks[i].execTime == PengTrack.ExecTime.Update && tracks[i].nodes.Count > 0)
+                {
+                    for (int j = 0; j < tracks[i].nodes.Count; j++)
+                    {
+                        if (tracks[i].nodes[j].scriptType == PengScript.PengScriptType.PlayEffects)
+                        {
+                            PlayEffects pe = tracks[i].nodes[j] as PlayEffects;
+                            if (pe.ps == null)
+                            {
+                                if (File.Exists(Application.dataPath + "/Resources/Effects/" + pe.effectPath.value + ".prefab"))
+                                {
+                                    Debug.Log(1);
+                                    GameObject psPrefab = Resources.Load("Effects/" + pe.effectPath.value) as GameObject;
+                                    GameObject psGO = GameObject.Instantiate(psPrefab, Selection.activeTransform);
+                                    pe.ps = psGO.GetComponent<ParticleSystem>();
+                                    psList.Add(pe.ps);
+                                    pe.ps.tag = "Temporary";
+                                }
+                            }
+                            else
+                            {
+                                if (!pe.ps.gameObject.activeSelf)
+                                {
+                                    pe.ps.gameObject.SetActive(true);
+                                }
+                                pe.ps.Simulate((currentSelectedFrame - tracks[i].start) / globalFrameRate);
+                                pe.ps.transform.localPosition = pe.posOffset.value;
+                                pe.ps.transform.localRotation = Quaternion.Euler(pe.rotOffset.value);
+                                pe.ps.transform.localScale = pe.scaleOffset.value;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    
+    public void EnterPlayModeClearVFX(PlayModeStateChange obj)
+    {
+        if (psList.Count > 0)
+        {
+            for (int i = psList.Count - 1; i >= 0; i--)
+            {
+                DestroyImmediate(psList[i].gameObject); 
+            }
+            psList.Clear();
+        }
+        GameObject[] temp = GameObject.FindGameObjectsWithTag("Temporary");
+        if (temp.Length > 0)
+        {
+            for (int i = temp.Length - 1; i >= 0; i--)
+            {
+                GameObject.DestroyImmediate(temp[i]);
+            }
+        }
+    }
+
+    public void OnCurrentStateChanged()
+    {
+        if (EditorApplication.isPlaying)
+        {
+            if (!runTimeEdit)
+            {
+                if (psList.Count > 0)
+                {
+                    Debug.Log(psList.Count);
+                    for (int i = psList.Count - 1; i >= 0; i--)
+                    {
+                        DestroyImmediate(psList[i].gameObject);
+                    }
+                    psList.Clear();
+                }
+            }
+        }
+        else
+        {
+            if (psList.Count > 0)
+            {
+                Debug.Log(psList.Count);
+                for (int i = psList.Count - 1 ; i >= 0; i--)
+                {
+                    DestroyImmediate(psList[i].gameObject); 
+                }
+                psList.Clear();
+            }
+        }
+    }
 }
