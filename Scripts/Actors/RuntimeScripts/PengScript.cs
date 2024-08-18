@@ -40,12 +40,10 @@ namespace PengScript
         GetTargetsByRange,
         [Description("1,全局时间变速,功能,Q,高封装")]
         GlobalTimeScale,
-        [Description("0,播放音频,表现,B,高封装")]
+        [Description("1,播放音频,表现,B,高封装")]
         PlayAudio,
         [Description("1,播放特效,表现,B,高封装")]
         PlayEffects,
-        [Description("0,清空目标,功能,Q,高封装")]
-        ClearTargets,
         [Description("0,尝试索敌,功能,C,高封装")]
         TryGetEnemy,
         [Description("0,允许转向,功能,Y,高封装")]
@@ -114,6 +112,8 @@ namespace PengScript
         CustomEvent,
         [Description("1,事件触发,事件,X,高封装")]
         OnEvent,
+        [Description("0,完美闪避判定,功能,W,高封装")]
+        PerfectDodge,
     }
 
     public struct ScriptIDVarID

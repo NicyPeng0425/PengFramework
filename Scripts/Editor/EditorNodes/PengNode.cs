@@ -84,7 +84,7 @@ public class PengNode
     }
 
     public NodeType type;
-
+    public string meaning = "暂无说明";
     public virtual void Draw()
     {
         Rect rectScale = new Rect();
@@ -361,8 +361,14 @@ public class PengNode
         if(scriptType != PengScript.PengScriptType.OnTrackExecute)
         {
             menu.AddItem(new GUIContent("删除节点"), false, () => master.ProcessRemoveNode(this));
-            menu.ShowAsContext();
         }
+        menu.AddItem(new GUIContent("脚本说明"), false, () => DisplayMeaning());
+        menu.ShowAsContext();
+    }
+
+    public void DisplayMeaning()
+    {
+        EditorUtility.DisplayDialog("脚本说明", this.meaning, "确认");
     }
 
     private void OnSelectedChange(bool changeTo)
@@ -802,6 +808,7 @@ public class DebugLog : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "输出一个对象的值，一般是一个浮点、整型、布尔或字符串类型的值。";
 
         inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
@@ -834,6 +841,7 @@ public class BreakPoint : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "设置一个断点，运行时此脚本被执行时将会暂停游戏。";
 
         inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];

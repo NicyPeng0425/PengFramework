@@ -117,6 +117,7 @@ public class PengEditorMain : EditorWindow
             gameManager.name = "Game";
             gameManager.tag = "PengGameManager";
             gameManager.AddComponent<PengGameManager>();
+            gameManager.AddComponent<AudioSource>();
             if (!Directory.Exists(Application.dataPath + "/Resources/Managers/GameManager"))
             {
                 Directory.CreateDirectory(Application.dataPath + "/Resources/Managers/GameManager");

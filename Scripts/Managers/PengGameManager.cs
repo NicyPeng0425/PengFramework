@@ -29,6 +29,8 @@ public class PengGameManager : MonoBehaviour
     public List<PengEffectManager> psPool = new List<PengEffectManager>();
     [HideInInspector]
     public Transform vfxRoot;
+    [HideInInspector]
+    public AudioSource globalSource;
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -46,6 +48,7 @@ public class PengGameManager : MonoBehaviour
         vfxRoot = new GameObject().transform;
         vfxRoot.name = "PengVFXRoot";
         vfxRoot.SetParent(this.transform);
+        globalSource = this.GetComponent<AudioSource>();
     }
     // Start is called before the first frame update
     void Start()

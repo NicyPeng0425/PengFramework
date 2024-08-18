@@ -76,7 +76,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
     public List<PengEditorTrack> tracks = new List<PengEditorTrack>();
     public int currentActorID = 100425;
     public int currentActorCamp = 1;
-    public string currentActorCampString = "1";
     public string currentActorName = "";
     public float currentScale = 1;
     public bool debug = false;
@@ -1010,18 +1009,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         GUI.Box(actorName, currentActorID.ToString(), style2);
 
         GUI.Box(actorCampLabel, "角色阵营：", style2);
-        currentActorCampString = GUI.TextField(actorCamp, currentActorCamp.ToString(), style2);
-
-        if (int.TryParse(currentActorCampString, out currentActorCamp))
-        {
-
-        }
-        else
-        {
-            currentActorCampString = currentActorCamp.ToString();
-            EditorUtility.DisplayDialog("警告", "阵营必须以整型数字来标识！", "ok");
-        }
-
+        currentActorCamp = EditorGUI.IntField(actorCamp, currentActorCamp, style2);
     }
 
     public void PauseEditingActor()
@@ -2135,7 +2123,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
         tracks = new List<PengEditorTrack>();
         currentActorID = 100425;
         currentActorCamp = 1;
-        currentActorCampString = "1";
         currentActorName = "";
         currentScale = 1;
         debug = false;

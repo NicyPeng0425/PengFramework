@@ -24,7 +24,7 @@ public class MathCompare : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
-
+        meaning = "比较两个值。";
         inVars = new PengEditorVariables.PengVar[3];
         outVars = new PengEditorVariables.PengVar[1];
 
@@ -111,7 +111,7 @@ public class MathBool : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
-
+        meaning = "布尔运算。";
         inVars = new PengEditorVariables.PengVar[3];
         outVars = new PengEditorVariables.PengVar[1];
 

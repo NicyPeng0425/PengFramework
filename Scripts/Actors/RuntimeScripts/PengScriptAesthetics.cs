@@ -1,6 +1,7 @@
 ﻿using PengVariables;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace PengScript
@@ -153,6 +154,71 @@ namespace PengScript
             else if (functionIndex == 1)
             {
                 ps.Stop();
+            }
+        }
+    }
+
+    public class PlayAudio : BaseScript
+    {
+        public PengString audioPath = new PengString("音频路径", 0, ConnectionPointType.In);
+        public PengFloat audioVol = new PengFloat("音量", 1, ConnectionPointType.In);
+
+        public List<string> paths = new List<string>();
+        public List<AudioClip> clips = new List<AudioClip>();
+        public PlayAudio(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+
+            type = PengScriptType.PlayAudio;
+            scriptName = GetDescription(type);
+            inVars[0] = audioPath;
+            inVars[1] = audioVol;
+
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(';');
+                audioPath.value = str[0];
+                audioVol.value = float.Parse(str[1]);
+
+                if (str[2] != "null")
+                {
+                    string[] paths = str[2].Split(",");
+                    if (paths.Length > 0)
+                    {
+                        for (int i = 0; i < paths.Length; i++)
+                        {
+                            clips.Add(Resources.Load<AudioClip>(paths[i]));
+                        }
+                    }
+                }
+            }
+        }
+
+        public override void Initial(int functionIndex)
+        {
+            base.Initial(functionIndex);
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            if (clips.Count > 0)
+            {
+                int index = Random.Range(0, clips.Count);
+                actor.speaker.PlayOneShot(clips[index]);
             }
         }
     }

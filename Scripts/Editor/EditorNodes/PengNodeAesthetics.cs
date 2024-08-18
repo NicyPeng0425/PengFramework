@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
+using Unity.VisualScripting;
+using System;
+using System.Reflection;
 
 public class PlayAnimation : PengNode
 {
@@ -21,6 +24,10 @@ public class PlayAnimation : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "播放一个动画。\n" +
+            "动画名称需填入Animator内的动画状态的名称，而不是动画Clip的名称。\n" +
+            "过渡时间、开始时间需填入一个范围从0到1的归一化浮点值。\n" +
+            "默认的动画层为0。";
 
         inPoints = new PengNodeConnection[1]; inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
@@ -70,6 +77,8 @@ public class PlayEffects : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "播放一个特效。\n" +
+            "特效路径填入其在Resources/Effects文件夹下的相对地址即可。例如，我想播放一个地址在Assets/Resources/Effects/100425/Slash的特效，那么我只需要填入100425/Slash即可。";
 
         inPoints = new PengNodeConnection[2]; 
         inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
@@ -202,6 +211,204 @@ public class PlayEffects : PengNode
             scaleOffset.value = BaseScript.ParseStringToVector3(str[4]);
             deleteTime.value = float.Parse(str[5]);
             UpdateParticle();
+        }
+    }
+}
+
+public class PlayAudio : PengNode
+{
+    public PengEditorVariables.PengString soundPath;
+    public PengEditorVariables.PengFloat soundVol;
+
+    public string oldPath;
+
+    public List<AudioClip> clipList;
+    public List<string> pathList;
+    public AudioSource source;
+    public PlayAudio(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "播放一个音效。\n" +
+            "音效路径填入其在Resources/Sounds文件夹下的相对地址即可。\n" +
+            "需要注意的是，此处需填入文件夹的相对地址，然后会从该文件夹下随机选择一个音效播放。\n" +
+            "例如，我想播放一个地址在Assets/Resources/Sounds/100425/HitSound文件夹下的音效，那么我只需要填入100425/HitSound即可。";
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+
+        inVars = new PengEditorVariables.PengVar[2];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        soundPath = new PengEditorVariables.PengString(this, "音效文件夹", 0, ConnectionPointType.In);
+        soundVol = new PengEditorVariables.PengFloat(this, "音轨声量", 1, ConnectionPointType.In);
+
+        soundPath.value = "Sounds/";
+        soundVol.value = 1;
+        soundPath.point = null;
+        soundVol.point = null;
+        oldPath = "";
+        clipList = new List<AudioClip>();
+        pathList = new List<string>();
+
+        ReadSpecialParaDescription(specialInfo);
+
+        inVars[0] = soundPath;
+        inVars[1] = soundVol;
+        LoadSound();
+
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.PlayAudio;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 2;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < paraNum; i++)
+        {
+            Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 40, 18);
+            Rect longField = new Rect(field.x, field.y, field.width + 140, field.height);
+            switch (i)
+            {
+                case 0:
+                    oldPath = soundPath.value;
+                    soundPath.value = EditorGUI.TextField(longField, soundPath.value);
+                    break;
+                case 1:
+                    soundVol.value = EditorGUI.Slider(field, soundVol.value, 0, 2);
+                    break;
+            }
+        }
+        if (soundPath.value != oldPath)
+        {
+            LoadSound();
+        }
+        if (!EditorApplication.isPlaying)
+        {
+            Rect play = new Rect(soundPath.varRect.x + 180, soundPath.varRect.y - 27, 40, 20);
+            if (GUI.Button(play, "试听"))
+            {
+                PlayInEdtior();
+            }
+        }
+    }
+
+    public void PlayInEdtior()
+    {
+        if (EditorApplication.isPlaying)
+        {
+            return;
+        }
+
+        if (clipList != null && clipList.Count == 0)
+        {
+
+            LoadSound();
+        }
+
+        if (source == null)
+        {
+            source = GameObject.FindWithTag("PengGameManager").GetComponent<AudioSource>();
+        }
+
+        if (clipList != null && clipList.Count > 0)
+        {
+            int index = UnityEngine.Random.Range(0, clipList.Count);
+
+            Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
+            Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
+            MethodInfo method = audioUtilClass.GetMethod(
+                "PlayPreviewClip",
+                BindingFlags.Static | BindingFlags.Public,
+                null,
+                new System.Type[] 
+                {
+                    typeof(AudioClip), typeof(int), typeof(bool)
+                },
+                null
+                );
+            method.Invoke(
+                null,
+                new object[] 
+                {
+                    clipList[index], 0, false
+                }
+            );
+        }
+    }
+
+    public void LoadSound()
+    {
+        if (source == null)
+        {
+            source = GameObject.FindWithTag("PengGameManager").GetComponent<AudioSource>();
+        }
+
+        if (!Directory.Exists(Application.dataPath + "/Resources/Sounds/" + soundPath.value))
+            return;
+        DirectoryInfo direct = new DirectoryInfo(Application.dataPath + "/Resources/Sounds/" + soundPath.value);
+        FileInfo[] files = direct.GetFiles();
+        if (files != null && files.Length > 0)
+        {
+            clipList.Clear();
+            pathList.Clear();
+            for (int i = 0; i < files.Length; i++)
+            {
+                if (files[i].Name.EndsWith(".meta"))
+                {
+                    continue;
+                }
+                if (files[i].Name.EndsWith(".mp3") || files[i].Name.EndsWith(".wav"))
+                {
+                    string name = files[i].Name;
+                    string[] noPost = name.Split(".");
+                    clipList.Add(Resources.Load<AudioClip>("Sounds/" + soundPath.value + "/" + noPost[0]));
+                    pathList.Add("Sounds/" + soundPath.value + "/" + noPost[0]);
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        string paths = "";
+        if (pathList.Count > 0)
+        {
+            
+            for (int i = 0; i < pathList.Count; i++)
+            {
+                paths += pathList[i];
+                if (i != pathList.Count - 1)
+                {
+                    paths += ",";
+                }
+            }
+        }
+        else
+        {
+            paths = "null";
+        }
+        string result = soundPath.value + ";" + soundVol.value + ";" + paths;
+        return result;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(';');
+            soundPath.value = str[0];
+            soundVol.value = float.Parse(str[1]);
+            oldPath = soundPath.value;
         }
     }
 }
