@@ -14,6 +14,7 @@ using UnityEditor.Animations;
 using UnityEditorInternal.VersionControl;
 using static PengScript.GetTargetsByRange;
 using PengScript;
+using log4net.Util;
 
 public partial class PengActorStateEditorWindow : EditorWindow
 {
@@ -81,7 +82,30 @@ public partial class PengActorStateEditorWindow : EditorWindow
     public bool debug = false;
     public bool editorPlaying = false;
     private bool m_runTimeEdit = false;
-    
+    GameObject m_currentSelection = null;
+    public GameObject currentSelectionGameObject
+    {
+        get { return m_currentSelection; }
+        set { 
+            if (m_currentSelection == null && value != null)
+            {
+                OnCurrentStateChanged();
+                m_currentSelection = value;
+            }
+            if (value != m_currentSelection)
+            {
+                OnCurrentStateChanged();
+                m_currentSelection = value;
+            }
+            if (value == null)
+            {
+                OnCurrentStateChanged();
+                m_currentSelection = null;
+            }
+}
+    }
+    public bool editorStatePlaying = false;
+    public float editorStatePreviewTimeCount = 0;
     public bool runTimeEdit
     {
         get { return m_runTimeEdit; }
@@ -127,12 +151,14 @@ public partial class PengActorStateEditorWindow : EditorWindow
         editorPlaying = EditorApplication.isPlaying;
         SceneView.duringSceneGui += this.OnSceneGUI;
         EditorApplication.playModeStateChanged += EnterPlayModeClearVFX;
+        EditorApplication.update += UpdateState;
     }
 
     private void OnDisable()
     {
         SceneView.duringSceneGui -= this.OnSceneGUI;
         EditorApplication.playModeStateChanged -= EnterPlayModeClearVFX;
+        EditorApplication.update -= UpdateState;
         if (psList.Count > 0)
         {
             for (int i = psList.Count - 1; i >= 0; i--)
@@ -157,6 +183,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
         {
             return;
         }
+
+        currentSelectionGameObject = Selection.activeGameObject;
 
         if (Selection.activeGameObject == null)
         {
@@ -1263,7 +1291,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
             }
             GUILayout.Space(10);
             GUILayout.Label("状态长度：", GUILayout.Width(65));
-            GUILayout.Space(5);
+            GUILayout.Space(15);
 
             try
             {
@@ -1273,6 +1301,30 @@ public partial class PengActorStateEditorWindow : EditorWindow
             catch
             {
 
+            }
+
+            if (!EditorApplication.isPlaying)
+            {
+                Rect butRe = new Rect(sideBarWidth + 600, 20, 50, 20);
+                
+                if (editorStatePlaying)
+                {
+                    if (GUI.Button(butRe, EditorGUIUtility.IconContent("d_PauseButton")))
+                    {
+                        editorStatePlaying = false;
+                    }
+                }
+                else
+                {
+                    if (GUI.Button(butRe, EditorGUIUtility.IconContent("d_PlayButton")))
+                    {
+                        editorStatePlaying = true;
+                    }
+                }
+            }
+            else
+            {
+                editorStatePlaying = false;
             }
 
         }
@@ -2197,7 +2249,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
                             {
                                 if (File.Exists(Application.dataPath + "/Resources/Effects/" + pe.effectPath.value + ".prefab"))
                                 {
-                                    Debug.Log(1);
                                     GameObject psPrefab = Resources.Load("Effects/" + pe.effectPath.value) as GameObject;
                                     GameObject psGO = GameObject.Instantiate(psPrefab, Selection.activeTransform);
                                     pe.ps = psGO.GetComponent<ParticleSystem>();
@@ -2215,6 +2266,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
                                 pe.ps.transform.localPosition = pe.posOffset.value;
                                 pe.ps.transform.localRotation = Quaternion.Euler(pe.rotOffset.value);
                                 pe.ps.transform.localScale = pe.scaleOffset.value;
+
+                                if ((currentSelectedFrame - tracks[i].start) / globalFrameRate >= pe.deleteTime.value)
+                                {
+                                    pe.ps.Simulate(-1);
+                                }
                             }
                         }
                     }
@@ -2264,12 +2320,29 @@ public partial class PengActorStateEditorWindow : EditorWindow
         {
             if (psList.Count > 0)
             {
-                Debug.Log(psList.Count);
                 for (int i = psList.Count - 1 ; i >= 0; i--)
                 {
                     DestroyImmediate(psList[i].gameObject); 
                 }
                 psList.Clear();
+            }
+        }
+    }
+
+    public void UpdateState()
+    {
+        if (editorStatePlaying)
+        {
+            editorStatePreviewTimeCount += Time.deltaTime;
+            if (editorStatePreviewTimeCount >= 2 / globalFrameRate)
+            {
+                editorStatePreviewTimeCount -= 2 / globalFrameRate;
+                currentSelectedFrame++;
+                if (currentSelectedFrame >= currentFrameLength)
+                {
+                    currentSelectedFrame = 0;
+                }
+                Repaint();
             }
         }
     }
