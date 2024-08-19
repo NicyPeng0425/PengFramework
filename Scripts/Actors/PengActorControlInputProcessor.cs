@@ -7,7 +7,7 @@ public partial class PengActorControl : MonoBehaviour
 {
     public void ProcessInputAttack(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
             { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -24,7 +24,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputDodge(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -41,7 +41,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputJump(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -58,7 +58,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputSkill_A(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -75,7 +75,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputSkill_B(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -92,7 +92,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputSkill_C(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))
@@ -109,7 +109,7 @@ public partial class PengActorControl : MonoBehaviour
 
     public void ProcessInputSkill_D(InputAction.CallbackContext Obj)
     {
-        if (!acceptInput)
+        if (!acceptInput || aiCtrl)
         { return; }
 
         if (!actions.ContainsKey(actor.game.currentFrame))

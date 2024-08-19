@@ -241,6 +241,7 @@ public class PengActor : MonoBehaviour
     {
         game = GameObject.FindWithTag("PengGameManager").GetComponent<PengGameManager>();
         game.actors.Add(this);
+        input.InputListener();
     }
 
     // Update is called once per frame

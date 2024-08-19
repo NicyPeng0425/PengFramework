@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using System.Xml;
 using System.Linq;
+using Cinemachine;
 
 public class PengEditorMain : EditorWindow
 {

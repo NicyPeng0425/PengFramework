@@ -74,6 +74,21 @@ public class PengRuntimeMonitor : EditorWindow
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.BeginHorizontal();
+                if (game.actors[i].input.aiCtrl)
+                {
+                    if (GUILayout.Button("设为主控", GUILayout.Width(80)))
+                    {
+                        for (int j = 0; j < game.actors.Count; j++)
+                        {
+                            game.actors[j].input.aiCtrl = true;
+                        }
+                        game.actors[i].input.aiCtrl = false;
+                    }
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
                 GUILayout.Label("角色状态：", GUILayout.Width(80));
                 GUILayout.Label(game.actors[i].currentName, GUILayout.Width(80));
                 GUILayout.FlexibleSpace();

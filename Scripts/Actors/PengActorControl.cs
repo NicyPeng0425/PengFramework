@@ -8,6 +8,8 @@ public partial class PengActorControl : MonoBehaviour
     [HideInInspector]
     public bool aiCtrl = true;
     [HideInInspector]
+    public bool active = false;
+    [HideInInspector]
     public PengActor actor;
     //玩家的原始输入，即WASD所指示的世界坐标系指向
     [HideInInspector]
@@ -22,7 +24,6 @@ public partial class PengActorControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -30,7 +31,7 @@ public partial class PengActorControl : MonoBehaviour
     {
         if ((actions.Count > 0))
         {
-            for (int i = actions.Count - 1; i >= 0; i++)
+            for (int i = actions.Count - 1; i >= 0; i--)
             {
                 if (actor.game.currentFrame - actions.ElementAt(i).Key >= 2)
                 {
@@ -41,7 +42,10 @@ public partial class PengActorControl : MonoBehaviour
 
         if (aiCtrl)
         {
-            AIControlLogic();
+            if (active)
+            {
+                AIControlLogic();
+            }
         }
         else
         {

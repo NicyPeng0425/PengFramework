@@ -126,4 +126,102 @@ namespace PengScript
             }
         }
     }
+
+    public class GetInput : BaseScript
+    {
+        public struct InputMap
+        {
+            public string stateName;
+            public int frameOffset;
+            public PengActorControl.ActionType input;
+        }
+
+        public List<InputMap> maps = new List<InputMap>();
+        public int toTrans = -1;
+        public GetInput(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[0];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(";");
+                if (str.Length > 0)
+                {
+                    for (int i = 0; i < str.Length; i++)
+                    {
+                        string[] s1 = str[i].Split(",");
+                        InputMap map = new InputMap();
+                        map.stateName = s1[0];
+                        map.frameOffset = int.Parse(s1[1]);
+                        map.input = (PengActorControl.ActionType)Enum.Parse(typeof(PengActorControl.ActionType), s1[2]);
+                        maps.Add(map);
+                    }
+                }
+            }
+            type = PengScriptType.GetInput;
+            scriptName = GetDescription(type);
+        }
+
+        public override void Initial(int functionIndex)
+        {
+            base.Initial(functionIndex);
+            if (actor.currentStateFrame - trackMaster.start == 0)
+            {
+                toTrans = -1;
+            }
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            
+            if (actor.input.actions.Count > 0)
+            {
+                for (int i = 0; i < actor.input.actions.Count; i++)
+                {
+                    for (int f = maps.Count - 1; f >= 0; f--)
+                    {
+                        if (actor.input.actions.ElementAt(i).Value.Contains(maps[f].input))
+                        {
+                            if (toTrans < 0)
+                            {
+                                toTrans = f;
+                            }
+                            else if(f <= toTrans)
+                            {
+                                toTrans = f;
+                            }   
+                        }
+                    }
+                }
+            }
+
+            if (toTrans >= 0)
+            {
+                if (actor.currentStateFrame - trackMaster.start >= maps[toTrans].frameOffset)
+                {
+                    if (actor.actorStates.ContainsKey(maps[toTrans].stateName))
+                    {
+                        actor.TransState(maps[toTrans].stateName, true);
+                    }
+                    else
+                    {
+                        Debug.Log("Actor" + actor.actorID.ToString() + "在" + actor.currentName + "状态的" + trackMaster.name + "轨道中调用了输入分歧-切换状态，但没有给定名称的状态。");
+                    }
+                }
+            }
+        }
+    }
 }

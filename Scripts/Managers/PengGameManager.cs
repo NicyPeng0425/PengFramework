@@ -31,6 +31,8 @@ public class PengGameManager : MonoBehaviour
     public Transform vfxRoot;
     [HideInInspector]
     public AudioSource globalSource;
+    [HideInInspector]
+    
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -59,7 +61,7 @@ public class PengGameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        currentFrame = Mathf.FloorToInt( Time.time / globalFrameRate );
+        currentFrame = Mathf.FloorToInt( Time.time * globalFrameRate );
     }
 
     public void ReadGlobalFrameRate()

@@ -123,6 +123,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
     //所有状态及其对应的是否循环
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
     public PengEditorTrack globalTrack;
+    public Dictionary<int, PlayAudio> previewAudios = new Dictionary<int, PlayAudio>();
     string m_currentStateName;    
     public string currentStateName
     {
@@ -1299,6 +1300,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 {
                     if (GUI.Button(butRe, EditorGUIUtility.IconContent("d_PauseButton")))
                     {
+                        previewAudios.Clear();
                         editorStatePlaying = false;
                     }
                 }
@@ -1306,6 +1308,22 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 {
                     if (GUI.Button(butRe, EditorGUIUtility.IconContent("d_PlayButton")))
                     {
+                        if (tracks.Count > 0)
+                        {
+                            for (int i = 0; i < tracks.Count; i++)
+                            {
+                                if (tracks[i].execTime == PengTrack.ExecTime.Update && tracks[i].nodes.Count > 0)
+                                {
+                                    for (int j = 0; j < tracks[i].nodes.Count; j++)
+                                    {
+                                        if (tracks[i].nodes[j].scriptType == PengScriptType.PlayAudio)
+                                        {
+                                            previewAudios.Add(tracks[i].start, tracks[i].nodes[j] as PlayAudio);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         editorStatePlaying = true;
                     }
                 }
@@ -2329,6 +2347,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 {
                     currentSelectedFrame = 0;
                 }
+                if (previewAudios.Count > 0 && previewAudios.ContainsKey(currentSelectedFrame))
+                {
+                    previewAudios[currentSelectedFrame].PlayInEdtior();
+                }
+                
                 Repaint();
             }
         }
