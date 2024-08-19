@@ -186,16 +186,16 @@ public class PengActor : MonoBehaviour
         get {
             if (buff.buffs.Count > 0)
             {
-                bool yes = false;
+                bool yes = true;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    if (buff.notEffectedByGravity) { yes = true; }
+                    if (buff.notEffectedByGravity) { yes = false; }
                 }
                 return yes;
             }
             else
             {
-                return false;
+                return true;
             }
         }
     }
@@ -221,6 +221,8 @@ public class PengActor : MonoBehaviour
     }
     [HideInInspector]
     public bool isGrounded;
+    [HideInInspector]
+    public float fallSpeed;
     [HideInInspector]
     public AudioSource speaker;
 
@@ -251,6 +253,8 @@ public class PengActor : MonoBehaviour
         {
             current.OnUpdate();
         }
+
+        ProcessGravity();
     }
 
     public void TransState(string name, bool actively)
@@ -274,10 +278,42 @@ public class PengActor : MonoBehaviour
         buff.ProcessStateChange(actively);
     }
 
-
     public void ProcessStateEnd()
     {
         buff.ProcessStateEnd();
+    }
+
+    public void ProcessGravity()
+    {
+        if (underGravity)
+        {
+            isGrounded = false;
+            Vector3 posi = this.transform.position + Vector3.up * 0.35f;
+            Collider[] cols = Physics.OverlapSphere(posi, 0.3f);
+            if (cols.Length > 0)
+            {
+                for (int i = 0; i < cols.Length; i++)
+                {
+                    if (cols[i].transform.tag != "PengActor")
+                    {
+                        isGrounded = true;
+                    }
+                }
+            }
+            if (isGrounded)
+            {
+                fallSpeed = -4f;
+            }
+            else
+            {
+                fallSpeed -= 15f * Time.deltaTime;
+            }
+        }
+        else
+        {
+            fallSpeed = 0;
+        }
+        ctrl.Move(fallSpeed * Vector3.up * Time.deltaTime);
     }
 
     public void LoadActorState()
