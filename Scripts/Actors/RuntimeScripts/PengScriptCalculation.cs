@@ -1,4 +1,5 @@
 ﻿using PengVariables;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -218,6 +219,76 @@ namespace PengScript
                 case 2:
                     PengBool pb2 = varSource as PengBool;
                     bool2.value = pb2.value;
+                    break;
+            }
+        }
+    }
+
+    public class MathStringEqual : BaseScript
+    {
+
+        public PengString string1 = new PengString("字符串一", 0, ConnectionPointType.In);
+        public PengString string2 = new PengString("字符串二", 1, ConnectionPointType.In);
+
+        public PengBool result = new PengBool("结果", 0, ConnectionPointType.Out);
+        public MathStringEqual(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.MathCompare;
+            scriptName = GetDescription(type);
+            inVars[0] = string1;
+            inVars[1] = string2;
+            outVars[0] = result;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                string1.value = str[0];
+                string2.value = str[1];
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            result.value = (string1.value == string2.value);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengString ps1 = varSource as PengString;
+                    string1.value = ps1.value;
+                    break;
+                case 1:
+                    PengString ps2 = varSource as PengString;
+                    string2.value = ps2.value;
                     break;
             }
         }

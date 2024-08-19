@@ -198,3 +198,74 @@ public class MathBool : PengNode
         }
     }
 }
+
+public class MathStringEqual : PengNode
+{
+    public PengEditorVariables.PengString string1;
+    public PengEditorVariables.PengString string2;
+
+    public PengEditorVariables.PengBool result;
+
+    public MathStringEqual(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "比较两个字符串，以检查两者是否相等。";
+        inVars = new PengEditorVariables.PengVar[2];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        string1 = new PengEditorVariables.PengString(this, "字符串一", 0, ConnectionPointType.In);
+        string2 = new PengEditorVariables.PengString(this, "字符串二", 1, ConnectionPointType.In);
+        result = new PengEditorVariables.PengBool(this, "结果", 0, ConnectionPointType.Out);
+
+        inVars[0] = string1;
+        inVars[1] = string2;
+        outVars[0] = result;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.MathStringEqual;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 2;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 2; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        string1.value = EditorGUI.TextField(field, string1.value);
+                        break;
+                    case 1:
+                        string2.value = EditorGUI.TextField(field, string2.value);
+                        break;
+                }
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return string1.value + "," + string2.value;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            string1.value = str[0];
+            string2.value = str[1];
+        }
+    }
+}

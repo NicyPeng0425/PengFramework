@@ -84,7 +84,7 @@ namespace PengScript
         MathDivide,
         [Description("0,平方,运算,P,低封装")]
         MathSquare,
-        [Description("1,比较,运算,B,低封装")]
+        [Description("1,浮点比较,运算,B,低封装")]
         MathCompare,
         [Description("1,布尔运算,运算,B,低封装")]
         MathBool,
@@ -114,6 +114,8 @@ namespace PengScript
         OnEvent,
         [Description("0,完美闪避判定,功能,W,高封装")]
         PerfectDodge,
+        [Description("1,字符串相等,运算,Z,低封装")]
+        MathStringEqual
     }
 
     public struct ScriptIDVarID

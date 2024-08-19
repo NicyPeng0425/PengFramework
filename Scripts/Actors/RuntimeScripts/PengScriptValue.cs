@@ -356,6 +356,8 @@ namespace PengScript
             ActorCurrentHP = 7,
             ActorMaxHP = 8,
             ActorPosition = 9,
+            ActorCurrentStateName = 10,
+            ActorLastStateName = 11,
         }
 
         public enum VariableTypeCN
@@ -370,6 +372,8 @@ namespace PengScript
             当前生命值 = 7,
             最大生命值 = 8,
             位置 = 9,
+            Actor当前状态名 = 10,
+            Actor上个状态名 = 11,
         }
 
         public PengInt int1 = new PengInt("占位", 0, ConnectionPointType.In);
@@ -477,7 +481,7 @@ namespace PengScript
                         {
                             outVars[0] = intOut;
                         }
-                        else if (varType == VariableType.ActorName)
+                        else if (varType == VariableType.ActorName || varType == VariableType.ActorCurrentStateName || varType == VariableType.ActorLastStateName)
                         {
                             outVars[0] = stringOut;
                         }
@@ -597,6 +601,12 @@ namespace PengScript
                             break;
                         case VariableType.ActorPosition:
                             vec3Out.value = ppa.value.transform.position;
+                            break;
+                        case VariableType.ActorCurrentStateName:
+                            stringOut.value = ppa.value.currentName;
+                            break;
+                        case VariableType.ActorLastStateName:
+                            stringOut.value = ppa.value.lastName;
                             break;
                     }
                     break;

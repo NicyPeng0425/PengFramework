@@ -209,6 +209,8 @@ public class PengActorState : IPengActorState
                 return new PlayAudio(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.GetInput:
                 return new GetInput(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.MathStringEqual:
+                return new MathStringEqual(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

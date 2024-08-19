@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static PengScript.GetVariables;
 
 public class ValuePengInt : PengNode
 {
@@ -681,7 +682,7 @@ public class GetVariables : PengNode
                 {
                     outVars[0] = intOut;
                 }
-                else if (varType == PengScript.GetVariables.VariableType.ActorName)
+                else if (varType == PengScript.GetVariables.VariableType.ActorName || varType == VariableType.ActorCurrentStateName || varType == VariableType.ActorLastStateName)
                 {
                     outVars[0] = stringOut;
                 }
