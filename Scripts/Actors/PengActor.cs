@@ -224,6 +224,8 @@ public class PengActor : MonoBehaviour
     [HideInInspector]
     public float fallSpeed;
     [HideInInspector]
+    public string stateBeforeGroundedName = "";
+    [HideInInspector]
     public AudioSource speaker;
 
     private void Awake()
@@ -285,6 +287,7 @@ public class PengActor : MonoBehaviour
 
     public void ProcessGravity()
     {
+        bool lastFrameGrounded = isGrounded;
         if (underGravity)
         {
             isGrounded = false;
@@ -314,6 +317,24 @@ public class PengActor : MonoBehaviour
             fallSpeed = 0;
         }
         ctrl.Move(fallSpeed * Vector3.up * Time.deltaTime);
+        if (!lastFrameGrounded && isGrounded)
+        {
+            OnGrounded();
+        }
+    }
+
+    public void OnGrounded()
+    {
+        if (globalTrack != null && globalTrack.scripts.Count > 0)
+        {
+            for (int i = 0; i < globalTrack.scripts.Count; i++)
+            {
+                if (globalTrack.scripts[i].type == PengScriptType.OnGround)
+                {
+                    globalTrack.scripts[i].Execute(0);
+                }
+            }
+        }
     }
 
     public void LoadActorState()
