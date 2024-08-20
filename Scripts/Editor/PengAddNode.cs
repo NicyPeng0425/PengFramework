@@ -81,6 +81,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 return new GetInput(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.MathStringEqual:
                 return new MathStringEqual(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.OnGround:
+                return new OnGround(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -265,6 +267,19 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
+                break;
+            case PengScript.PengScriptType.OnGround:
+                if (editGlobal)
+                {
+                    track.nodes.Add(new OnGround(mousePos, this, ref track, id,
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                        PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("警告", "不允许在全局节点图以外的地方放置着地事件节点。", "确认");
+                }
                 break;
         }
     }

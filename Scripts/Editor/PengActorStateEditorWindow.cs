@@ -15,6 +15,7 @@ using UnityEditorInternal.VersionControl;
 using static PengScript.GetTargetsByRange;
 using PengScript;
 using log4net.Util;
+using NUnit.Framework.Interfaces;
 
 public partial class PengActorStateEditorWindow : EditorWindow
 {
@@ -134,6 +135,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
     public XmlElement copyInfo = null;
     XmlDocument copyInternalDoc = null;
+    public XmlElement copyNodeInfo = null;
+    XmlDocument copyNodeInternalDoc = null;
     public List<ParticleSystem> psList = new List<ParticleSystem>();
     //
 
@@ -1555,6 +1558,17 @@ public partial class PengActorStateEditorWindow : EditorWindow
             Rect debugRect = new Rect(box.x + 720, box.y + 3, 80, 20);
             debug = GUI.Toggle(debugRect, debug, "Debug");
 
+           
+            if (copyNodeInfo != null)
+            {
+                Rect copyNodeRect = new Rect(debugRect.x + debugRect.width + 10, debugRect.y, 80, 20);
+                if (GUI.Button(copyNodeRect, "粘贴脚本"))
+                {
+                    PengEditorTrack trk = tracks[currentSelectedTrack];
+                    PasteNode(ref trk);
+                }
+            }
+
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
             {
                 if (text1.Contains(Event.current.mousePosition))
@@ -1567,7 +1581,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     trackNameEditing = false;
                     GUI.changed = true;
                 }
-
             }
         }
         if (editGlobal)
@@ -1603,7 +1616,69 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
             Rect debugRect = new Rect(box.x + 720, box.y + 3, 80, 20);
             debug = GUI.Toggle(debugRect, debug, "Debug");
+
+            if (copyNodeInfo != null)
+            {
+                Rect copyNodeRect = new Rect(debugRect.x + debugRect.width + 10, debugRect.y, 80, 20);
+                if (GUI.Button(copyNodeRect, "粘贴脚本"))
+                {
+                    PasteNode(ref globalTrack);
+                }
+            }
         }
+    }
+
+    public void CopyNode(PengNode node)
+    {
+        node.isSelected = false;
+        copyNodeInternalDoc = new XmlDocument();
+        XmlDeclaration decl = copyNodeInternalDoc.CreateXmlDeclaration("1.0", "UTF-8", "");
+        copyNodeInfo = GeneratePureNodeInfo(ref copyNodeInternalDoc, node);
+    }
+
+    public static XmlElement GeneratePureNodeInfo(ref XmlDocument doc, PengNode pengNode)
+    {
+        XmlElement node = doc.CreateElement("Script");
+        node.SetAttribute("Name", pengNode.nodeName);
+        node.SetAttribute("ScriptType", pengNode.scriptType.ToString());
+        node.SetAttribute("NodeType", pengNode.type.ToString());
+        node.SetAttribute("NodePos", PengNode.ParseVector2ToString(pengNode.pos));
+        node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
+        node.SetAttribute("Position", PengNode.ParseVector2ToString(pengNode.pos));
+        node.SetAttribute("ParaNum", pengNode.paraNum.ToString());
+        node.SetAttribute("OutID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(pengNode.outID.Count)));
+        node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(pengNode.varOutID.Count)));
+        node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(pengNode.varInID.Count)));
+        node.SetAttribute("SpecialInfo", pengNode.SpecialParaDescription());
+        return node;
+    }
+
+    public static XmlElement GenerateNodeInfo(ref XmlDocument doc, PengNode pengNode)
+    {
+        XmlElement node = doc.CreateElement("Script");
+        node.SetAttribute("Name", pengNode.nodeName);
+        node.SetAttribute("ScriptType", pengNode.scriptType.ToString());
+        node.SetAttribute("NodeType", pengNode.type.ToString());
+        node.SetAttribute("NodePos", PengNode.ParseVector2ToString(pengNode.pos));
+        node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
+        node.SetAttribute("Position", PengNode.ParseVector2ToString(pengNode.pos));
+        node.SetAttribute("ParaNum", pengNode.paraNum.ToString());
+        node.SetAttribute("OutID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.outID));
+        node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(pengNode.varOutID));
+        node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.varInID));
+        node.SetAttribute("SpecialInfo", pengNode.SpecialParaDescription());
+        return node;
+    }
+
+    public void PasteNode(ref PengEditorTrack track)
+    {
+        PengNode node = ReadPengNode(copyNodeInfo, ref track);
+        node.master = this;
+        node.trackMaster = track;
+        node.isSelected = true;
+        node.pos = new Vector2(350f, 415f) + gridOffset;
+        track.nodes.Add(node);
+        Save(false);
     }
 
     private void DrawConnectionLines()
@@ -2101,21 +2176,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         {
             for (int l = 0; l < pengTrack.nodes.Count; l++)
             {
-                XmlElement node = doc.CreateElement("Script");
-                PengNode pengNode = pengTrack.nodes[l];
-                node.SetAttribute("Name", pengNode.nodeName);
-                node.SetAttribute("ScriptType", pengNode.scriptType.ToString());
-                node.SetAttribute("NodeType", pengNode.type.ToString());
-                node.SetAttribute("NodePos", PengNode.ParseVector2ToString(pengNode.pos));
-                node.SetAttribute("ScriptID", pengNode.nodeID.ToString());
-                node.SetAttribute("Position", PengNode.ParseVector2ToString(pengNode.pos));
-                node.SetAttribute("ParaNum", pengNode.paraNum.ToString());
-                node.SetAttribute("OutID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.outID));
-                node.SetAttribute("VarOutID", PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(pengNode.varOutID));
-                node.SetAttribute("VarInID", PengNode.ParseDictionaryIntNodeIDConnectionIDToString(pengNode.varInID));
-                node.SetAttribute("SpecialInfo", pengNode.SpecialParaDescription());
-
-                track.AppendChild(node);
+                track.AppendChild(GenerateNodeInfo(ref doc, pengTrack.nodes[l]));
             }
         }
         return track;
@@ -2153,6 +2214,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
         currentStateName = "";
         copyInfo = null;
         copyInternalDoc = null;
+        copyNodeInfo = null;
+        copyNodeInternalDoc = null;
     }
 
     public bool LoadGlobalConfiguration()

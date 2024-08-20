@@ -211,6 +211,8 @@ public class PengActorState : IPengActorState
                 return new GetInput(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.MathStringEqual:
                 return new MathStringEqual(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.OnGround:
+                return new OnGround(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

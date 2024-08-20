@@ -106,7 +106,7 @@ namespace PengScript
         BreakPoint,
         [Description("1,整型转浮点,值,Z,低封装")]
         ValueIntToFloat,
-        [Description("0,着地分歧,分歧,Z,高封装")]
+        [Description("1,着地事件,事件,Z,高封装")]
         OnGround,
         [Description("1,自定义事件,事件,Z,高封装")]
         CustomEvent,
@@ -115,7 +115,7 @@ namespace PengScript
         [Description("0,完美闪避判定,功能,W,高封装")]
         PerfectDodge,
         [Description("1,字符串相等,运算,Z,低封装")]
-        MathStringEqual
+        MathStringEqual,
     }
 
     public struct ScriptIDVarID

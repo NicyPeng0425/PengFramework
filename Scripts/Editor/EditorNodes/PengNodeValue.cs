@@ -699,6 +699,10 @@ public class GetVariables : PengNode
                 {
                     outVars[0] = vec3Out;
                 }
+                else if (varType == PengScript.GetVariables.VariableType.ActorOnGround)
+                {
+                    outVars[0] = boolOut;
+                }
                 break;
         }
     }

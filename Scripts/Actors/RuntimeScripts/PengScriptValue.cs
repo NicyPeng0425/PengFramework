@@ -358,6 +358,7 @@ namespace PengScript
             ActorPosition = 9,
             ActorCurrentStateName = 10,
             ActorLastStateName = 11,
+            ActorOnGround = 12,
         }
 
         public enum VariableTypeCN
@@ -374,6 +375,8 @@ namespace PengScript
             位置 = 9,
             Actor当前状态名 = 10,
             Actor上个状态名 = 11,
+            Actor是否着地 = 12,
+            
         }
 
         public PengInt int1 = new PengInt("占位", 0, ConnectionPointType.In);
@@ -495,6 +498,10 @@ namespace PengScript
                         {
                             outVars[0] = vec3Out;
                         }
+                        else if(varType == VariableType.ActorOnGround)
+                        {
+                            outVars[0] = boolOut;
+                        }
                         ppa = new PengPengActor("角色", 2, ConnectionPointType.In);
                         inVars[2] = ppa;
                         break;
@@ -607,6 +614,9 @@ namespace PengScript
                             break;
                         case VariableType.ActorLastStateName:
                             stringOut.value = ppa.value.lastName;
+                            break;
+                        case VariableType.ActorOnGround:
+                            boolOut.value = ppa.value.isGrounded;
                             break;
                     }
                     break;

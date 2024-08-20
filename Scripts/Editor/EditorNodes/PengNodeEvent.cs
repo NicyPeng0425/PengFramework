@@ -113,3 +113,34 @@ public class OnEvent : PengNode
         eventName.value = info;
     }
 }
+
+public class OnGround : PengNode
+{
+    public OnGround(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoints = new PengNodeConnection[1]; inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Event;
+        scriptType = PengScript.PengScriptType.OnGround;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+    }
+}

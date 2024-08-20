@@ -86,5 +86,27 @@ namespace PengScript
             Execute(0);
         }
     }
+
+    public class OnGround : BaseScript
+    {
+        public OnGround(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[4];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.OnGround;
+            scriptName = GetDescription(type);
+        }
+    }
 }
 

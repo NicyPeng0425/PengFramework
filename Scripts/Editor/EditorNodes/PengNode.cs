@@ -361,6 +361,7 @@ public class PengNode
         if(scriptType != PengScript.PengScriptType.OnTrackExecute)
         {
             menu.AddItem(new GUIContent("删除节点"), false, () => master.ProcessRemoveNode(this));
+            menu.AddItem(new GUIContent("复制节点"), false, () => master.CopyNode(this));
         }
         menu.AddItem(new GUIContent("脚本说明"), false, () => DisplayMeaning());
         menu.ShowAsContext();
