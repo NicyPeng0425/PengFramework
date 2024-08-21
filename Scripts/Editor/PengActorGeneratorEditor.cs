@@ -1,16 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using System.IO;
-using static UnityEditor.VersionControl.Asset;
 using System.ComponentModel;
-using UnityEditor.Experimental.GraphView;
-using PengScript;
 
 public class PengActorGeneratorEditor : EditorWindow
 {
@@ -47,7 +43,7 @@ public class PengActorGeneratorEditor : EditorWindow
     public string pasteName;
 
 
-    [MenuItem("PengFramework/角色生成器")]
+    [MenuItem("PengFramework/角色生成器", false, 3)]
     static void Init()
     {
         PengActorGeneratorEditor window = (PengActorGeneratorEditor)EditorWindow.GetWindow(typeof(PengActorGeneratorEditor));

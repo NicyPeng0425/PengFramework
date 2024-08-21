@@ -571,3 +571,214 @@ public class JumpForce : PengNode
         }
     }
 }
+
+public class MoveByFrame : PengNode
+{
+    public PengEditorVariables.PengVector3 force;
+    public MoveByFrame(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.meaning = "按特定速度，每帧执行时移动。X轴正方向为角色的右侧，Z轴正方向为角色的前方，Y轴正方向为角色的上方。";
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        force = new PengEditorVariables.PengVector3(this, "速度", 0, ConnectionPointType.In);
+
+        inVars[0] = force;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.MoveByFrame;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 1; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 180, 18);
+                switch (i)
+                {
+                    case 0:
+                        force.value = EditorGUI.Vector3Field(field, "", force.value);
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return BaseScript.ParseVector3ToString(force.value);
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            force.value = BaseScript.ParseStringToVector3(info);
+        }
+    }
+}
+
+public class AddOrRemoveBuff : PengNode
+{
+    public AddOrRemove addOrRemove;
+    public CertainOrAll certainOrAll;
+
+    public PengEditorVariables.PengPengActor ppa;
+    public PengEditorVariables.PengInt addOrRemoveInt;
+    public PengEditorVariables.PengInt certainOrAllInt;
+    public PengEditorVariables.PengInt id;
+
+    public AddOrRemoveBuff(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.meaning = "增删buff。执行一次表示增/删一层。";
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[3];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        ppa = new PengEditorVariables.PengPengActor(this, "目标", 0, ConnectionPointType.In);
+
+        addOrRemoveInt = new PengEditorVariables.PengInt(this, "增or删", 1, ConnectionPointType.In);
+        addOrRemoveInt.value = 0;
+        addOrRemove = AddOrRemove.Add;
+        addOrRemoveInt.point = null;
+
+        certainOrAllInt = new PengEditorVariables.PengInt(this, "操作类型", 2, ConnectionPointType.In);
+        certainOrAllInt.value = 0;
+        certainOrAll = CertainOrAll.Certain;
+        certainOrAllInt.point = null;
+
+        id = new PengEditorVariables.PengInt(this, "ID", 3, ConnectionPointType.In);
+
+        inVars[0] = ppa;
+        inVars[1] = addOrRemoveInt;
+        inVars[2] = id;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.AddOrRemoveBuff;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 3;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        ChangeNode();
+        Rect field1 = new Rect(inVars[0].varRect.x + 45, inVars[0].varRect.y, 180, 18);
+        Rect field2 = new Rect(inVars[1].varRect.x + 45, inVars[1].varRect.y, 180, 18);
+        Rect field3 = new Rect(inVars[2].varRect.x + 45, inVars[2].varRect.y, 180, 18);
+
+        switch (addOrRemove)
+        {
+            case AddOrRemove.Add:
+                addOrRemove = (AddOrRemove)EditorGUI.EnumPopup(field2, addOrRemove);
+                addOrRemoveInt.value = (int)addOrRemove;
+                id.value = EditorGUI.IntField(field3, id.value);
+                break;
+            case AddOrRemove.Remove:
+                switch (certainOrAll)
+                {
+                    case CertainOrAll.Certain:
+                        Rect field4 = new Rect(inVars[3].varRect.x + 45, inVars[3].varRect.y, 180, 18);
+                        addOrRemove = (AddOrRemove)EditorGUI.EnumPopup(field2, addOrRemove);
+                        addOrRemoveInt.value = (int)addOrRemove;
+                        certainOrAll = (CertainOrAll)EditorGUI.EnumPopup(field3, certainOrAll);
+                        certainOrAllInt.value = (int)certainOrAll;
+                        id.value = EditorGUI.IntField(field4, id.value);
+                        break;
+                    default:
+                        addOrRemove = (AddOrRemove)EditorGUI.EnumPopup(field2, addOrRemove);
+                        addOrRemoveInt.value = (int)addOrRemove;
+                        certainOrAll = (CertainOrAll)EditorGUI.EnumPopup(field3, certainOrAll);
+                        certainOrAllInt.value = (int)certainOrAll;
+                        break;
+                }
+                break;
+        }
+        ChangeNode();
+    }
+
+    public void ChangeNode()
+    {
+        switch (addOrRemove)
+        {
+            case AddOrRemove.Add:
+                paraNum = 3;
+                inVars = new PengEditorVariables.PengVar[paraNum];
+                inVars[0] = ppa;
+                inVars[1] = addOrRemoveInt;
+                inVars[2] = id;
+                id.index = 2;
+                break;
+            case AddOrRemove.Remove:
+                switch (certainOrAll)
+                {
+                    case CertainOrAll.Certain:
+                        paraNum = 4;
+                        inVars = new PengEditorVariables.PengVar[paraNum];
+                        inVars[0] = ppa;
+                        inVars[1] = addOrRemoveInt;
+                        inVars[2] = certainOrAllInt;
+                        inVars[3] = id;
+                        certainOrAllInt.index = 2;
+                        id.index = 3;
+                        break;
+                    default:
+                        paraNum = 3;
+                        inVars = new PengEditorVariables.PengVar[paraNum];
+                        inVars[0] = ppa;
+                        inVars[1] = addOrRemoveInt;
+                        inVars[2] = certainOrAllInt;
+                        certainOrAllInt.index = 2;
+                        break;
+                }
+                break;
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return addOrRemoveInt.value.ToString() + "," + certainOrAllInt.value.ToString() + "," + id.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(',');
+            addOrRemoveInt.value = int.Parse(str[0]);
+            addOrRemove = (AddOrRemove)addOrRemoveInt.value;
+            certainOrAllInt.value = int.Parse(str[1]);
+            certainOrAll = (CertainOrAll)certainOrAllInt.value;
+            id.value = int.Parse(str[2]);
+            ChangeNode();
+        }
+    }
+}

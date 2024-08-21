@@ -118,8 +118,10 @@ namespace PengScript
         MathStringEqual,
         [Description("1,瞬时跳跃力,功能,S,高封装")]
         JumpForce,
-        [Description("0,按帧移动,功能,A,低封装")]
+        [Description("1,每帧移动,功能,A,低封装")]
         MoveByFrame,
+        [Description("1,增删Buff,功能,Z,高封装")]
+        AddOrRemoveBuff,
     }
 
     public struct ScriptIDVarID

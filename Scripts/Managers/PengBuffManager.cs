@@ -1,5 +1,7 @@
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml;
 using UnityEngine;
 
 public class PengBuffManager: MonoBehaviour
@@ -11,24 +13,33 @@ public class PengBuffManager: MonoBehaviour
     [HideInInspector]
     public List<PengBuff> buffs = new List<PengBuff>();
 
-    public Dictionary<int, string> buffDic1 = new Dictionary<int, string>(2000);
-    public Dictionary<int, string> buffDic2 = new Dictionary<int, string>(2000);
-    public Dictionary<int, string> buffDic3 = new Dictionary<int, string>(2000);
-    public Dictionary<int, string> buffDic4 = new Dictionary<int, string>(2000);
-    public Dictionary<int, string> buffDic5 = new Dictionary<int, string>(2000);
+    public Dictionary<int, XmlElement> buffDic = new Dictionary<int, XmlElement>(2000);
 
     private void Awake()
     {
-        if (gameOwner != null)
-        {
-            //¼ÓÔØBuffµ½Îå¸öDicÖĞ
-            //¼ÇµÃÔÙĞ´¸ö²éÑ¯buffĞÅÏ¢µÄ¹¦ÄÜµ½BuffµÄ¹¹Ôìº¯ÊıÀï
-        }
+        
     }
 
     void Start()
     {
-        
+        if (gameOwner != null)
+        {
+            TextAsset ta = Resources.Load("BuffData/Universal/BuffTable") as TextAsset;
+            XmlDocument result = new XmlDocument();
+            if (ta == null)
+                return;
+            result.LoadXml(ta.text);
+            XmlElement root = result.DocumentElement;
+            if (root.ChildNodes.Count > 0)
+            {
+                for (int i = 0; i < root.ChildNodes.Count; i++)
+                {
+                    XmlElement ele = root.ChildNodes[i] as XmlElement;
+                    buffDic.Add(int.Parse(ele.GetAttribute("ID")), ele);
+                }
+                Debug.Log("å…±åŠ è½½" + buffDic.Count.ToString() + "ä¸ªBuffã€‚");
+            }
+        }
     }
 
     void Update()
@@ -44,9 +55,26 @@ public class PengBuffManager: MonoBehaviour
 
     public void AddBuff(int ID)
     {
-        PengBuff buff = new PengBuff(ID, this);
-        buffs.Add(buff);
-        buff.OnAdd();
+        bool hasSame = false;
+        if (buffs.Count > 0)
+        {
+            for (int i = 0; i < buffs.Count; i++)
+            {
+                if (buffs[i].ID == ID)
+                {
+                    hasSame = true;
+                    buffs[i].stack++;
+                    buffs[i].OnAdd();
+                    break;
+                }
+            }
+        }
+        if (!hasSame)
+        {
+            PengBuff buff = new PengBuff(ID, this);
+            buffs.Add(buff);
+            buff.OnAdd();
+        }
     }
 
     public void RemoveBuff(int ID)
@@ -57,42 +85,28 @@ public class PengBuffManager: MonoBehaviour
             if (buff.ID == ID)
             {
                 toRemove.Add(buff);
-            }
-        }
-        foreach (PengBuff buff in toRemove)
-        {
-            buffs.Remove(buff);
-        }
-        foreach (PengBuff buff in toRemove)
-        {
-            buff.OnRemove();
-        }
-    }
-
-    public void RemoveBuff(int ID, int num)
-    {
-        int nu = 0;
-        List<PengBuff> toRemove = new List<PengBuff>();
-        foreach (PengBuff buff in buffs)
-        {
-            if (buff.ID == ID)
-            {
-                toRemove.Add(buff);
-                nu++;
-                if (nu >= num)
+                if (!buff.removeOnceForAll)
                 {
                     break;
                 }
             }
         }
-        foreach (PengBuff buff in toRemove)
+        if (toRemove.Count > 0)
         {
-            buffs.Remove(buff);
+            foreach (PengBuff buff in toRemove)
+            {
+                buff.stack--;
+            }
+            foreach (PengBuff buff in toRemove)
+            {
+                buff.OnRemove();
+            }
         }
-        foreach (PengBuff buff in toRemove)
+        else
         {
-            buff.OnRemove();
+            Debug.LogWarning("è¯•å›¾ç§»é™¤IDä¸º" + ID.ToString() + "çš„Buffï¼Œä½†å¹¶æœªæ‰¾åˆ°ã€‚");
         }
+        
     }
 
     public void RemoveCertainBuff(PengBuff buff)
@@ -106,7 +120,10 @@ public class PengBuffManager: MonoBehaviour
         List<PengBuff> toRemove = new List<PengBuff>();
         foreach (PengBuff buff in buffs)
         {
-            toRemove.Add(buff);
+            if (buff.removeConditionType != PengBuff.RemoveConditionType.Permanent)
+            {
+                toRemove.Add(buff);
+            }
         }
         buffs.Clear();
         foreach (PengBuff buff in toRemove)
@@ -120,7 +137,7 @@ public class PengBuffManager: MonoBehaviour
         List<PengBuff> toRemove = new List<PengBuff>();
         foreach (PengBuff buff in buffs)
         {
-            if (buff.isDebuff)
+            if (buff.isDebuff && buff.removeConditionType != PengBuff.RemoveConditionType.Permanent)
             {
                 toRemove.Add(buff);
             }
@@ -140,7 +157,7 @@ public class PengBuffManager: MonoBehaviour
         List<PengBuff> toRemove = new List<PengBuff>();
         foreach (PengBuff buff in buffs)
         {
-            if (!buff.isDebuff)
+            if (!buff.isDebuff && buff.removeConditionType != PengBuff.RemoveConditionType.Permanent)
             {
                 toRemove.Add(buff);
             }
@@ -179,19 +196,19 @@ public class PengBuffManager: MonoBehaviour
 }
 
 /// <summary>
-/// BuffÄÜ´ïµ½µÄ¹¦ÄÜ
-/// 1. ÓÀ¾Ã´æÔÚ
-/// 2. ±»ÒÆ³ı
-/// 3. ±»¼ìË÷
-/// 4. ÄÜ¶à²ã´æÔÚ£¬¿ÉÒÔÉèÉÏÏŞ
-/// 5. ÄÜ³ÖĞøÒ»¶ÎÊ±¼äºóÏûÉ¢
-/// 6. ¶à²ã´æÔÚÊ±£¬ÄÜ³ÖĞøÒ»¶ÎÊ±¼äºóÈ«²¿ÏûÉ¢£¬Ò²ÄÜÒ»²ãÒ»²ãµØÏûÉ¢
-/// 7. ÄÜÔÚ¶¯×÷¶Î±»¶¯½áÊøºóÏûÉ¢
-/// 8. ÄÜÔÚ¶¯×÷¶Î±»¶¯½áÊøºóÏûÉ¢
-/// 9. ±êÊ¶ÎªÔöÒæ»ò¼õÒæ
-/// 10. ÄÜÖ´ĞĞĞĞÎª£º¼õÉÙCD£¬»Ö¸´ÑªÁ¿£¬¼õÉÙÑªÁ¿£¬Ë¢ĞÂCD£¬±ØÉ±£¬¸Ä±äÊôĞÔ£¬½ûÓÃÊäÈë£¬¸Ä±äUI£¬¸Ä±ä¼¼ÄÜ...
-/// 11. ³åÍ»¹ØÏµ
-/// 12. ÄÜ±êÊ¶×ÔÉíµÄÌØÊâ´æÔÚ
+/// Buffèƒ½è¾¾åˆ°çš„åŠŸèƒ½
+/// 1. æ°¸ä¹…å­˜åœ¨
+/// 2. è¢«ç§»é™¤
+/// 3. è¢«æ£€ç´¢
+/// 4. èƒ½å¤šå±‚å­˜åœ¨ï¼Œå¯ä»¥è®¾ä¸Šé™
+/// 5. èƒ½æŒç»­ä¸€æ®µæ—¶é—´åæ¶ˆæ•£
+/// 6. å¤šå±‚å­˜åœ¨æ—¶ï¼Œèƒ½æŒç»­ä¸€æ®µæ—¶é—´åå…¨éƒ¨æ¶ˆæ•£ï¼Œä¹Ÿèƒ½ä¸€å±‚ä¸€å±‚åœ°æ¶ˆæ•£
+/// 7. èƒ½åœ¨åŠ¨ä½œæ®µè¢«åŠ¨ç»“æŸåæ¶ˆæ•£
+/// 8. èƒ½åœ¨åŠ¨ä½œæ®µè¢«åŠ¨ç»“æŸåæ¶ˆæ•£
+/// 9. æ ‡è¯†ä¸ºå¢ç›Šæˆ–å‡ç›Š
+/// 10. èƒ½æ‰§è¡Œè¡Œä¸ºï¼šå‡å°‘CDï¼Œæ¢å¤è¡€é‡ï¼Œå‡å°‘è¡€é‡ï¼Œåˆ·æ–°CDï¼Œå¿…æ€ï¼Œæ”¹å˜å±æ€§ï¼Œç¦ç”¨è¾“å…¥ï¼Œæ”¹å˜UIï¼Œæ”¹å˜æŠ€èƒ½...
+/// 11. å†²çªå…³ç³»
+/// 12. èƒ½æ ‡è¯†è‡ªèº«çš„ç‰¹æ®Šå­˜åœ¨
 /// </summary>
 
 public class PengBuff
@@ -212,25 +229,15 @@ public class PengBuff
         Contrast,
     }
 
-    public enum StackType
-    {
-        Stackable,
-        NonStackable,
-    }
-
-    public enum RemoveType
-    {
-        AllStack,
-        OneByOne,
-        AllSameTypeBuff,
-    }
 
     public float existTime;
-    public RemoveConditionType removeConditionType;
-    public StackType stackType;
-    public RemoveType removeType;
+    public float existTimeCount;
 
-    //ÊôĞÔ¼Ó³É
+    public RemoveConditionType removeConditionType;
+    public int stackLimit;
+    public bool removeOnceForAll;
+
+    //å±æ€§åŠ æˆ
     public float attackPowerValue;
     public float attackPowerPercent;
     public float defendPowerValue;
@@ -240,6 +247,30 @@ public class PengBuff
     public bool notEffectedByGravity;
     public bool unBreakable;
     public bool invincible;
+
+    int m_stack;
+    public int stack
+    {
+        get { return m_stack; }
+        set 
+        { 
+            if (value <= stackLimit)
+            {
+                m_stack = value;
+            }
+            if (m_stack <= 0)
+            {
+                if (removeConditionType != RemoveConditionType.Permanent)
+                {
+                    master.RemoveCertainBuff(this);
+                }
+                else
+                {
+                    m_stack = 1;
+                }
+            }
+        }
+    }
 
     public PengBuff(int ID, PengBuffManager master)
     {
@@ -252,19 +283,29 @@ public class PengBuff
 
     public virtual void OnAdd()
     {
-
+        if (removeConditionType == RemoveConditionType.Time)
+        {
+            existTimeCount = existTime;
+        }
     }
 
     public virtual void OnUpdate()
     {
         if (removeConditionType == RemoveConditionType.Time)
         {
-            if (existTime > 0)
+            if (existTimeCount > 0)
             {
-                existTime -= Time.deltaTime;
-                if (existTime <= 0)
+                existTimeCount -= Time.deltaTime;
+                if (existTimeCount <= 0)
                 {
-                    master.RemoveCertainBuff(this);
+                    if (removeOnceForAll)
+                    {
+                        stack = 0;
+                    }
+                    else
+                    {
+                        stack--;
+                    }
                 }
             }
         }
@@ -277,7 +318,10 @@ public class PengBuff
 
     public virtual void OnStateEnd()
     {
-
+        if (removeConditionType == RemoveConditionType.StateEnd)
+        {
+            stack--;
+        }
     }
 
     public virtual void OnStateChange(bool actively)
@@ -287,6 +331,31 @@ public class PengBuff
 
     public void ConstructBuffByID(int id)
     {
+        if (gameOwner.buff.buffDic.ContainsKey(id))
+        {
+            XmlElement ele = gameOwner.buff.buffDic[id];
+            ID = int.Parse(ele.GetAttribute("ID"));
+            Name = ele.GetAttribute("Name");
+            Description = ele.GetAttribute("Description");
+            isDebuff = int.Parse(ele.GetAttribute("IsDebuff")) > 0;
+            existTime = float.Parse(ele.GetAttribute("ExistTime"));
+            removeConditionType = (RemoveConditionType)Enum.Parse(typeof(RemoveConditionType), ele.GetAttribute("RemoveCondition"));
+            stackLimit = int.Parse(ele.GetAttribute("StackLimit"));
+            removeOnceForAll = int.Parse(ele.GetAttribute("RemoveOnceForAll")) > 0;
+            attackPowerValue = float.Parse(ele.GetAttribute("AttackPowerValue"));
+            attackPowerPercent = float.Parse(ele.GetAttribute("AttackPowerPercent"));
+            defendPowerValue = float.Parse(ele.GetAttribute("DefendPowerValue"));
+            defendPowerPercent = float.Parse(ele.GetAttribute("DefendPowerPercent"));
+            criticalRateValue = float.Parse(ele.GetAttribute("CriticalRateValue"));
+            criticalDamageRatioValue = float.Parse(ele.GetAttribute("CriticalDamageRatioValue"));
+            notEffectedByGravity = int.Parse(ele.GetAttribute("NotEffectedByGravity")) > 0;
+            unBreakable = int.Parse(ele.GetAttribute("Unbreakable")) > 0;
+            invincible = int.Parse(ele.GetAttribute("Invicible")) > 0;
+        }
+        else
+        {
+            Debug.LogWarning("ä¸å­˜åœ¨IDä¸º" + id.ToString() + "çš„Buffï¼Œæ·»åŠ Buffå¤±è´¥ã€‚");
+        }
 
     }
 }

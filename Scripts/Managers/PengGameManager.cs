@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public class PengGameManager : MonoBehaviour
@@ -39,7 +37,7 @@ public class PengGameManager : MonoBehaviour
         Physics.gravity = Vector3.zero;
         this.tag = "PengGameManager";
         bb = new PengBlackBoard<PengGameManager>(this);
-        buff = this.AddComponent<PengBuffManager>();
+        buff = this.gameObject.AddComponent<PengBuffManager>();
         main = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
         eventManager = new PengEventManager();
         eventManager.game = this;

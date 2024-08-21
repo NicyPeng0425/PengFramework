@@ -217,6 +217,10 @@ public class PengActorState : IPengActorState
                 return new AllowChangeDirection(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.JumpForce:
                 return new JumpForce(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.MoveByFrame:
+                return new MoveByFrame(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.AddOrRemoveBuff:
+                return new AddOrRemoveBuff(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

@@ -617,5 +617,167 @@ namespace PengScript
             actor.fallSpeed = force.value;
         }
     }
+
+    public class MoveByFrame : BaseScript
+    {
+        public PengVector3 force = new PengVector3("速度", 0, ConnectionPointType.In);
+
+        public MoveByFrame(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                force.value = ParseStringToVector3(specialInfo);
+            }
+            inVars[0] = force;
+            type = PengScriptType.MoveByFrame;
+            scriptName = GetDescription(type);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengVector3 pf = varSource as PengVector3;
+                    force.value = pf.value;
+                    break;
+            }
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            Vector3 dir = actor.transform.forward * force.value.z + actor.transform.up * force.value.y + actor.transform.right * force.value.x;
+            actor.ctrl.Move(dir * (1 / actor.game.globalFrameRate));
+        }
+    }
+
+    public enum AddOrRemove
+    {
+        Add,
+        Remove,
+    }
+
+    public enum CertainOrAll
+    {
+        Certain,
+        AllBuff,
+        AllGoodBuff,
+        AllBadDebuff,
+    }
+
+    public class AddOrRemoveBuff : BaseScript
+    {
+        public PengPengActor ppa = new PengPengActor("目标", 0, ConnectionPointType.In);
+        public AddOrRemove aor = AddOrRemove.Add;
+        public CertainOrAll coa = CertainOrAll.Certain;
+        public PengInt id = new PengInt("ID", 2, ConnectionPointType.In);
+
+        public AddOrRemoveBuff(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(',');
+                int aorInt = int.Parse(str[0]);
+                aor = (AddOrRemove)aorInt;
+                int coaInt = int.Parse(str[1]);
+                coa = (CertainOrAll)coaInt;
+                id.value = int.Parse(str[2]);
+                switch (aor)
+                {
+                    case AddOrRemove.Add:
+                        inVars = new PengVar[3];
+                        inVars[0] = ppa;
+                        inVars[2] = id;
+                        id.index = 2;
+                        break;
+                    case AddOrRemove.Remove:
+                        switch (coa)
+                        {
+                            case CertainOrAll.Certain:
+                                inVars = new PengVar[4];
+                                inVars[0] = ppa;
+                                inVars[3] = id;
+                                id.index = 3;
+                                break;
+                            default:
+                                inVars = new PengVar[3];
+                                inVars[0] = ppa;
+                                break;
+                        }
+                        break;
+                }
+            }
+            type = PengScriptType.AddOrRemoveBuff;
+            scriptName = GetDescription(type);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            PengInt pi = varSource as PengInt;
+            id.value = pi.value;
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            if (varInID[0].scriptID < 0)
+            {
+                ppa.value = actor;
+            }
+            switch (aor)
+            {
+                case AddOrRemove.Add:
+                    ppa.value.buff.AddBuff(id.value);
+                    break;
+                case AddOrRemove.Remove:
+                    switch (coa)
+                    {
+                        case CertainOrAll.Certain:
+                            ppa.value.buff.RemoveBuff(id.value);
+                            break;
+                        case CertainOrAll.AllBuff:
+                            ppa.value.buff.RemoveAllBuff();
+                            break;
+                        case CertainOrAll.AllGoodBuff:
+                            ppa.value.buff.RemoveAllGoodBuff();
+                            break;
+                        case CertainOrAll.AllBadDebuff:
+                            ppa.value.buff.RemoveAllBadDeBuff();
+                            break;
+                    }
+                    break;
+            }
+        }
+    }
 }
 

@@ -9,7 +9,7 @@ public class PengRuntimeMonitor : EditorWindow
 {
     public PengGameManager game;
     public Vector2 scroll;
-    [MenuItem("PengFramework/运行时数据监控")]
+    [MenuItem("PengFramework/运行时数据监控", false, 4)]
     static void Init()
     {
         PengRuntimeMonitor window = (PengRuntimeMonitor)EditorWindow.GetWindow(typeof(PengRuntimeMonitor));
