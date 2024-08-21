@@ -32,7 +32,7 @@ public class PengGameManager : MonoBehaviour
     [HideInInspector]
     public AudioSource globalSource;
     [HideInInspector]
-    
+    float checkHasActorControlledByPlayerTimeCount = 0;
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -55,13 +55,25 @@ public class PengGameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        if (!HasControlledActor())
+        {
+            Debug.Log("暂无被玩家控制的Actor，请在运行时监控中设置。");
+        }
+        checkHasActorControlledByPlayerTimeCount = Time.time;
     }
 
     // Update is called once per frame
     void Update()
     {
         currentFrame = Mathf.FloorToInt( Time.time * globalFrameRate );
+        if (Time.time - checkHasActorControlledByPlayerTimeCount >= 1.5f)
+        {
+            checkHasActorControlledByPlayerTimeCount = Time.time;
+            if (!HasControlledActor())
+            {
+                Debug.Log("暂无被玩家控制的Actor，请在运行时监控中设置。");
+            }
+        }
     }
 
     public void ReadGlobalFrameRate()
@@ -215,5 +227,21 @@ public class PengGameManager : MonoBehaviour
         go.transform.SetParent(vfxRoot, true);
 
         return pvem;
+    }
+
+    public bool HasControlledActor()
+    {
+        bool result = false;
+        if (actors.Count > 0)
+        {
+            for (int i = 0; i < actors.Count; i++)
+            {
+                if (!actors[i].input.aiCtrl)
+                {
+                    result = true; break;
+                }
+            }
+        }
+        return result;
     }
 }

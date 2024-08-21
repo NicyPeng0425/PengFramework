@@ -680,11 +680,13 @@ public class GetVariables : PengNode
                     varType == PengScript.GetVariables.VariableType.ActorCriticalDamageRatio ||
                     varType == PengScript.GetVariables.VariableType.ActorCurrentHP ||
                     varType == PengScript.GetVariables.VariableType.ActorMaxHP ||
-                    varType == VariableType.ActorDirectionInputMagnitude)
+                    varType == VariableType.ActorDirectionInputMagnitude || varType == VariableType.ActorFallSpeed)
                 {
                     outVars[0] = floatOut;
                 }
-                else if (varType == PengScript.GetVariables.VariableType.ActorPosition || varType== VariableType.ActorDirectionInput || varType == VariableType.ActorDirectionProcessed || varType == VariableType.ActorForward)
+                else if (varType == PengScript.GetVariables.VariableType.ActorPosition || varType== VariableType.ActorDirectionInput ||
+                    varType == VariableType.ActorDirectionProcessed || varType == VariableType.ActorForward ||
+                    varType == VariableType.ActorInertia)
                 {
                     outVars[0] = vec3Out;
                 }

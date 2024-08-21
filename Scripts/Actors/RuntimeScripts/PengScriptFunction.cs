@@ -570,5 +570,52 @@ namespace PengScript
             }
         }
     }
+
+    public class JumpForce : BaseScript
+    {
+        public PengFloat force = new PengFloat("跳跃力", 0, ConnectionPointType.In);
+
+        public JumpForce(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                force.value = float.Parse(specialInfo);
+            }
+            inVars[0] = force;
+            type = PengScriptType.JumpForce;
+            scriptName = GetDescription(type);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf = varSource as PengFloat;
+                    force.value = pf.value;
+                    break;
+            }
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            actor.fallSpeed = force.value;
+        }
+    }
 }
 

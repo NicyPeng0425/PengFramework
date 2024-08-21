@@ -224,6 +224,10 @@ public class PengActor : MonoBehaviour
     [HideInInspector]
     public float fallSpeed;
     [HideInInspector]
+    public Vector3 inertia;
+    [HideInInspector]
+    bool inertiaUpdate = true;
+    [HideInInspector]
     public string stateBeforeGroundedName = "";
     [HideInInspector]
     public AudioSource speaker;
@@ -317,9 +321,17 @@ public class PengActor : MonoBehaviour
             fallSpeed = 0;
         }
         ctrl.Move(fallSpeed * Vector3.up * Time.deltaTime);
+        if (inertiaUpdate)
+        {
+            inertia = (transform.forward - transform.forward.y * Vector3.up).normalized;
+        }
         if (!lastFrameGrounded && isGrounded)
         {
             OnGrounded();
+        }
+        if (lastFrameGrounded && !isGrounded)
+        {
+            OnLaunch();
         }
     }
 
@@ -335,6 +347,12 @@ public class PengActor : MonoBehaviour
                 }
             }
         }
+        inertiaUpdate = true;
+    }
+
+    public void OnLaunch()
+    {
+        inertiaUpdate = false;
     }
 
     public void LoadActorState()

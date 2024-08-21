@@ -116,6 +116,10 @@ namespace PengScript
         PerfectDodge,
         [Description("1,字符串相等,运算,Z,低封装")]
         MathStringEqual,
+        [Description("1,瞬时跳跃力,功能,S,高封装")]
+        JumpForce,
+        [Description("0,按帧移动,功能,A,低封装")]
+        MoveByFrame,
     }
 
     public struct ScriptIDVarID

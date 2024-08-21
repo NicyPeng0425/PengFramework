@@ -363,6 +363,8 @@ namespace PengScript
             ActorDirectionInputMagnitude = 14,
             ActorForward = 15,
             ActorDirectionProcessed = 16,
+            ActorInertia = 17,
+            ActorFallSpeed = 18,
         }
 
         public enum VariableTypeCN
@@ -384,6 +386,8 @@ namespace PengScript
             Actor方向输入模长 = 14,
             Actor正前方 = 15,
             Actor方向输入世界坐标 = 16,
+            Actor惯性 = 17,
+            下落速度 = 18,
         }
 
         public PengInt int1 = new PengInt("占位", 0, ConnectionPointType.In);
@@ -498,11 +502,13 @@ namespace PengScript
                         else if (varType == VariableType.ActorAttackPower || varType == VariableType.ActorDefendPower ||
                             varType == VariableType.ActorCriticalRate || varType == VariableType.ActorCriticalDamageRatio ||
                             varType == VariableType.ActorCurrentHP || varType == VariableType.ActorMaxHP ||
-                            varType == VariableType.ActorDirectionInputMagnitude)
+                            varType == VariableType.ActorDirectionInputMagnitude || varType == VariableType.ActorFallSpeed)
                         {
                             outVars[0] = floatOut;
                         }
-                        else if (varType == VariableType.ActorPosition || varType == VariableType.ActorDirectionInput || varType == VariableType.ActorForward || varType == VariableType.ActorDirectionProcessed)
+                        else if (varType == VariableType.ActorPosition || varType == VariableType.ActorDirectionInput ||
+                            varType == VariableType.ActorForward || varType == VariableType.ActorDirectionProcessed ||
+                            varType == VariableType.ActorInertia)
                         {
                             outVars[0] = vec3Out;
                         }
@@ -637,6 +643,12 @@ namespace PengScript
                             break;
                         case VariableType.ActorDirectionProcessed:
                             vec3Out.value = ppa.value.input.processedInputDir;
+                            break;
+                        case VariableType.ActorInertia:
+                            vec3Out.value = ppa.value.inertia;
+                            break;
+                        case VariableType.ActorFallSpeed:
+                            floatOut.value = ppa.value.fallSpeed;
                             break;
                     }
                     break;

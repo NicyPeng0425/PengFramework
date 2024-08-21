@@ -471,6 +471,10 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
                         if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
                         {
+                            if (dragTrackIndex > tracks.Count - 1)
+                            {
+                                dragTrackIndex = tracks.Count - 1;
+                            }
                             if (tracks[dragTrackIndex].start > currentFrameLength)
                             {
                                 tracks[dragTrackIndex].start = currentFrameLength - 1;

@@ -215,6 +215,8 @@ public class PengActorState : IPengActorState
                 return new OnGround(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.AllowChangeDirection:
                 return new AllowChangeDirection(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.JumpForce:
+                return new JumpForce(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }
