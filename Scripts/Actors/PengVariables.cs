@@ -34,7 +34,6 @@ namespace PengVariables
         public PengScript.BaseScript script;
         public string name;
         public PengVarType type;
-        public Rect varRect;
         public int index;
     }
 

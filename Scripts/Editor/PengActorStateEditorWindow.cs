@@ -344,6 +344,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
     public void DrawTimelineMap()
     {
         GUIStyle style = new GUIStyle("LODBlackBox");
+        style.normal.textColor = new Color(0.8f, 0.9f, 0.7f);
         GUIStyle style1 = new GUIStyle("IN EditColliderButton");
         GUIStyle style2 = new GUIStyle("Tooltip");
         GUIStyle style3 = new GUIStyle("LargeBoldLabel");
@@ -385,7 +386,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 if (tracks[i].execTime == PengTrack.ExecTime.Update)
                 {
                     Rect rectBG = new Rect(sideBarWidth + 100 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, timelineLength, 14);
-                    Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 71 + 27 * (i - 2) - timelineScrollPos.y, 90, 18);
+                    Rect rectButton = new Rect(sideBarWidth + 5 - timelineScrollPos.x, 71 + 27 * (i - 2) - timelineScrollPos.y, 70, 18);
+                    Rect rectButtonOtherInfo = new Rect(rectButton.x + rectButton.width + 2, rectButton.y, 18, 18);
                     Rect rectTrack = new Rect(sideBarWidth + 100 + tracks[i].start * 10 - timelineScrollPos.x, 73 + 27 * (i - 2) - timelineScrollPos.y, (tracks[i].end - tracks[i].start + 1) * 10f, 12);
                     Rect rectLeft = new Rect(sideBarWidth + 97 + tracks[i].start * 10 - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
                     Rect rectRight = new Rect(sideBarWidth + 97 + tracks[i].start * 10 + (tracks[i].end - tracks[i].start + 1) * 10f - timelineScrollPos.x, 72 + 27 * (i - 2) - timelineScrollPos.y, 6, 16);
@@ -404,11 +406,16 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
                     if (timelineHeight >= rectButton.y + rectButton.height)
                     {
-                        GUI.Box(rectBG, "", style);
+                        GUI.Box(rectBG, tracks[i].otherInfo, style);
                         if (GUI.Button(rectButton, tracks[i].trackName))
                         {
                             currentSelectedTrack = i;
                             editGlobal = false;
+                        }
+                        if (GUI.Button(rectButtonOtherInfo, "//"))
+                        {
+                            PengOtherInfoEditor editor = PengOtherInfoEditor.Init(this, i);
+                            editor.position = new Rect(Event.current.mousePosition.x + 40, Event.current.mousePosition.y + 40, editor.position.width, editor.position.height);
                         }
                         GUI.Box(rectTrack, "", style1);
                         GUI.Box(rectLeft, "", style2);
@@ -2157,6 +2164,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
     {
         PengEditorTrack track = new PengEditorTrack((PengTrack.ExecTime)Enum.Parse(typeof(PengTrack.ExecTime), trackEle.GetAttribute("ExecTime")),
                         trackEle.GetAttribute("Name"), int.Parse(trackEle.GetAttribute("Start")), int.Parse(trackEle.GetAttribute("End")), this, false);
+        if (trackEle.GetAttribute("Other") != null)
+        {
+            track.otherInfo = trackEle.GetAttribute("Other");
+        }
+        
         foreach (XmlElement nodeEle in trackEle.ChildNodes)
         {
             PengNode node = ReadPengNode(nodeEle, ref track);
@@ -2172,6 +2184,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         track.SetAttribute("Start", pengTrack.start.ToString());
         track.SetAttribute("End", pengTrack.end.ToString());
         track.SetAttribute("ExecTime", pengTrack.execTime.ToString());
+        track.SetAttribute("Other", pengTrack.otherInfo.ToString());
         if (pengTrack.nodes.Count > 0)
         {
             for (int l = 0; l < pengTrack.nodes.Count; l++)

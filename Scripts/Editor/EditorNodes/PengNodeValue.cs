@@ -19,9 +19,6 @@ public class ValuePengInt : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
-        //outPoints = new PengNodeConnection[1];
-        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
         outVars = new PengEditorVariables.PengVar[1];
         pengInt = new PengEditorVariables.PengInt(this, "值", 0, ConnectionPointType.Out);
@@ -72,9 +69,6 @@ public class ValuePengFloat : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
-        //outPoints = new PengNodeConnection[1];
-        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
         outVars = new PengEditorVariables.PengVar[1];
         pengFloat = new PengEditorVariables.PengFloat(this, "值", 0, ConnectionPointType.Out);
@@ -125,9 +119,6 @@ public class ValuePengString : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
-        //outPoints = new PengNodeConnection[1];
-        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
         outVars = new PengEditorVariables.PengVar[1];
         pengString = new PengEditorVariables.PengString(this, "值", 0, ConnectionPointType.Out);
@@ -172,9 +163,6 @@ public class ValuePengBool : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        //inPoints = new PengNodeConnection[1];inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
-        //outPoints = new PengNodeConnection[1];
-        //outPoints[0] = new PengNodeConnection(ConnectionPointType.Out, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
         outVars = new PengEditorVariables.PengVar[1];
         pengBool = new PengEditorVariables.PengBool(this, "值", 0, ConnectionPointType.Out);
@@ -691,11 +679,12 @@ public class GetVariables : PengNode
                     varType == PengScript.GetVariables.VariableType.ActorCriticalRate ||
                     varType == PengScript.GetVariables.VariableType.ActorCriticalDamageRatio ||
                     varType == PengScript.GetVariables.VariableType.ActorCurrentHP ||
-                    varType == PengScript.GetVariables.VariableType.ActorMaxHP)
+                    varType == PengScript.GetVariables.VariableType.ActorMaxHP ||
+                    varType == VariableType.ActorDirectionInputMagnitude)
                 {
                     outVars[0] = floatOut;
                 }
-                else if (varType == PengScript.GetVariables.VariableType.ActorPosition)
+                else if (varType == PengScript.GetVariables.VariableType.ActorPosition || varType== VariableType.ActorDirectionInput || varType == VariableType.ActorDirectionProcessed || varType == VariableType.ActorForward)
                 {
                     outVars[0] = vec3Out;
                 }

@@ -46,7 +46,7 @@ namespace PengScript
         PlayEffects,
         [Description("0,尝试索敌,功能,C,高封装")]
         TryGetEnemy,
-        [Description("0,允许转向,功能,Y,高封装")]
+        [Description("1,允许转向,功能,Y,高封装")]
         AllowChangeDirection,
         [Description("0,设置显隐,表现,S,高封装")]
         SetVisibility,

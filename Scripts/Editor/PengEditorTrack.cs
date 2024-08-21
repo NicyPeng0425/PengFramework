@@ -11,6 +11,8 @@ public class PengEditorTrack
     public int start;
     public int end;
     PengActorStateEditorWindow m_master;
+
+    public string otherInfo = "";
     public PengActorStateEditorWindow master
     {
         get { return m_master; }

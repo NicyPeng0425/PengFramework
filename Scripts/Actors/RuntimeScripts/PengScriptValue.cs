@@ -359,6 +359,10 @@ namespace PengScript
             ActorCurrentStateName = 10,
             ActorLastStateName = 11,
             ActorOnGround = 12,
+            ActorDirectionInput = 13,
+            ActorDirectionInputMagnitude = 14,
+            ActorForward = 15,
+            ActorDirectionProcessed = 16,
         }
 
         public enum VariableTypeCN
@@ -376,7 +380,10 @@ namespace PengScript
             Actor当前状态名 = 10,
             Actor上个状态名 = 11,
             Actor是否着地 = 12,
-            
+            Actor方向输入 = 13,
+            Actor方向输入模长 = 14,
+            Actor正前方 = 15,
+            Actor方向输入世界坐标 = 16,
         }
 
         public PengInt int1 = new PengInt("占位", 0, ConnectionPointType.In);
@@ -490,11 +497,12 @@ namespace PengScript
                         }
                         else if (varType == VariableType.ActorAttackPower || varType == VariableType.ActorDefendPower ||
                             varType == VariableType.ActorCriticalRate || varType == VariableType.ActorCriticalDamageRatio ||
-                            varType == VariableType.ActorCurrentHP || varType == VariableType.ActorMaxHP)
+                            varType == VariableType.ActorCurrentHP || varType == VariableType.ActorMaxHP ||
+                            varType == VariableType.ActorDirectionInputMagnitude)
                         {
                             outVars[0] = floatOut;
                         }
-                        else if (varType == VariableType.ActorPosition)
+                        else if (varType == VariableType.ActorPosition || varType == VariableType.ActorDirectionInput || varType == VariableType.ActorForward || varType == VariableType.ActorDirectionProcessed)
                         {
                             outVars[0] = vec3Out;
                         }
@@ -617,6 +625,18 @@ namespace PengScript
                             break;
                         case VariableType.ActorOnGround:
                             boolOut.value = ppa.value.isGrounded;
+                            break;
+                        case VariableType.ActorDirectionInput:
+                            vec3Out.value = ppa.value.input.originalInputDir;
+                            break;
+                        case VariableType.ActorDirectionInputMagnitude:
+                            floatOut.value = ppa.value.input.originalInputDir.magnitude;
+                            break;
+                        case VariableType.ActorForward:
+                            vec3Out.value = ppa.value.transform.forward;
+                            break;
+                        case VariableType.ActorDirectionProcessed:
+                            vec3Out.value = ppa.value.input.processedInputDir;
                             break;
                     }
                     break;

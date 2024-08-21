@@ -445,3 +445,66 @@ public class CustomEvent : PengNode
         }
     }
 }
+
+public class AllowChangeDirection : PengNode
+{
+    public PengEditorVariables.PengFloat lerp;
+    public AllowChangeDirection(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.meaning = "执行时允许读取方向控制，并进行转向。转向插值的数值越高，转向越快、平滑越少。";
+
+        inPoints = new PengNodeConnection[1]; 
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        lerp = new PengEditorVariables.PengFloat(this, "转向插值", 0, ConnectionPointType.In);
+
+        inVars[0] = lerp;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.AllowChangeDirection;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 1; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        lerp.value = EditorGUI.Slider(field, lerp.value, 0f, 1f);
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return lerp.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            lerp.value = float.Parse(info);
+        }
+    }
+}

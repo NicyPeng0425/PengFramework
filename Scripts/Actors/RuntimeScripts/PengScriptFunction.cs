@@ -103,6 +103,7 @@ namespace PengScript
         {
             base.Function(functionIndex);
             result.value = new List<PengActor>();
+            actor.targets.Clear();
             Vector3 pos = actor.transform.position + pengOffset.value.x * actor.transform.right + pengOffset.value.y * actor.transform.up + pengOffset.value.z * actor.transform.forward;
             Collider[] returns = new Collider[0];
             if (actor.game.actors.Count > 0)
@@ -146,6 +147,7 @@ namespace PengScript
                     if (pa != null && pa.actorCamp == pengCamp.value && pa.alive)
                     {
                         result.value.Add(pa);
+                        actor.targets.Add(pa);
                     }
                 }
             }
@@ -500,6 +502,72 @@ namespace PengScript
         {
             base.Function(functionIndex);
             actor.game.eventManager.TriggerEvent(eventName.value, intMessage.value, floatMessage.value, stringMessage.value, boolMessage.value);
+        }
+    }
+
+    public class AllowChangeDirection : BaseScript
+    {
+        public PengFloat lerp = new PengFloat("时间速度", 0, ConnectionPointType.In);
+
+        public AllowChangeDirection(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                lerp.value = float.Parse(specialInfo);
+            }
+            inVars[0] = lerp;
+            type = PengScriptType.AllowChangeDirection;
+            scriptName = GetDescription(type);
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pf = varSource as PengFloat;
+                    lerp.value = pf.value;
+                    break;
+            }
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            Vector3 currentDir = new Vector3(actor.transform.forward.x, 0, actor.transform.forward.z);
+            currentDir = currentDir.normalized;
+            Vector3 finalDir = Vector3.zero;
+            if (actor.input.processedInputDir.magnitude > 0.125f)
+            {
+                if (lerp.value >= 0.99f)
+                {
+                    finalDir = actor.input.processedInputDir;
+                }
+                else
+                {
+                    if ((currentDir + actor.input.processedInputDir).magnitude <= 0.01f)
+                    {
+                        currentDir = Quaternion.Euler(0,5,0) * currentDir;
+                        currentDir = new Vector3(currentDir.x, 0, currentDir.z).normalized;
+                    }
+                    finalDir = Vector3.Lerp(currentDir, actor.input.processedInputDir, lerp.value);
+                }
+                actor.transform.LookAt(actor.transform.position + finalDir);
+            }
         }
     }
 }

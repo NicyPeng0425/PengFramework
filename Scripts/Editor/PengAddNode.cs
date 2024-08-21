@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
@@ -83,6 +83,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 return new MathStringEqual(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnGround:
                 return new OnGround(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.AllowChangeDirection:
+                return new AllowChangeDirection(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -217,7 +219,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("¾¯¸æ", "²»ÔÊĞíÔÚÈ«¾Ö½ÚµãÍ¼ÒÔÍâµÄµØ·½·ÅÖÃÊÂ¼ş´¥·¢½Úµã¡£", "È·ÈÏ");
+                    EditorUtility.DisplayDialog("è­¦å‘Š", "ä¸å…è®¸åœ¨å…¨å±€èŠ‚ç‚¹å›¾ä»¥å¤–çš„åœ°æ–¹æ”¾ç½®äº‹ä»¶è§¦å‘èŠ‚ç‚¹ã€‚", "ç¡®è®¤");
                 }
                 break;
             case PengScript.PengScriptType.CustomEvent:
@@ -278,8 +280,14 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("¾¯¸æ", "²»ÔÊĞíÔÚÈ«¾Ö½ÚµãÍ¼ÒÔÍâµÄµØ·½·ÅÖÃ×ÅµØÊÂ¼ş½Úµã¡£", "È·ÈÏ");
+                    EditorUtility.DisplayDialog("è­¦å‘Š", "ä¸å…è®¸åœ¨å…¨å±€èŠ‚ç‚¹å›¾ä»¥å¤–çš„åœ°æ–¹æ”¾ç½®ç€åœ°äº‹ä»¶èŠ‚ç‚¹ã€‚", "ç¡®è®¤");
                 }
+                break;
+            case PengScript.PengScriptType.AllowChangeDirection:
+                track.nodes.Add(new AllowChangeDirection(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
         }
     }
