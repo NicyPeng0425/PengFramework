@@ -247,6 +247,7 @@ public class PengBuff
     public bool notEffectedByGravity;
     public bool unBreakable;
     public bool invincible;
+    public float resistValue;
 
     int m_stack;
     public int stack
@@ -352,6 +353,7 @@ public class PengBuff
             notEffectedByGravity = int.Parse(ele.GetAttribute("NotEffectedByGravity")) > 0;
             unBreakable = int.Parse(ele.GetAttribute("Unbreakable")) > 0;
             invincible = int.Parse(ele.GetAttribute("Invicible")) > 0;
+            resistValue = float.Parse(ele.GetAttribute("ResistValue"));
         }
         else
         {

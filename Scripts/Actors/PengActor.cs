@@ -227,6 +227,29 @@ public class PengActor : MonoBehaviour
     public Vector3 inertia;
     [HideInInspector]
     bool inertiaUpdate = true;
+    //抗打断
+    [HideInInspector]
+    float m_resist;
+    [HideInInspector]
+    public float resist
+    {
+        get 
+        {
+            if (buff.buffs.Count > 0)
+            {
+                float change = 0;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    change += buff.resistValue;
+                }
+                return m_resist + change;
+            }
+            else
+            {
+                return m_resist;
+            }
+        }
+    }
     [HideInInspector]
     public string stateBeforeGroundedName = "";
     [HideInInspector]
@@ -355,6 +378,11 @@ public class PengActor : MonoBehaviour
         inertiaUpdate = false;
     }
 
+    public void OnBreak()
+    {
+        
+    }
+
     public void LoadActorState()
     {
         TextAsset textAsset = (TextAsset)Resources.Load("ActorData/" + actorID.ToString() + "/" + actorID.ToString());
@@ -396,6 +424,7 @@ public class PengActor : MonoBehaviour
                             defendPower = float.Parse(son.GetAttribute("DefendPower"));
                             criticalRate = float.Parse(son.GetAttribute("CriticalRate"));
                             criticalDamageRatio = float.Parse(son.GetAttribute("CriticalDamageRatio"));
+                            m_resist = float.Parse(son.GetAttribute("Resist"));
                             continue;
                         }
                         if (son.Name == "Track")

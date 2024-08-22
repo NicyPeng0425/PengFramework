@@ -50,7 +50,7 @@ namespace PengScript
         AllowChangeDirection,
         [Description("0,设置显隐,表现,S,高封装")]
         SetVisibility,
-        [Description("0,伤害流程,功能,S,高封装")]
+        [Description("1,伤害流程,功能,S,高封装")]
         AttackDamage,
         [Description("1,设置黑板变量,功能,S,低封装")]
         SetBlackBoardVariables,

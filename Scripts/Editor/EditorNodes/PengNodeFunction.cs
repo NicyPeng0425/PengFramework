@@ -782,3 +782,66 @@ public class AddOrRemoveBuff : PengNode
         }
     }
 }
+
+public class AttackDamage : PengNode
+{
+    
+    public AttackDamage(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.meaning = "修改瞬时跳跃力。一般放在跳跃状态的Enter帧，执行一次即可，建议值为10以上。";
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[1];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        //force = new PengEditorVariables.PengFloat(this, "跳跃力", 0, ConnectionPointType.In);
+
+        //inVars[0] = force;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.AttackDamage;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 1; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        //force.value = EditorGUI.FloatField(field, force.value);
+                        break;
+                }
+            }
+        }
+    }
+    /*
+    public override string SpecialParaDescription()
+    {
+        return force.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            force.value = float.Parse(info);
+        }
+    }*/
+}

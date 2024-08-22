@@ -779,5 +779,21 @@ namespace PengScript
             }
         }
     }
+
+    public enum AttackPowerType
+    {
+        轻 = 0,
+        中 = 1,
+        重 = 2,
+    }
+
+    public enum BreakType
+    {
+        不打断 = 0,
+        强制打断 = 1,
+        削韧 = 2,
+        力度 = 3,
+    }
+
 }
 

@@ -16,6 +16,7 @@ using static PengScript.GetTargetsByRange;
 using PengScript;
 using log4net.Util;
 using NUnit.Framework.Interfaces;
+using static Codice.CM.Common.CmCallContext;
 
 public partial class PengActorStateEditorWindow : EditorWindow
 {
@@ -105,6 +106,15 @@ public partial class PengActorStateEditorWindow : EditorWindow
             }
 }
     }
+
+    public float currentActorMaxHP = 1000f;
+    public float currentActorAttackPower = 200f;
+    public float currentActorDefendPower = 50f;
+    public float currentActorCriticalRate = 0.2f;
+    public float currentActorCriticalDamageRatio = 1.5f;
+    public float currentActorResist = 200f;
+    public PengActorAttributesEditor attrEditor = null;
+
     public bool editorStatePlaying = false;
     public float editorStatePreviewTimeCount = 0;
     public bool runTimeEdit
@@ -1030,6 +1040,12 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
         GUI.Box(actorCampLabel, "角色阵营：", style2);
         currentActorCamp = EditorGUI.IntField(actorCamp, currentActorCamp, style2);
+
+        Rect editBtn = new Rect(actorNameLabel.x, actorNameLabel.y + 25, sideBarWidth * 0.45f, 20);
+        if (GUI.Button(editBtn, "编辑角色基础属性"))
+        {
+            attrEditor = PengActorAttributesEditor.Init(this);
+        }
     }
 
     public void PauseEditingActor()
@@ -1929,39 +1945,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
     public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, Dictionary<string, PengActorState.StateType> stateTypes, bool showMsg, PengEditorTrack globalTrack)
     {
-        //Actor数据结构：
-        //<Actor>
-        //  <ActorInfo>
-        //      <ActorID ActorID = "..." />
-        //      <Camp Camp = "..." />
-        //      <GlobalTrack Name = "..." Start = "..." End = "..." ExecTime = "...">
-        //          <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //          <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //      </GlobalTrack>
-        //  </ActorInfo>
-        //  <ActorState>
-        //      <StateGroup Name = "...">
-        //          <State Name = "..." IsLoop = "..." Length = "...">
-        //              <Track Name = "..." Start = "..." End = "..." ExecTime = "...">
-        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //                  ...
-        //              </Track>
-        //              ...
-        //          </State>
-        //          <State Name = "..." IsLoop = "..." Length = "...">
-        //              <Track Name = "..." Start = "..." End = "..." ExecTime = "...">
-        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //                  <Script Name = "..." ScriptType = "..." NodeType = "..." ... />
-        //                  ...
-        //              </Track>
-        //              ...
-        //          </State>
-        //          ...
-        //      </StateGroup>
-        //      ...
-        //  </ActorState>
-        //</Actor>
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
         //一二级结构
@@ -1981,9 +1964,20 @@ public partial class PengActorStateEditorWindow : EditorWindow
         {
             info.AppendChild(GenerateTrackInfo(ref doc, globalTrack));
         }
+
+        XmlElement attr = doc.CreateElement("Attribute");
+        attr.SetAttribute("MaxHP", globalTrack.master.currentActorMaxHP.ToString());
+        attr.SetAttribute("AttackPower", globalTrack.master.currentActorAttackPower.ToString());
+        attr.SetAttribute("DefendPower", globalTrack.master.currentActorDefendPower.ToString());
+        attr.SetAttribute("CriticalRate", globalTrack.master.currentActorCriticalRate.ToString());
+        attr.SetAttribute("CriticalDamageRatio", globalTrack.master.currentActorCriticalDamageRatio.ToString());
+        attr.SetAttribute("Resist", globalTrack.master.currentActorResist.ToString());
+
+
         info.AppendChild(ID);
         info.AppendChild(camp);
         info.AppendChild(name);
+        info.AppendChild(attr);
         
         //states下的三级结构
         //死亡迭代
@@ -2094,6 +2088,11 @@ public partial class PengActorStateEditorWindow : EditorWindow
             Debug.LogError(actorID.ToString() + "的角色数据里没有角色状态！怎么回事呢？");
             return;
         }
+        if (attrEditor != null)
+        {
+            attrEditor.Close();
+            attrEditor = null;
+        }
 
         XmlNodeList infoChilds = actorInfo.ChildNodes;
         foreach (XmlElement ele in infoChilds)
@@ -2111,6 +2110,16 @@ public partial class PengActorStateEditorWindow : EditorWindow
             if(ele.Name == "ActorName")
             {
                 currentActorName = ele.GetAttribute("ActorName");
+            }
+            if (ele.Name == "Attribute")
+            {
+                currentActorMaxHP = float.Parse(ele.GetAttribute("MaxHP"));
+                currentActorAttackPower = float.Parse(ele.GetAttribute("AttackPower"));
+                currentActorDefendPower = float.Parse(ele.GetAttribute("DefendPower"));
+                currentActorCriticalRate = float.Parse(ele.GetAttribute("CriticalRate"));
+                currentActorCriticalDamageRatio = float.Parse(ele.GetAttribute("CriticalDamageRatio"));
+                currentActorResist = float.Parse(ele.GetAttribute("Resist"));
+                continue;
             }
             if (ele.Name == "Track")
             {

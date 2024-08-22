@@ -14,7 +14,7 @@ public class PengEditorMain : EditorWindow
     /// 常用的UI绘制方法也放在这儿
     /// </summary>
     XmlDocument globalConfiguration;
-    [MenuItem("PengFramework/启动器", false, 0)]
+    [MenuItem("PengFramework/启动器", false, -12)]
     static void Init()
     {
         PengEditorMain window = (PengEditorMain)EditorWindow.GetWindow(typeof(PengEditorMain));

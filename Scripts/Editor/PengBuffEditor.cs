@@ -73,6 +73,7 @@ public class PengBuffEditor : EditorWindow
             newEle.SetAttribute("NotEffectedByGravity", "0");
             newEle.SetAttribute("Unbreakable", "0");
             newEle.SetAttribute("Invicible", "0");
+            newEle.SetAttribute("ResistValue", "0");
 
             root.AppendChild(newEle);
         }
@@ -281,6 +282,17 @@ public class PengBuffEditor : EditorWindow
             float cdrv = float.Parse(editEle.GetAttribute("CriticalDamageRatioValue"));
             cdrv = EditorGUILayout.FloatField(cdrv, GUILayout.Width(40));
             editEle.SetAttribute("CriticalDamageRatioValue", cdrv.ToString());
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("抗打断力增加", GUILayout.Width(70));
+            GUILayout.Space(3);
+            float rv = float.Parse(editEle.GetAttribute("ResistValue"));
+            rv = EditorGUILayout.FloatField(rv, GUILayout.Width(60));
+            editEle.SetAttribute("ResistValue", rv.ToString());
+            GUILayout.Space(3);
+
+            
             EditorGUILayout.EndHorizontal();
         }
         //面板
