@@ -236,14 +236,21 @@ namespace PengScript
             {
                 for (int i = 0; i < inVars.Length ; i++)
                 {
-                    inVars[i].script = this;
+                    if (inVars[i] != null)
+                    {
+                        inVars[i].script = this;
+                    }
+                    
                 }
             }
             if (outVars.Length > 0)
             {
                 for (int i = 0; i < outVars.Length; i++)
                 {
-                    outVars[i].script = this;
+                    if (outVars[i] != null)
+                    {
+                        outVars[i].script = this;
+                    }
                 }
             }
         }
