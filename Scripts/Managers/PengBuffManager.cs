@@ -331,9 +331,10 @@ public class PengBuff
 
     public void ConstructBuffByID(int id)
     {
-        if (gameOwner.buff.buffDic.ContainsKey(id))
+        
+        if (actorOwner.game.buff.buffDic.ContainsKey(id))
         {
-            XmlElement ele = gameOwner.buff.buffDic[id];
+            XmlElement ele = actorOwner.game.buff.buffDic[id];
             ID = int.Parse(ele.GetAttribute("ID"));
             Name = ele.GetAttribute("Name");
             Description = ele.GetAttribute("Description");
