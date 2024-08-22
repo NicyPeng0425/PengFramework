@@ -38,7 +38,16 @@ public class PengActorState : IPengActorState
         播片 = 6,
         受击 = 7,
         硬直 = 8,
-        其他 = 9,
+        冲刺 = 9,
+        空中攻击 = 10,
+        空中冲刺 = 11,
+        空中闪避 = 12,
+        空中待机 = 13,
+        空中移动 = 14,
+        空中受击 = 15,
+        跳跃 = 16,
+        落下 = 17,
+        其他 = 18,
     }
 
     public StateType stateType;
@@ -237,6 +246,10 @@ public class PengActorState : IPengActorState
                 return new MathStringEqual(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.OnGround:
                 return new OnGround(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.OnHit:
+                return new OnHit(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.OnDie:
+                return new OnDie(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.AllowChangeDirection:
                 return new AllowChangeDirection(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.JumpForce:
@@ -245,6 +258,12 @@ public class PengActorState : IPengActorState
                 return new MoveByFrame(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.AddOrRemoveBuff:
                 return new AddOrRemoveBuff(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.AttackDamage:
+                return new AttackDamage(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.TryGetEnemy:
+                return new TryGetEnemy(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.PerfectDodge:
+                return new PerfectDodge(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

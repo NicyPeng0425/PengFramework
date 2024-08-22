@@ -112,7 +112,7 @@ namespace PengScript
         CustomEvent,
         [Description("1,事件触发,事件,X,高封装")]
         OnEvent,
-        [Description("0,完美闪避判定,功能,W,高封装")]
+        [Description("1,完美闪避判定,功能,W,高封装")]
         PerfectDodge,
         [Description("1,字符串相等,运算,Z,低封装")]
         MathStringEqual,
@@ -128,6 +128,12 @@ namespace PengScript
         GetTargetsByBuff,
         [Description("0,状态获取目标,功能,G,高封装")]
         GetTargetsByState,
+        [Description("0,召唤Actor,功能,Z,高封装")]
+        SummonActor,
+        [Description("1,死亡事件,事件,S,高封装")]
+        OnDie,
+        [Description("1,受击事件,事件,S,高封装")]
+        OnHit,
     }
 
     public struct ScriptIDVarID

@@ -790,10 +790,297 @@ namespace PengScript
     public enum BreakType
     {
         不打断 = 0,
-        强制打断 = 1,
-        削韧 = 2,
-        力度 = 3,
+        直接打断 = 1,
+        打断力 = 2,
     }
 
+    public class AttackDamage : BaseScript
+    {
+        public AttackPowerType attackPowerType = AttackPowerType.轻;
+        public BreakType breakType = BreakType.不打断;
+        public PengFloat breakResist = new PengFloat("打断力", 2, ConnectionPointType.In);
+        public PengString hitAudioPath = new PengString("受击音效", 3, ConnectionPointType.In);
+        public PengFloat hitAudioVol = new PengFloat("受击音量", 4, ConnectionPointType.In);
+        public PengString hitVFXPath = new PengString("受击特效", 5, ConnectionPointType.In);
+        public PengFloat damageRatio = new PengFloat("伤害倍率", 6, ConnectionPointType.In);
+        public PengVector3 cameraImpulseSpeed = new PengVector3("震屏速度", 7, ConnectionPointType.In);
+        public PengFloat cameraImpulseTime = new PengFloat("震屏时间", 8, ConnectionPointType.In);
+        public PengFloat hitPause = new PengFloat("受击顿帧", 9, ConnectionPointType.In);
+        public PengFloat attackerPause = new PengFloat("攻击顿帧", 10, ConnectionPointType.In);
+
+        public List<AudioClip> clips = new List<AudioClip>();
+        public AttackDamage(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(";");
+                attackPowerType = (AttackPowerType)int.Parse(str[0]);
+                breakType = (BreakType)int.Parse(str[1]);
+                breakResist.value = float.Parse(str[2]);
+                string[] hitAudioPaths = str[3].Split("|");
+                if (hitAudioPaths.Length > 0)
+                {
+                    if (hitAudioPaths[0] != "")
+                    {
+                        hitAudioPath.value = hitAudioPaths[0];
+                    }
+                    for (int i = 1; i < hitAudioPaths.Length; i++)
+                    {
+                        clips.Add(Resources.Load<AudioClip>(hitAudioPaths[i]));
+                    }
+                }
+                hitAudioVol.value = float.Parse(str[4]);
+                if (str[5] == "-1")
+                {
+                    hitVFXPath.value = "";
+                }
+                else
+                {
+                    hitVFXPath.value = str[5];
+                }
+                damageRatio.value = float.Parse(str[6]);
+                cameraImpulseSpeed.value = BaseScript.ParseStringToVector3(str[7]);
+                cameraImpulseTime.value = float.Parse(str[8]);
+                hitPause.value = float.Parse(str[9]);
+                attackerPause.value = float.Parse(str[10]);
+            }
+            inVars[2] = breakResist;
+            inVars[3] = hitAudioPath;
+            inVars[4] = hitAudioVol;
+            inVars[5] = hitVFXPath;
+            inVars[6] = damageRatio;
+            inVars[7] = cameraImpulseSpeed;
+            inVars[8] = cameraImpulseTime;
+            inVars[9] = hitPause;
+            inVars[10] = attackerPause;
+            type = PengScriptType.AttackDamage;
+            scriptName = GetDescription(type);
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            if (actor.targets.Count == 0)
+                return;
+
+            actor.pauseTime += attackerPause.value;
+            for (int i = 0; i < actor.targets.Count; i++)
+            {
+                actor.targets[i].lastHitActor = actor;
+                actor.targets[i].OnHit();
+                actor.targets[i].pauseTime += hitPause.value;
+                if (clips.Count > 0)
+                {
+                    int rand = Random.Range(0, clips.Count);
+                    actor.targets[i].speaker.PlayOneShot(clips[rand], hitAudioVol.value);
+                }
+
+                if (!actor.targets[i].invincible)
+                {
+                    float dmg = actor.attackPower * damageRatio.value;
+                    float critical = Random.Range(0f, 1f);
+                    if (critical <= actor.criticalRate)
+                    {
+                        dmg *= actor.criticalDamageRatio;
+                    }
+                    dmg -= actor.targets[i].defendPower;
+                    actor.targets[i].currentHP -= dmg;
+                    //UI跳字
+                }
+
+                actor.game.GenerateVFX(hitVFXPath.value, actor.targets[i].hitVFXPivot.transform.position, Vector3.zero, Vector3.one, actor.targets[i], true, 1);
+
+
+                if ((breakType == BreakType.打断力 && breakResist.value >= actor.targets[i].resist && !actor.targets[i].unbreakable) ||
+                    (breakType == BreakType.直接打断 && !actor.targets[i].unbreakable))
+                {
+                    switch (attackPowerType)
+                    {
+                        case AttackPowerType.轻:
+                            if (actor.targets[i].actorStates.ContainsKey("LightHit"))
+                            {
+                                actor.targets[i].TransState("LightHit", false);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Actor" + actor.targets[i].actorID.ToString() + "受到轻攻击，但并没有轻受击硬直的状态可供切换，请考虑添加名为LightHit的状态。");
+                            }
+                            break;
+                        case AttackPowerType.中:
+                            if (actor.targets[i].actorStates.ContainsKey("MiddleHit"))
+                            {
+                                actor.targets[i].TransState("MiddleHit", false);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Actor" + actor.targets[i].actorID.ToString() + "受到中攻击，但并没有中受击硬直的状态可供切换，请考虑添加名为MiddleHit的状态。");
+                            }
+                            break;
+                        case AttackPowerType.重:
+                            if (actor.targets[i].actorStates.ContainsKey("HeavyHit"))
+                            {
+                                actor.targets[i].TransState("HeavyHit", false);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Actor" + actor.targets[i].actorID.ToString() + "受到重攻击，但并没有重受击硬直的状态可供切换，请考虑添加名为HeavyHit的状态。");
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (attackPowerType)
+                    {
+                        //程序化骨骼抖动
+                        case AttackPowerType.轻:
+                            break;
+                        case AttackPowerType.中:
+                            break;
+                        case AttackPowerType.重:
+                            break;
+                    }
+                }
+            }
+            //震屏
+            actor.targets.Clear();
+        }
+    }
+
+    public class TryGetEnemy : BaseScript
+    {
+        public PengFloat range = new PengFloat("范围", 0, ConnectionPointType.In);
+        public PengFloat angle = new PengFloat("角度", 1, ConnectionPointType.In);
+
+        public TryGetEnemy(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                range.value = float.Parse(str[0]);
+                angle.value = float.Parse(str[1]);
+            }
+            inVars[0] = range;
+            inVars[1] = angle;
+            type = PengScriptType.TryGetEnemy;
+            scriptName = GetDescription(type);
+        }
+
+        public override void Function(int functionIndex)
+        {
+            base.Function(functionIndex);
+            float radius = range.value + 1;
+            Vector3 dir = Vector3.zero;
+            PengActor tar = null;
+            foreach (PengActor a in actor.game.actors)
+            {
+                if (a.alive && a.actorCamp != actor.actorCamp && a.gameObject.activeSelf)
+                {
+                    Vector3 d = a.transform.position - actor.transform.position;
+                    d = new Vector3(d.x, 0, d.z);
+                    Vector3 forward = new Vector3(actor.transform.forward.x, 0, actor.transform.forward.z);
+                    if (Vector3.Angle(forward, d) <= angle.value)
+                    {
+                        float dis = d.magnitude;
+                        if (dis <= radius)
+                        {
+                            radius = dis;
+                            dir = d;
+                            tar = a;
+                        }
+                    }
+                }
+            }
+            if (tar != null)
+            {
+                actor.transform.LookAt(actor.transform.position + dir.normalized);
+            }
+            else
+            {
+                if (actor.input.processedInputDir.magnitude >= 0.05f)
+                {
+                    Vector3 finalDir = actor.input.processedInputDir;
+                    actor.transform.LookAt(actor.transform.position + finalDir);
+                }
+            }
+        }
+    }
+
+    public class PerfectDodge : BaseScript
+    {
+        public PerfectDodge(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Execute(int functionIndex)
+        {
+            Initial(functionIndex);
+            Function(functionIndex);
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            base.Construct(specialInfo);
+            type = PengScriptType.PerfectDodge;
+            scriptName = GetDescription(type);
+        }
+
+        public override void Function(int functionIndex)
+        {
+            bool dodge = false;
+            for (int i = 0; i < actor.game.actors.Count; i++)
+            {
+                if (actor.game.actors[i].actorCamp != actor.actorCamp)
+                {
+                    if (actor.game.actors[i].targets.Contains(actor))
+                    {
+                        dodge = true;
+                        break;
+                    }
+                }
+            }
+            if (dodge)
+            {
+                ScriptFlowNext();
+            }
+        }
+    }
 }
 

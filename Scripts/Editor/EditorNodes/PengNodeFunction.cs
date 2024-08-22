@@ -1,6 +1,8 @@
 ﻿using PengScript;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -785,6 +787,26 @@ public class AddOrRemoveBuff : PengNode
 
 public class AttackDamage : PengNode
 {
+    public PengEditorVariables.PengInt attackPowerTypeInt;
+    public AttackPowerType attackPowerType;
+
+    public PengEditorVariables.PengInt breakTypeInt;
+    public BreakType breakType;
+
+    public PengEditorVariables.PengFloat breakResist;
+
+    public PengEditorVariables.PengString hitAudioPath;
+    public PengEditorVariables.PengFloat hitAudioVol;
+
+    public PengEditorVariables.PengString hitVFXPath;
+
+    public PengEditorVariables.PengFloat damageRatio;
+
+    public PengEditorVariables.PengVector3 cameraImpulseSpeed;
+    public PengEditorVariables.PengFloat cameraImpulseTime;
+
+    public PengEditorVariables.PengFloat hitPause;
+    public PengEditorVariables.PengFloat attackerPause;
     
     public AttackDamage(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
     {
@@ -794,21 +816,298 @@ public class AttackDamage : PengNode
         this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
-        this.meaning = "修改瞬时跳跃力。一般放在跳跃状态的Enter帧，执行一次即可，建议值为10以上。";
+        this.meaning = "对目标进行一段打击，一般与“按范围获取目标”节点搭配使用。";
 
         inPoints = new PengNodeConnection[1];
         inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
-        inVars = new PengEditorVariables.PengVar[1];
+        inVars = new PengEditorVariables.PengVar[11];
         outVars = new PengEditorVariables.PengVar[0];
 
-        //force = new PengEditorVariables.PengFloat(this, "跳跃力", 0, ConnectionPointType.In);
+        attackPowerTypeInt = new PengEditorVariables.PengInt(this, "打击力度", 0, ConnectionPointType.In);
+        attackPowerTypeInt.value = 0;
+        attackPowerType = AttackPowerType.轻;
+        inVars[0] = attackPowerTypeInt;
+        attackPowerTypeInt.point = null;
 
-        //inVars[0] = force;
+        breakTypeInt = new PengEditorVariables.PengInt(this, "打断类型", 1, ConnectionPointType.In);
+        attackPowerTypeInt.value = 0;
+        breakType = BreakType.不打断;
+        inVars[1] = breakTypeInt;
+        breakTypeInt.point = null;
+
+        breakResist = new PengEditorVariables.PengFloat(this, "打断力", 2, ConnectionPointType.In);
+        inVars[2] = breakResist;
+        breakResist.point = null;
+
+        hitAudioPath = new PengEditorVariables.PengString(this, "受击音效", 3, ConnectionPointType.In);
+        inVars[3] = hitAudioPath;
+        hitAudioPath.value = "HitSFX/";
+        hitAudioPath.point = null;
+
+        hitAudioVol = new PengEditorVariables.PengFloat(this, "受击音量", 4, ConnectionPointType.In);
+        inVars[4] = hitAudioVol;
+        hitAudioVol.point = null;
+
+        hitVFXPath = new PengEditorVariables.PengString(this, "受击特效", 5, ConnectionPointType.In);
+        inVars[5] = hitVFXPath;
+        hitVFXPath.value = "HitVFX/";
+        hitVFXPath.point = null;
+
+        damageRatio = new PengEditorVariables.PengFloat(this, "伤害倍率", 6, ConnectionPointType.In);
+        inVars[6] = damageRatio;
+        damageRatio.point = null;
+
+        cameraImpulseSpeed = new PengEditorVariables.PengVector3(this, "震屏速度", 7, ConnectionPointType.In);
+        inVars[7] = cameraImpulseSpeed;
+        cameraImpulseSpeed.point = null;
+
+        cameraImpulseTime = new PengEditorVariables.PengFloat(this, "震屏时间", 8, ConnectionPointType.In);
+        inVars[8] = cameraImpulseTime;
+        cameraImpulseTime.point = null;
+
+        hitPause = new PengEditorVariables.PengFloat(this, "受击者顿帧", 9, ConnectionPointType.In);
+        inVars[9] = hitPause;
+        hitPause.point = null;
+
+        attackerPause = new PengEditorVariables.PengFloat(this, "攻击者顿帧", 10, ConnectionPointType.In);
+        inVars[10] = attackerPause;
+        attackerPause.point = null;
+
         ReadSpecialParaDescription(specialInfo);
         type = NodeType.Action;
         scriptType = PengScript.PengScriptType.AttackDamage;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 11;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < paraNum; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 65, inVars[i].varRect.y, 160, 18);
+                inVars[i].varRect = new Rect(field.x - 65, field.y, 60, 18);
+                switch (i)
+                {
+                    case 0:
+                        attackPowerType = (AttackPowerType)EditorGUI.EnumPopup(field, attackPowerType);
+                        attackPowerTypeInt.value = (int)attackPowerType;
+                        break;
+                    case 1:
+                        breakType = (BreakType)EditorGUI.EnumPopup(field, breakType);
+                        breakTypeInt.value = (int)breakType;
+                        break;
+                    case 2:
+                        breakResist.value = EditorGUI.FloatField(field, breakResist.value);
+                        break;
+                    case 3:
+                        hitAudioPath.value = EditorGUI.TextField(field, hitAudioPath.value);
+                        break;
+                    case 4:
+                        hitAudioVol.value = EditorGUI.FloatField(field, hitAudioVol.value);
+                        break;
+                    case 5:
+                        hitVFXPath.value = EditorGUI.TextField (field, hitVFXPath.value);
+                        break;
+                    case 6:
+                        damageRatio.value = EditorGUI.FloatField(field, damageRatio.value);
+                        break;
+                    case 7:
+                        cameraImpulseSpeed.value = EditorGUI.Vector3Field(field, "", cameraImpulseSpeed.value);
+                        break;
+                    case 8:
+                        cameraImpulseTime.value = EditorGUI.FloatField(field, cameraImpulseTime.value);
+                        break;
+                    case 9:
+                        hitPause.value = EditorGUI.FloatField(field, hitPause.value);
+                        break;
+                    case 10:
+                        attackerPause.value = EditorGUI.FloatField (field, attackerPause.value);
+                        break;
+                }
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        string result = "";
+        
+        if (Directory.Exists(Application.dataPath + "/Resources/Sounds/" + hitAudioPath.value))
+        {
+            hitAudioPath.value += "|";
+            DirectoryInfo direct = new DirectoryInfo(Application.dataPath + "/Resources/Sounds/" + hitAudioPath.value);
+            FileInfo[] files = direct.GetFiles();
+            if (files != null && files.Length > 0)
+            {
+                for (int i = 0; i < files.Length; i++)
+                {
+                    if (files[i].Name.EndsWith(".meta"))
+                    {
+                        continue;
+                    }
+                    if (files[i].Name.EndsWith(".mp3") || files[i].Name.EndsWith(".wav"))
+                    {
+                        string name = files[i].Name;
+                        string[] noPost = name.Split(".");
+                        hitAudioPath.value += "Sounds/" + hitAudioPath.value + "/" +  noPost[0] + "|";
+                    }
+                }
+            }
+        }
+        if (hitVFXPath.value == "")
+        {
+            hitVFXPath.value = "-1";
+        }
+
+        result += attackPowerTypeInt.value.ToString() + ";";
+        result += breakTypeInt.value.ToString() + ";";
+        result += breakResist.value.ToString() + ";" + hitAudioPath.value + ";" + hitAudioVol.value.ToString() + ";";
+        result += hitVFXPath.value.ToString() + ";" + damageRatio.value.ToString() + ";" + BaseScript.ParseVector3ToString(cameraImpulseSpeed.value) + ";";
+        result += cameraImpulseTime.value.ToString() + ";" + hitPause.value.ToString() + ";" + attackerPause.value.ToString();
+        return result;
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(";");
+            attackPowerTypeInt.value = int.Parse(str[0]);
+            attackPowerType = (AttackPowerType)attackPowerTypeInt.value;
+
+            breakTypeInt.value = int.Parse(str[1]);
+            breakType = (BreakType)breakTypeInt.value;
+
+            breakResist.value = float.Parse(str[2]);
+
+            string[] hitAudioPaths = str[3].Split("|");
+            if (hitAudioPaths.Length > 0)
+            {
+                if (hitAudioPaths[0] != "")
+                {
+                    hitAudioPath.value = hitAudioPaths[0];
+                }
+            }
+            
+            hitAudioVol.value = float.Parse(str[4]);
+
+            if (str[5] == "-1")
+            {
+                hitVFXPath.value = "";
+            }
+            else
+            {
+                hitVFXPath.value = str[5];
+            }
+            
+            damageRatio.value = float.Parse(str[6]);
+            cameraImpulseSpeed.value = BaseScript.ParseStringToVector3(str[7]);
+            cameraImpulseTime.value = float.Parse(str[8]);
+            hitPause.value = float.Parse(str[9]);
+            attackerPause.value = float.Parse(str[10]);
+        }
+    }
+}
+
+public class TryGetEnemy : PengNode
+{
+    public PengEditorVariables.PengFloat range;
+    public PengEditorVariables.PengFloat angle;
+    public TryGetEnemy(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[2];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        range = new PengEditorVariables.PengFloat(this, "范围", 0, ConnectionPointType.In);
+        range.point = null;
+        angle = new PengEditorVariables.PengFloat(this, "角度", 1, ConnectionPointType.In);
+        angle.point = null;
+
+        inVars[0] = range;
+        inVars[1] = angle;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.TryGetEnemy;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 2;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < 1; i++)
+        {
+            if (varInID[i].nodeID < paraNum)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 180, 18);
+                switch (i)
+                {
+                    case 0:
+                        range.value = EditorGUI.FloatField(field, "", range.value);
+                        break;
+                    case 1:
+                        angle.value = EditorGUI.FloatField(field, angle.value);
+                        break;
+                }
+            }
+        }
+    }
+
+    public override string SpecialParaDescription()
+    {
+        return range.value.ToString() + "," + angle.value.ToString();
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            range.value = float.Parse(str[0]);
+            angle.value = float.Parse(str[1]);
+        }
+    }
+}
+
+public class PerfectDodge : PengNode
+{
+    public PerfectDodge(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        this.meaning = "只有在完美闪避判定成功时，才会执行该节点的后续节点。";
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[0];
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Action;
+        scriptType = PengScript.PengScriptType.PerfectDodge;
         nodeName = GetDescription(scriptType);
 
         paraNum = 1;
@@ -817,31 +1116,5 @@ public class AttackDamage : PengNode
     public override void Draw()
     {
         base.Draw();
-        for (int i = 0; i < 1; i++)
-        {
-            if (varInID[i].nodeID < 0)
-            {
-                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
-                switch (i)
-                {
-                    case 0:
-                        //force.value = EditorGUI.FloatField(field, force.value);
-                        break;
-                }
-            }
-        }
     }
-    /*
-    public override string SpecialParaDescription()
-    {
-        return force.value.ToString();
-    }
-
-    public override void ReadSpecialParaDescription(string info)
-    {
-        if (info != "")
-        {
-            force.value = float.Parse(info);
-        }
-    }*/
 }

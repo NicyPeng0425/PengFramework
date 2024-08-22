@@ -83,6 +83,10 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 return new MathStringEqual(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnGround:
                 return new OnGround(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.OnHit:
+                return new OnHit(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.OnDie:
+                return new OnDie(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.AllowChangeDirection:
                 return new AllowChangeDirection(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.JumpForce:
@@ -91,6 +95,12 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 return new MoveByFrame(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.AddOrRemoveBuff:
                 return new AddOrRemoveBuff(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.AttackDamage:
+                return new AttackDamage(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.TryGetEnemy:
+                return new TryGetEnemy(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.PerfectDodge:
+                return new PerfectDodge(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -289,6 +299,32 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     EditorUtility.DisplayDialog("警告", "不允许在全局节点图以外的地方放置着地事件节点。", "确认");
                 }
                 break;
+            case PengScript.PengScriptType.OnHit:
+                if (editGlobal)
+                {
+                    track.nodes.Add(new OnHit(mousePos, this, ref track, id,
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                        PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("警告", "不允许在全局节点图以外的地方放置受击事件节点。", "确认");
+                }
+                break;
+            case PengScript.PengScriptType.OnDie:
+                if (editGlobal)
+                {
+                    track.nodes.Add(new OnDie(mousePos, this, ref track, id,
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                        PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                        PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("警告", "不允许在全局节点图以外的地方放置死亡事件节点。", "确认");
+                }
+                break;
             case PengScript.PengScriptType.AllowChangeDirection:
                 track.nodes.Add(new AllowChangeDirection(mousePos, this, ref track, id,
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
@@ -312,6 +348,24 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
+                break;
+            case PengScript.PengScriptType.AttackDamage:
+                track.nodes.Add(new AttackDamage(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(11)), ""));
+                break;
+            case PengScript.PengScriptType.TryGetEnemy:
+                track.nodes.Add(new TryGetEnemy(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
+                break;
+            case PengScript.PengScriptType.PerfectDodge:
+                track.nodes.Add(new PerfectDodge(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
                 break;
         }
     }

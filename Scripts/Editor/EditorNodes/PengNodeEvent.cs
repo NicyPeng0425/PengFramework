@@ -125,7 +125,8 @@ public class OnGround : PengNode
         this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
         this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
 
-        inPoints = new PengNodeConnection[1]; inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        inPoints = new PengNodeConnection[1]; 
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
         outPoints = new PengNodeConnection[1];
         outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
         inVars = new PengEditorVariables.PengVar[0];
@@ -134,6 +135,78 @@ public class OnGround : PengNode
         ReadSpecialParaDescription(specialInfo);
         type = NodeType.Event;
         scriptType = PengScript.PengScriptType.OnGround;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+    }
+}
+
+public class OnHit : PengNode
+{
+    public PengEditorVariables.PengPengActor ppa;
+    public OnHit(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoints = new PengNodeConnection[1]; 
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        ppa = new PengEditorVariables.PengPengActor(this, "攻击者", 0, ConnectionPointType.Out);
+        outVars[0] = ppa;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Event;
+        scriptType = PengScript.PengScriptType.OnHit;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 1;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+    }
+}
+
+public class OnDie : PengNode
+{
+    public PengEditorVariables.PengPengActor ppa;
+    public OnDie(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+
+        inPoints = new PengNodeConnection[1];
+        inPoints[0] = new PengNodeConnection(ConnectionPointType.FlowIn, 0, this, null);
+        outPoints = new PengNodeConnection[1];
+        outPoints[0] = new PengNodeConnection(ConnectionPointType.FlowOut, 0, this, null);
+        inVars = new PengEditorVariables.PengVar[0];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        ppa = new PengEditorVariables.PengPengActor(this, "击杀者", 0, ConnectionPointType.Out);
+        outVars[0] = ppa;
+
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Event;
+        scriptType = PengScript.PengScriptType.OnDie;
         nodeName = GetDescription(scriptType);
 
         paraNum = 1;

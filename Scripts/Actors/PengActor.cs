@@ -220,6 +220,26 @@ public class PengActor : MonoBehaviour
         }
     }
     [HideInInspector]
+    public bool invincible
+    {
+        get
+        {
+            if (buff.buffs.Count > 0)
+            {
+                bool yes = false;
+                foreach (PengBuff buff in buff.buffs)
+                {
+                    if (buff.invincible) { yes = true; }
+                }
+                return yes;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    [HideInInspector]
     public bool isGrounded;
     [HideInInspector]
     public float fallSpeed;
@@ -254,6 +274,10 @@ public class PengActor : MonoBehaviour
     public string stateBeforeGroundedName = "";
     [HideInInspector]
     public AudioSource speaker;
+    [HideInInspector]
+    public Transform hitVFXPivot;
+    [HideInInspector]
+    public PengActor lastHitActor;
 
     private void Awake()
     {
@@ -265,6 +289,9 @@ public class PengActor : MonoBehaviour
         buff = this.AddComponent<PengBuffManager>();
         buff.actorOwner = this;
         speaker = this.AddComponent<AudioSource>();
+        hitVFXPivot = new GameObject().transform;
+        hitVFXPivot.SetParent(this.transform);
+        hitVFXPivot.localPosition = ctrl.center;
         LoadActorState();
     }
     // Start is called before the first frame update
@@ -477,10 +504,31 @@ public class PengActor : MonoBehaviour
 
     public void OnDie()
     {
-
+        if (globalTrack != null && globalTrack.scripts.Count > 0)
+        {
+            for (int i = 0; i < globalTrack.scripts.Count; i++)
+            {
+                if (globalTrack.scripts[i].type == PengScriptType.OnDie)
+                {
+                    globalTrack.scripts[i].Execute(0);
+                }
+            }
+        }
     }
 
-    
+    public void OnHit()
+    {
+        if (globalTrack != null && globalTrack.scripts.Count > 0)
+        {
+            for (int i = 0; i < globalTrack.scripts.Count; i++)
+            {
+                if (globalTrack.scripts[i].type == PengScriptType.OnHit)
+                {
+                    globalTrack.scripts[i].Execute(0);
+                }
+            }
+        }
+    }
 }
 
 public class ReadOnlyAttribute : PropertyAttribute
