@@ -27,11 +27,35 @@ public class PengActorState : IPengActorState
     public float frameCnt = 0f;
     public List<bool> executedTags = new List<bool>();
 
+    public enum StateType
+    {
+        待机 = 0,
+        移动 = 1,
+        闪避 = 2,
+        技能 = 3,
+        大招 = 4,
+        交互 = 5,
+        播片 = 6,
+        受击 = 7,
+        硬直 = 8,
+        其他 = 9,
+    }
+
+    public StateType stateType;
+
     public PengActorState(PengActor actor, XmlElement stateInfo)
     {
         this.actor = actor;
         this.length = int.Parse(stateInfo.GetAttribute("Length"));
         this.isLoop = int.Parse(stateInfo.GetAttribute("IsLoop")) > 0;
+        if (stateInfo.HasAttribute("StateType"))
+        {
+            this.stateType = (StateType)Enum.Parse(typeof(StateType), stateInfo.GetAttribute("StateType"));
+        }
+        else
+        {
+            this.stateType = StateType.其他;
+        }
         this.tracks = ReadActorTracks(stateInfo);
     }
     public void OnEnter()

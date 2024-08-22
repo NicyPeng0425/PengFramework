@@ -45,7 +45,7 @@ public class PengRuntimeMonitor : EditorWindow
 
         if (game.actors.Count > 0)
         {
-            GUIStyle buffStyle = new GUIStyle("AnimationEventTooltip");
+            GUIStyle buffStyle = new GUIStyle("AppToolbar");
             GUIStyle bbKeyStyle = new GUIStyle("ContentToolbar");
             GUIStyle bbValueStyle = new GUIStyle("ContentToolbar");
             bbKeyStyle.alignment = TextAnchor.MiddleLeft;

@@ -122,6 +122,12 @@ namespace PengScript
         MoveByFrame,
         [Description("1,增删Buff,功能,Z,高封装")]
         AddOrRemoveBuff,
+        [Description("0,是否含有Buff,值,S,高封装")]
+        HasBuff,
+        [Description("0,Buff获取目标,功能,G,高封装")]
+        GetTargetsByBuff,
+        [Description("0,状态获取目标,功能,G,高封装")]
+        GetTargetsByState,
     }
 
     public struct ScriptIDVarID

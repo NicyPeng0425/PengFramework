@@ -74,6 +74,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
     public bool isSideScrollBarDragging = false;
     public bool trackNameEditing = false;
     public bool currentStateLoop = false;
+    public PengActorState.StateType currentStateType = PengActorState.StateType.其他;
     public List<PengEditorTrack> tracks = new List<PengEditorTrack>();
     public int currentActorID = 100425;
     public int currentActorCamp = 1;
@@ -123,6 +124,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
     public Dictionary<string, int> statesLength = new Dictionary<string, int>();
     //所有状态及其对应的是否循环
     public Dictionary<string, bool> statesLoop = new Dictionary<string, bool>();
+    //所有状态及其对应的状态类型
+    public Dictionary<string, PengActorState.StateType> statesTypes = new Dictionary<string, PengActorState.StateType>();
     public PengEditorTrack globalTrack;
     public Dictionary<int, PlayAudio> previewAudios = new Dictionary<int, PlayAudio>();
     string m_currentStateName;    
@@ -845,6 +848,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
                         statesLength.Add(stateName, 55);
                         statesLoop.Add(stateName, false);
+                        statesTypes.Add(stateName, PengActorState.StateType.其他);
                         GUI.changed = true;
                     }
                     if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && entryDelete.Contains(Event.current.mousePosition))
@@ -932,6 +936,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 statesTrack.Remove(deleteStateName);
                 statesLength.Remove(deleteStateName);
                 statesLoop.Remove(deleteStateName);
+                statesTypes.Remove(deleteStateName); 
                 GUI.changed = true;
             }
         }
@@ -1272,6 +1277,19 @@ public partial class PengActorStateEditorWindow : EditorWindow
                             }
                         }
                     }
+
+                    if (statesTypes.Count > 0)
+                    {
+                        for (int i = 0; i < statesTypes.Count; i++)
+                        {
+                            if (statesTypes.ElementAt(i).Key == currentStateName)
+                            {
+                                statesTypes.Add(stateName, statesTypes.ElementAt(i).Value);
+                                statesTypes.Remove(currentStateName);
+                                break;
+                            }
+                        }
+                    }
                     currentStateName = stateName;
                 }
             }
@@ -1306,9 +1324,23 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
             }
 
+            GUILayout.Space(10);
+            GUILayout.Label("状态类型：", GUILayout.Width(65));
+            GUILayout.Space(10);
+
+            try
+            {
+                statesTypes[currentStateName] = (PengActorState.StateType)EditorGUILayout.EnumPopup(statesTypes[currentStateName], GUILayout.Width(65));
+                currentStateType = statesTypes[currentStateName];
+            }
+            catch
+            {
+
+            }
+
             if (!EditorApplication.isPlaying)
             {
-                Rect butRe = new Rect(sideBarWidth + 600, 20, 50, 20);
+                Rect butRe = new Rect(sideBarWidth + 750, 20, 50, 20);
                 
                 if (editorStatePlaying)
                 {
@@ -1892,10 +1924,10 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
     public void Save(bool showMsg)
     {
-        SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, showMsg, globalTrack);
+        SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, statesTypes, showMsg, globalTrack);
     }
 
-    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, bool showMsg, PengEditorTrack globalTrack)
+    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, Dictionary<string, PengActorState.StateType> stateTypes, bool showMsg, PengEditorTrack globalTrack)
     {
         //Actor数据结构：
         //<Actor>
@@ -1970,6 +2002,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
                         state.SetAttribute("Name", stateName);
                         state.SetAttribute("IsLoop", statesLoop[stateName] ? "1" : "0");
                         state.SetAttribute("Length", statesLength[stateName].ToString());
+                        state.SetAttribute("StateType", stateTypes[stateName].ToString());
                         if (stateTrack[stateName].Count > 0)
                         {
                             for (int k = 0; k < stateTrack[stateName].Count; k++)
@@ -2092,6 +2125,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         statesLength = new Dictionary<string, int>();
         statesLoop = new Dictionary<string, bool>();
         statesTrack = new Dictionary<string, List<PengEditorTrack>>();
+        statesTypes = new Dictionary<string, PengActorState.StateType>();
         foreach (XmlElement ele in stateGroupChild)
         {
             List<string> stateNames = new List<string>();
@@ -2100,6 +2134,14 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 stateNames.Add(ele2.GetAttribute("Name"));
                 statesLength.Add(ele2.GetAttribute("Name"), int.Parse(ele2.GetAttribute("Length")));
                 statesLoop.Add(ele2.GetAttribute("Name"), int.Parse(ele2.GetAttribute("IsLoop")) > 0);
+                if (ele2.HasAttribute("StateType"))
+                {
+                    statesTypes.Add(ele2.GetAttribute("Name"), (PengActorState.StateType)Enum.Parse(typeof(PengActorState.StateType), ele2.GetAttribute("StateType")));
+                }
+                else
+                {
+                    statesTypes.Add(ele2.GetAttribute("Name"), PengActorState.StateType.其他);
+                }
                 List<PengEditorTrack> pengTracks = new List<PengEditorTrack>();
                 foreach(XmlElement trackEle in ele2.ChildNodes)
                 {
@@ -2117,6 +2159,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         currentFrameLength = statesLength[currentStateName];
         currentStateLoop = statesLoop[currentStateName];
         tracks = statesTrack[currentStateName];
+        currentStateType = statesTypes[currentStateName];
         currentSelectedTrack = 2;
         editGlobal = false;
         currentSelectedFrame = 0;
@@ -2228,6 +2271,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         statesTrack = new Dictionary<string, List<PengEditorTrack>>();
         statesLength = new Dictionary<string, int>();
         statesLoop = new Dictionary<string, bool>();
+        statesTypes = new Dictionary<string, PengActorState.StateType>();
         currentStateName = "";
         copyInfo = null;
         copyInternalDoc = null;
