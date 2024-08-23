@@ -80,6 +80,7 @@ public class PengRuntimeMonitor : EditorWindow
                     {
                         for (int j = 0; j < game.actors.Count; j++)
                         {
+                            game.mainActor = game.actors[j];
                             game.actors[j].input.aiCtrl = true;
                         }
                         game.actors[i].input.aiCtrl = false;

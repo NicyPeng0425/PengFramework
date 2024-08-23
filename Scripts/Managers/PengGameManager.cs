@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using Cinemachine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PengGameManager : MonoBehaviour
@@ -31,6 +33,17 @@ public class PengGameManager : MonoBehaviour
     public AudioSource globalSource;
     [HideInInspector]
     float checkHasActorControlledByPlayerTimeCount = 0;
+    [HideInInspector]
+    PengActor m_mainActor;
+    [HideInInspector]
+    public PengActor mainActor
+    {
+        get { return m_mainActor; }
+        set { m_mainActor = value;  OnMainActorSet(); }
+    }
+    [HideInInspector]
+    public CinemachineFreeLook mainFL;
+
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -49,6 +62,17 @@ public class PengGameManager : MonoBehaviour
         vfxRoot.name = "PengVFXRoot";
         vfxRoot.SetParent(this.transform);
         globalSource = this.GetComponent<AudioSource>();
+
+        GameObject mainFLPF = Resources.Load("Cameras/MainFreeLook") as GameObject;
+        if (mainFLPF == null)
+        {
+            Debug.Log("实例化自由视角相机失败，请检查地址与命名是否为Resources/Cameras/MainFreeLook，若没有该预制体，则请在PengFramework/Prefab下寻找并复制粘贴到制指定为位置。");
+        }
+        else
+        {
+            GameObject mainFLGO = GameObject.Instantiate(mainFLPF);
+            mainFL = mainFLGO.GetComponent<CinemachineFreeLook>();
+        }
     }
     // Start is called before the first frame update
     void Start()
@@ -241,5 +265,11 @@ public class PengGameManager : MonoBehaviour
             }
         }
         return result;
+    }
+
+    public void OnMainActorSet()
+    {
+        mainFL.Follow = mainActor.transform;
+        mainFL.LookAt = mainActor.lookAt;
     }
 }

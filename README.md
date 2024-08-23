@@ -16,8 +16,9 @@ A framework for the development of action games.
 3. 将此项目克隆到Asset文件夹。例如：C:nicy/PengFrameworkSample/Asset/PengFramework
 4. 打开启动器，进行全局配置。
 5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab
-6. 角色配置完毕后，可在运行时监控中将其设为主控，接受玩家输入，用于测试。
-7. 更多详细信息请参考：https://nicypeng.notion.site/ed948501a86940d389df1c71f7a9e058
+6. Asset/PengFramework/Prefab下若有预制体，请将其复制到应当出现的地方。例如，MainFreeLook预制体应当放在Resources/Cameras下。
+7. 角色配置完毕后，可在运行时监控中将其设为主控，接受玩家输入，用于测试。
+8. 更多详细信息请参考：https://nicypeng.notion.site/ed948501a86940d389df1c71f7a9e058
 
 # 后续开发计划
 1. 配套AI插件

@@ -278,6 +278,8 @@ public class PengActor : MonoBehaviour
     public Transform hitVFXPivot;
     [HideInInspector]
     public PengActor lastHitActor;
+    [HideInInspector]
+    public Transform lookAt;
 
     private void Awake()
     {
@@ -292,6 +294,9 @@ public class PengActor : MonoBehaviour
         hitVFXPivot = new GameObject().transform;
         hitVFXPivot.SetParent(this.transform);
         hitVFXPivot.localPosition = ctrl.center;
+        lookAt = new GameObject().transform;
+        lookAt.SetParent(this.transform);
+        lookAt.localPosition = ctrl.height * 0.85f * Vector3.up;
         LoadActorState();
     }
     // Start is called before the first frame update

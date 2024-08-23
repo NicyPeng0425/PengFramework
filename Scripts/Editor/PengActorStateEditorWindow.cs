@@ -6,17 +6,8 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
-using UnityEditor.Experimental.GraphView;
-using System.Security.Cryptography.X509Certificates;
-using Unity.VisualScripting;
-using System.Threading.Tasks;
-using UnityEditor.Animations;
-using UnityEditorInternal.VersionControl;
 using static PengScript.GetTargetsByRange;
 using PengScript;
-using log4net.Util;
-using NUnit.Framework.Interfaces;
-using static Codice.CM.Common.CmCallContext;
 
 public partial class PengActorStateEditorWindow : EditorWindow
 {
@@ -1532,8 +1523,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
         }
     }
 
-    
-
     private void DrawNodes()
     {
         GUIStyle style = new GUIStyle("AnimLeftPaneSeparator");
@@ -1919,25 +1908,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
 
     }
 
-    public static XmlElement ConstructNewTrackXML(ref XmlDocument doc, PengTrack.ExecTime execTime, int start, int end)
-    {
-        XmlElement xml = doc.CreateElement("Track");
-        xml.SetAttribute("Name", "Track");
-        xml.SetAttribute("ExecTime", execTime.ToString());
-        xml.SetAttribute("Start", start.ToString());
-        xml.SetAttribute("End", end.ToString());
-
-        return xml;
-    }
-
-    public static XmlElement ConstructNewScriptXML(ref XmlDocument doc, PengNode node)
-    {
-        XmlElement ele = doc.CreateElement(node.nodeName);
-
-
-        return ele;
-    }
-
     public void Save(bool showMsg)
     {
         SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, statesTypes, showMsg, globalTrack);
@@ -2182,38 +2152,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
             Vector2 targetPos = new Vector2(300f, 415f) - currentPos;
             DragAllNodes(targetPos);
         }
-    }
-
-    public static PengNode GetPengNodeByID(int id, List<PengNode> nodes)
-    {
-        PengNode node = null;
-        if (nodes.Count > 0)
-        {
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                if (nodes[i].nodeID == id)
-                {
-                    node = nodes[i];
-                    break;
-                }
-            }
-        }
-        return node;
-    }
-    
-    public static PengEditorVariables.PengVar GetPengVarByVarID(PengNode node, int id, PengScript.ConnectionPointType type)
-    {
-        PengEditorVariables.PengVar result = null;
-        switch (type)
-        {
-            case PengScript.ConnectionPointType.In:
-                result = node.inVars[id];
-                break;
-            case PengScript.ConnectionPointType.Out:
-                result = node.outVars[id];
-                break;
-        }
-        return result;
     }
 
     public PengEditorTrack GenerateTrack(XmlElement trackEle)
