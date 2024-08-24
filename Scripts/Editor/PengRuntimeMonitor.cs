@@ -78,12 +78,7 @@ public class PengRuntimeMonitor : EditorWindow
                 {
                     if (GUILayout.Button("设为主控", GUILayout.Width(80)))
                     {
-                        for (int j = 0; j < game.actors.Count; j++)
-                        {
-                            game.mainActor = game.actors[j];
-                            game.actors[j].input.aiCtrl = true;
-                        }
-                        game.actors[i].input.aiCtrl = false;
+                        game.SetMainActor(game.actors[i], true);
                     }
                 }
                 GUILayout.FlexibleSpace();

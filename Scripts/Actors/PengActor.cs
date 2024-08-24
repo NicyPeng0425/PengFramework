@@ -70,8 +70,8 @@ public class PengActor : MonoBehaviour
                 float change = 0;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    change += buff.attackPowerPercent * m_attackPower;
-                    change += buff.attackPowerValue;
+                    change += buff.attackPowerPercent * buff.stack * m_attackPower;
+                    change += buff.attackPowerValue * buff.stack;
                 }
                 return m_attackPower + change;
             }
@@ -94,8 +94,8 @@ public class PengActor : MonoBehaviour
                 float change = 0;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    change += buff.defendPowerPercent * m_defendPower;
-                    change += buff.defendPowerValue;
+                    change += buff.defendPowerPercent * buff.stack * m_defendPower;
+                    change += buff.defendPowerValue * buff.stack;
                 }
                 return m_defendPower + change;
             }
@@ -118,7 +118,7 @@ public class PengActor : MonoBehaviour
                 float change = 0;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    change += buff.criticalRateValue;
+                    change += buff.criticalRateValue * buff.stack;
                 }
                 return m_criticalRate + change;
             }
@@ -140,7 +140,7 @@ public class PengActor : MonoBehaviour
                 float change = 0;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    change += buff.criticalDamageRatioValue;
+                    change += buff.criticalDamageRatioValue * buff.stack;
                 }
                 return m_criticalDamageRatio + change;
             }
@@ -260,7 +260,7 @@ public class PengActor : MonoBehaviour
                 float change = 0;
                 foreach (PengBuff buff in buff.buffs)
                 {
-                    change += buff.resistValue;
+                    change += buff.resistValue * buff.stack;
                 }
                 return m_resist + change;
             }
@@ -280,7 +280,8 @@ public class PengActor : MonoBehaviour
     public PengActor lastHitActor;
     [HideInInspector]
     public Transform lookAt;
-
+    [ReadOnly]
+    public int runtimeID;
     private void Awake()
     {
         anim = this.GetComponent<Animator>();
@@ -302,9 +303,6 @@ public class PengActor : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        game = GameObject.FindWithTag("PengGameManager").GetComponent<PengGameManager>();
-        game.actors.Add(this);
-        input.InputListener();
     }
 
     // Update is called once per frame
@@ -533,6 +531,11 @@ public class PengActor : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        
     }
 }
 

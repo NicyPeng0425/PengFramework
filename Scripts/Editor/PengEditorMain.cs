@@ -17,8 +17,8 @@ public class PengEditorMain : EditorWindow
     [MenuItem("PengFramework/启动器", false, -12)]
     static void Init()
     {
-        PengEditorMain window = (PengEditorMain)EditorWindow.GetWindow(typeof(PengEditorMain));
-        window.position = new Rect(100,100,300,300);
+        PengEditorMain window = (PengEditorMain)GetWindow(typeof(PengEditorMain));
+        window.position = new Rect(60,60,300,300);
         window.titleContent = new GUIContent("彭框架启动器");
     }
 
@@ -108,6 +108,8 @@ public class PengEditorMain : EditorWindow
             CreateResourcesDirectory("/ActorData");
             CreateResourcesDirectory("/BuffData");
             CreateResourcesDirectory("/InputData");
+            CreateResourcesDirectory("/Plot");
+            CreateResourcesDirectory("/Interactive");
 
             AddTag("PengGameManager");
             AddTag("PengActor");

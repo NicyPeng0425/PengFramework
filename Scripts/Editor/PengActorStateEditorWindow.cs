@@ -18,7 +18,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
     /// 感谢两位大佬！
     /// </summary>
     public List<PengNode> nodes = new List<PengNode>();
-    public List<PengNodeConnectionLine> lines = new List<PengNodeConnectionLine>();
     public PengNodeConnection selectingPoint;
     private Vector2 gridOffset;
     //private float nodeMapScale = 1f;

@@ -23,84 +23,85 @@ public partial class PengActorStateEditorWindow : EditorWindow
         string varOutID = ele.GetAttribute("VarOutID");
         string varInID = ele.GetAttribute("VarInID");
         string specialInfo = ele.GetAttribute("SpecialInfo");
+        Vector2 pos = PengNode.ParseStringToVector2(ele.GetAttribute("Position"));
         switch (type)
         {
             default:
                 return null;
             case PengScript.PengScriptType.OnTrackExecute:
-                return new OnTrackExecute(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new OnTrackExecute(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayAnimation:
-                return new PlayAnimation(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new PlayAnimation(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.IfElse:
-                return new IfElse(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new IfElse(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengInt:
-                return new ValuePengInt(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValuePengInt(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengFloat:
-                return new ValuePengFloat(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValuePengFloat(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengString:
-                return new ValuePengString(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValuePengString(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengBool:
-                return new ValuePengBool(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValuePengBool(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GetTargetsByRange:
-                return new GetTargetsByRange(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new GetTargetsByRange(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ForIterator:
-                return new ForIterator(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ForIterator(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValuePengVector3:
-                return new ValuePengVector3(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValuePengVector3(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValueFloatToString:
-                return new ValueFloatToString(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValueFloatToString(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.DebugLog:
-                return new DebugLog(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new DebugLog(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.TransState:
-                return new TransState(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new TransState(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.BreakPoint:
-                return new BreakPoint(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new BreakPoint(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GlobalTimeScale:
-                return new GlobalTimeScale(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new GlobalTimeScale(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.MathCompare:
-                return new MathCompare(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new MathCompare(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValueIntToFloat:
-                return new ValueIntToFloat(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValueIntToFloat(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.SetBlackBoardVariables:
-                return new SetBlackBoardVariables(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new SetBlackBoardVariables(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnEvent:
-                return new OnEvent(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new OnEvent(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.CustomEvent:
-                return new CustomEvent(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new CustomEvent(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GetVariables:
-                return new GetVariables(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new GetVariables(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.MathBool:
-                return new MathBool(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new MathBool(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.ValueGetListCount:
-                return new ValueGetListCount(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new ValueGetListCount(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayEffects:
-                return new PlayEffects(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new PlayEffects(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PlayAudio:
-                return new PlayAudio(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new PlayAudio(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.GetInput:
-                return new GetInput(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new GetInput(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.MathStringEqual:
-                return new MathStringEqual(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new MathStringEqual(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnGround:
-                return new OnGround(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new OnGround(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnHit:
-                return new OnHit(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new OnHit(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.OnDie:
-                return new OnDie(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new OnDie(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.AllowChangeDirection:
-                return new AllowChangeDirection(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new AllowChangeDirection(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.JumpForce:
-                return new JumpForce(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new JumpForce(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.MoveByFrame:
-                return new MoveByFrame(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new MoveByFrame(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.AddOrRemoveBuff:
-                return new AddOrRemoveBuff(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new AddOrRemoveBuff(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.AttackDamage:
-                return new AttackDamage(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new AttackDamage(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.TryGetEnemy:
-                return new TryGetEnemy(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new TryGetEnemy(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PerfectDodge:
-                return new PerfectDodge(PengNode.ParseStringToVector2(ele.GetAttribute("Position")), null, ref track, ID, outID, varOutID, varInID, specialInfo);
+                return new PerfectDodge(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 

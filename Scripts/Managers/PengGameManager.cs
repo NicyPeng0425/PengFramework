@@ -33,16 +33,13 @@ public class PengGameManager : MonoBehaviour
     public AudioSource globalSource;
     [HideInInspector]
     float checkHasActorControlledByPlayerTimeCount = 0;
+
     [HideInInspector]
-    PengActor m_mainActor;
-    [HideInInspector]
-    public PengActor mainActor
-    {
-        get { return m_mainActor; }
-        set { m_mainActor = value;  OnMainActorSet(); }
-    }
+    public PengActor mainActor;
     [HideInInspector]
     public CinemachineFreeLook mainFL;
+    [HideInInspector]
+    public List<int> usedID = new List<int>();
 
     private void Awake()
     {
@@ -62,6 +59,8 @@ public class PengGameManager : MonoBehaviour
         vfxRoot.name = "PengVFXRoot";
         vfxRoot.SetParent(this.transform);
         globalSource = this.GetComponent<AudioSource>();
+
+        GetAllExistingActor();
 
         GameObject mainFLPF = Resources.Load("Cameras/MainFreeLook") as GameObject;
         if (mainFLPF == null)
@@ -267,9 +266,79 @@ public class PengGameManager : MonoBehaviour
         return result;
     }
 
-    public void OnMainActorSet()
+    public void SetMainActor(PengActor actor, bool setMainFL)
+    {
+        foreach (PengActor p in actors)
+        {
+            p.input.aiCtrl = true;
+        }
+        actor.input.aiCtrl = false;
+        mainActor = actor;
+
+        if (setMainFL)
+        {
+            OnMainActorChangedSetMainFL();
+        }
+    }
+
+    public void OnMainActorChangedSetMainFL()
     {
         mainFL.Follow = mainActor.transform;
         mainFL.LookAt = mainActor.lookAt;
+    }
+
+    public int GenerateRuntimeID()
+    {
+        int id = 1000;
+        id += usedID.Count;
+        usedID.Add(id);
+        return id;
+    }
+
+    public void GetAllExistingActor()
+    {
+        GameObject[] gos = GameObject.FindGameObjectsWithTag("PengActor");
+        foreach (GameObject go in gos)
+        {
+            PengActor actor = null;
+            try
+            {
+                actor = go.GetComponent<PengActor>();
+            }
+            catch
+            { }
+            
+            if (actor != null)
+            {
+                ConfigActor(actor);
+            }
+        }
+    }
+
+    public void AddNewActor(int actorID, Vector3 position, Vector3 lookAtPosition)
+    {
+        GameObject actorPF = Resources.Load("Actors/" + actorID.ToString() + "/Actor" + actorID.ToString()) as GameObject;
+        if (actorPF == null)
+        {
+            Debug.LogWarning("Actor" + actorID.ToString() + "不存在，无法召唤。");
+            return;
+        }
+        GameObject actorGO = GameObject.Instantiate(actorPF);
+        actorGO.transform.position = position;
+        Vector3 dir = lookAtPosition - position;
+        dir -= dir.y * Vector3.up;
+        dir = dir.normalized;
+        actorGO.transform.LookAt(actorGO.transform.position + dir);
+        PengActor actor = actorGO.GetComponent<PengActor>();
+
+        ConfigActor(actor);
+    }
+
+    public void ConfigActor(PengActor actor)
+    {
+        actors.Add(actor);
+        actor.runtimeID = GenerateRuntimeID();
+        actor.game = this;
+        actor.input.InputListener();
     }
 }
