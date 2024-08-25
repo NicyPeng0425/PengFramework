@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
-using static PengLevelRuntimeFunction;
+using PengLevelRuntimeFunction;
 
 public partial class PengLevelEditor : EditorWindow
 {

@@ -40,7 +40,8 @@ public class PengGameManager : MonoBehaviour
     public CinemachineFreeLook mainFL;
     [HideInInspector]
     public List<int> usedID = new List<int>();
-
+    [HideInInspector]
+    public PengLevelRuntimeManager level;
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -59,6 +60,7 @@ public class PengGameManager : MonoBehaviour
         vfxRoot.name = "PengVFXRoot";
         vfxRoot.SetParent(this.transform);
         globalSource = this.GetComponent<AudioSource>();
+        level = this.AddComponent<PengLevelRuntimeManager>();
 
         GetAllExistingActor();
 

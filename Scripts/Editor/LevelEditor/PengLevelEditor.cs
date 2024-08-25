@@ -6,7 +6,7 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
-using static PengLevelRuntimeFunction;
+using PengLevelRuntimeFunction;
 using static PengActorState;
 using static UnityEditor.VersionControl.Asset;
 
@@ -170,13 +170,13 @@ public partial class PengLevelEditor : EditorWindow
 
         if (levelInfo == null || levelInfo.ChildNodes.Count == 0)
         {
-            Debug.LogError(levelID.ToString() + "的角色数据里没有角色信息！怎么回事呢？");
+            Debug.LogError(levelID.ToString() + "的关卡数据里没有关卡信息！怎么回事呢？");
             return;
         }
 
         if (levelScript == null || levelScript.ChildNodes.Count == 0)
         {
-            Debug.LogError(levelID.ToString() + "的角色数据里没有角色状态！怎么回事呢？");
+            Debug.LogError(levelID.ToString() + "的关卡数据里没有关卡脚本！怎么回事呢？");
             return;
         }
 

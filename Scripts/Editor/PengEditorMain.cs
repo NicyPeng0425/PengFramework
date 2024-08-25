@@ -114,6 +114,7 @@ public class PengEditorMain : EditorWindow
             AddTag("PengGameManager");
             AddTag("PengActor");
             AddTag("Temporary");
+            AddTag("PengLevel");
             AddLayer("PengActor", 30);
 
             GameObject gameManager = new GameObject();
