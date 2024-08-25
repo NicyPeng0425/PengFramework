@@ -384,6 +384,45 @@ public class PengLevelEditorNode
         return "";
     }
 
+    public virtual void DrawMoreInfo(Rect moreInfoRect)
+    {
+        Rect paraPanel = new Rect(moreInfoRect.x + 200, moreInfoRect.y + 20, moreInfoRect.width - 240, moreInfoRect.height - 40);
+        int line = Mathf.FloorToInt(paraPanel.height / 25f);
+        int col = 1;
+        if (inVars.Length > 0)
+        {
+            col = Mathf.FloorToInt(inVars.Length / line) + 1;
+        }
+            
+        if (inVars.Length > 0)
+        {
+            int index = 0;
+            for (int i = 0; i < col; i++)
+            {
+                for (int j = 0; j < line; j++)
+                {
+                    if (index < inVars.Length)
+                    {
+                        Rect field = new Rect(paraPanel.x + 250 * i, paraPanel.y + 25 * j, 70, 20);
+                        Rect fieldValue = new Rect(field.x + 80, field.y, 160, 20);
+                        GUI.Box(field, inVars[index].name + "：");
+                        DrawInVarValue(index, fieldValue);
+                        index++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public virtual void DrawInVarValue(int inVarID, Rect field)
+    {
+
+    }
+
     public virtual void ReadSpecialParaDescription(string info)
     {
     }

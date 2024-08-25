@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class PengGameManager : MonoBehaviour
 {
+    [ReadOnly]
     public float globalFrameRate = 60;
 
     [HideInInspector]
@@ -61,7 +62,7 @@ public class PengGameManager : MonoBehaviour
         vfxRoot.SetParent(this.transform);
         globalSource = this.GetComponent<AudioSource>();
         level = this.AddComponent<PengLevelRuntimeManager>();
-
+        level.game = this;
         GetAllExistingActor();
 
         GameObject mainFLPF = Resources.Load("Cameras/MainFreeLook") as GameObject;
@@ -317,13 +318,13 @@ public class PengGameManager : MonoBehaviour
         }
     }
 
-    public void AddNewActor(int actorID, Vector3 position, Vector3 lookAtPosition)
+    public PengActor AddNewActor(int actorID, Vector3 position, Vector3 lookAtPosition)
     {
         GameObject actorPF = Resources.Load("Actors/" + actorID.ToString() + "/Actor" + actorID.ToString()) as GameObject;
         if (actorPF == null)
         {
             Debug.LogWarning("Actor" + actorID.ToString() + "不存在，无法召唤。");
-            return;
+            return null;
         }
         GameObject actorGO = GameObject.Instantiate(actorPF);
         actorGO.transform.position = position;
@@ -334,6 +335,7 @@ public class PengGameManager : MonoBehaviour
         PengActor actor = actorGO.GetComponent<PengActor>();
 
         ConfigActor(actor);
+        return actor;
     }
 
     public void ConfigActor(PengActor actor)
@@ -342,5 +344,16 @@ public class PengGameManager : MonoBehaviour
         actor.runtimeID = GenerateRuntimeID();
         actor.game = this;
         actor.input.InputListener();
+    }
+}
+
+
+public class LabelAttribute : PropertyAttribute
+{
+    private string name = "";
+    public string Name { get { return name; } }
+    public LabelAttribute(string name)
+    {
+        this.name = name;
     }
 }

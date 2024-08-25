@@ -65,14 +65,32 @@ public partial class PengLevel : MonoBehaviour
         }
 
         XmlNodeList scriptChild = levelScript.ChildNodes;
+
         foreach (XmlElement ele in scriptChild)
         {
             PengLevelRuntimeFunction.LevelFunctionType type = (PengLevelRuntimeFunction.LevelFunctionType)Enum.Parse(typeof(PengLevelRuntimeFunction.LevelFunctionType), ele.GetAttribute("ScriptType"));
-            int id = int.Parse(ele.GetAttribute("ScriptID"));
-            string flowInfo = ele.GetAttribute("OutID");
-            string varInInfo = ele.GetAttribute("VarInID");
-            string info = ele.GetAttribute("SpecialInfo");
-            scripts.Add(id, ConstructFunctions(type, id, flowInfo, varInInfo, info));
+
+            if (type == PengLevelRuntimeFunction.LevelFunctionType.Start)
+            {
+                int id = int.Parse(ele.GetAttribute("ScriptID"));
+                string flowInfo = ele.GetAttribute("OutID");
+                string varInInfo = ele.GetAttribute("VarInID");
+                string info = ele.GetAttribute("SpecialInfo");
+                scripts.Add(id, ConstructFunctions(type, id, flowInfo, varInInfo, info));
+            }
+        }
+
+        foreach (XmlElement ele in scriptChild)
+        {
+            PengLevelRuntimeFunction.LevelFunctionType type = (PengLevelRuntimeFunction.LevelFunctionType)Enum.Parse(typeof(PengLevelRuntimeFunction.LevelFunctionType), ele.GetAttribute("ScriptType"));
+            if (type != PengLevelRuntimeFunction.LevelFunctionType.Start)
+            {
+                int id = int.Parse(ele.GetAttribute("ScriptID"));
+                string flowInfo = ele.GetAttribute("OutID");
+                string varInInfo = ele.GetAttribute("VarInID");
+                string info = ele.GetAttribute("SpecialInfo");
+                scripts.Add(id, ConstructFunctions(type, id, flowInfo, varInInfo, info));
+            }
         }
     }
 
@@ -84,6 +102,10 @@ public partial class PengLevel : MonoBehaviour
                 return null;
             case PengLevelRuntimeFunction.LevelFunctionType.Start:
                 return new PengLevelRuntimeFunction.LevelStart(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.GenerateActor:
+                return new PengLevelRuntimeFunction.GenerateActor(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.SetMainActor:
+                return new PengLevelRuntimeFunction.SetMainActor(this, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

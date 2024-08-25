@@ -22,14 +22,16 @@ namespace PengLevelRuntimeFunction
         EaseInBlack,
         [Description("0,黑屏渐出,UI")]
         EaseOutBlack,
-        [Description("0,生成Actor,功能")]
+        [Description("1,生成Actor,功能")]
         GenerateActor,
         [Description("0,跳转场景,功能")]
         JumpToScene,
-        [Description("0,设置主控,功能")]
+        [Description("1,设置主控,功能")]
         SetMainActor,
         [Description("0,增加Buff,功能")]
         AddBuff,
+        [Description("0,激活Actor,功能")]
+        ActiveActor,
         [Description("0,开始操控,功能")]
         StartControl,
         [Description("0,屏蔽操控,功能")]
@@ -72,6 +74,7 @@ namespace PengLevelRuntimeFunction
         public PengLevelRuntimeLevelScriptVariables.PengLevelVar[] inVars;
         public PengLevelRuntimeLevelScriptVariables.PengLevelVar[] outVars;
         public int ID;
+        //执行哪个出流？
         public int flowOutIDCache = -1;
         //每个节点只允许一个Enter
         public Dictionary<int, int> flowOutInfo = new Dictionary<int, int>();
@@ -95,7 +98,10 @@ namespace PengLevelRuntimeFunction
             if (flowOutIDCache >= 0)
             {
                 Final();
-                level.ChangeScript(flowOutInfo[flowOutIDCache]);
+                if (flowOutInfo[flowOutIDCache] >= 0)
+                {
+                    level.ChangeScript(flowOutInfo[flowOutIDCache]);
+                }
             }
         }
 
@@ -223,6 +229,104 @@ namespace PengLevelRuntimeFunction
         {
             base.Construct(info);
             type = LevelFunctionType.Start;
+        }
+
+        public override int CheckIfDone()
+        {
+            return 0;
+        }
+    }
+
+    public class GenerateActor : BaseScript
+    {
+        public PengLevelRuntimeLevelScriptVariables.PengInt actorID = new PengLevelRuntimeLevelScriptVariables.PengInt("角色ID", 0);
+        public PengLevelRuntimeLevelScriptVariables.PengPengActor actor = new PengLevelRuntimeLevelScriptVariables.PengPengActor("角色", 0);
+
+        public bool done = false;
+        public GenerateActor(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
+            inVars[0] = actorID;
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
+            outVars[0] = actor;
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.Start;
+            if (info != "")
+            {
+                actorID.value = int.Parse(info);
+            }
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                actor.value = level.master.game.AddNewActor(actorID.value, level.transform.position, level.transform.position + level.transform.forward);
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            return 0;
+        }
+    }
+
+    public class SetMainActor : BaseScript
+    {
+        public PengLevelRuntimeLevelScriptVariables.PengPengActor actor = new PengLevelRuntimeLevelScriptVariables.PengPengActor("角色", 0);
+
+        public bool done = false;
+        public SetMainActor(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
+            inVars[0] = actor;
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.SetMainActor;
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                level.master.game.SetMainActor(actor.value, true);
+                done = true;
+            }
+        }
+
+        public override void SetValue(int inVarID, PengLevelRuntimeLevelScriptVariables.PengLevelVar varSource)
+        {
+            PengLevelRuntimeLevelScriptVariables.PengPengActor val = varSource as PengLevelRuntimeLevelScriptVariables.PengPengActor;
+            actor.value = val.value;
         }
 
         public override int CheckIfDone()

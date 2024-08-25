@@ -10,6 +10,8 @@ namespace PengLevelRuntimeLevelScriptVariables
         PengActor,
         ListPengActor,
         String,
+        Int,
+        
     }
 
     public class PengLevelVar
@@ -52,6 +54,18 @@ namespace PengLevelRuntimeLevelScriptVariables
             this.name = name;
             this.index = index;
             type = PengLevelRuntimeLevelScriptVariableType.String;
+        }
+    }
+
+    public class PengInt : PengLevelVar
+    {
+        public int value;
+
+        public PengInt(string name, int index)
+        {
+            this.name = name;
+            this.index = index;
+            type = PengLevelRuntimeLevelScriptVariableType.Int;
         }
     }
 }

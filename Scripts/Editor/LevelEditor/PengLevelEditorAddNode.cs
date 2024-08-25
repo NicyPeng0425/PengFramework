@@ -31,6 +31,10 @@ public partial class PengLevelEditor : EditorWindow
                 return null;
             case LevelFunctionType.Start:
                 return new LevelStart(pos, null, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.GenerateActor:
+                return new GenerateActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.SetMainActor:
+                return new SetMainActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -57,6 +61,16 @@ public partial class PengLevelEditor : EditorWindow
                 nodes.Add(new LevelStart(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.GenerateActor:
+                nodes.Add(new GenerateActor(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
+            case LevelFunctionType.SetMainActor:
+                nodes.Add(new SetMainActor(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
         }
     }

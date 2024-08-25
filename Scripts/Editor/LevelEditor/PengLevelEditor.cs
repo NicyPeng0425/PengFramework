@@ -7,8 +7,6 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using PengLevelRuntimeFunction;
-using static PengActorState;
-using static UnityEditor.VersionControl.Asset;
 
 public partial class PengLevelEditor : EditorWindow
 {
@@ -27,6 +25,7 @@ public partial class PengLevelEditor : EditorWindow
     public int levelID;
     public PengLevelNodeConnection selectingPoint = null;
     public List<PengLevelEditorNode> nodes = new List<PengLevelEditorNode>();
+    public GameObject currentSelectingGO = null;
 
 
     [MenuItem("PengFramework/关卡编辑器", false, 21)]
@@ -40,11 +39,33 @@ public partial class PengLevelEditor : EditorWindow
 
     public void OnEnable()
     {
-        ReadLevelData(200000);
+        
     }
 
     private void OnGUI()
     {
+        if (Selection.activeGameObject == null)
+            return;
+
+        if (Selection.activeGameObject.GetComponent<PengLevel>() == null)
+            return;
+
+        if (Selection.activeGameObject != currentSelectingGO)
+        {
+            currentSelectingGO = Selection.activeGameObject;
+            levelID = Selection.activeGameObject.GetComponent<PengLevel>().levelID;
+            ReadLevelData(levelID);
+        }
+
+        if (nodes.Count == 0)
+        {
+            if (Selection.activeGameObject != null || currentSelectingGO != null)
+            {
+                levelID = Selection.activeGameObject.GetComponent<PengLevel>().levelID;
+                ReadLevelData(levelID);
+            }
+        }
+
         UpdateSegment();
         DrawGridBG();
         DrawNodes();
@@ -73,16 +94,28 @@ public partial class PengLevelEditor : EditorWindow
         styleSave.fontSize = 13;
         styleSave.normal.textColor = new Color(0.4f, 0.95f, 0.6f);
         Rect saveButton = new Rect(header.x + 180, header.y + 10, 40, 40);
-
+        EditorGUIUtility.AddCursorRect(saveButton, MouseCursor.Link);
         if (GUI.Button(saveButton, "保存\n数据", styleSave))
         {
-            SaveLevelData(true);
+            SaveLevelData(true, levelID, nodes);
         }
 
         PengEditorMain.DrawPengFrameworkIcon("关卡编辑器");
+
+        if (nodes.Count > 0)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].isSelected)
+                {
+                    nodes[i].DrawMoreInfo(moreInfo);
+                    break;
+                }
+            }
+        }
     }
 
-    public void SaveLevelData(bool showMsg)
+    public static void SaveLevelData(bool showMsg, int levelID, List<PengLevelEditorNode> nodes)
     {
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");

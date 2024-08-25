@@ -15,11 +15,11 @@ public class PengActor : MonoBehaviour
     [HideInInspector]
     public PengGameManager game;
 
-    [ReadOnly]
+    [ReadOnly,Label("角色ID")]
     public int actorID;
-    [ReadOnly]
+    [ReadOnly,Label("角色名称")]
     public string actorName;
-    [ReadOnly]
+    [ReadOnly,Label("角色阵营")]
     public int actorCamp;
 
     [HideInInspector]
@@ -241,7 +241,7 @@ public class PengActor : MonoBehaviour
     }
     [HideInInspector]
     public bool isGrounded;
-    [HideInInspector]
+    [ReadOnly,Label("下落速度")]
     public float fallSpeed;
     [HideInInspector]
     public Vector3 inertia;
@@ -349,7 +349,7 @@ public class PengActor : MonoBehaviour
         {
             isGrounded = false;
             Vector3 posi = this.transform.position + Vector3.up * 0.35f;
-            Collider[] cols = Physics.OverlapSphere(posi, 0.3f);
+            Collider[] cols = Physics.OverlapSphere(posi, 0.35f);
             if (cols.Length > 0)
             {
                 for (int i = 0; i < cols.Length; i++)
@@ -357,6 +357,13 @@ public class PengActor : MonoBehaviour
                     if (cols[i].transform.tag != "PengActor")
                     {
                         isGrounded = true;
+                    }
+                    else
+                    {
+                        Vector3 dir = transform.position - cols[i].transform.position;
+                        dir = dir - dir.y * Vector3.up;
+                        dir = dir.normalized;
+                        ctrl.Move(dir * 12f * Time.deltaTime);
                     }
                 }
             }

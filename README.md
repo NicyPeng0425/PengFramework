@@ -17,14 +17,13 @@ A framework for the development of action games.
 4. 打开启动器，进行全局配置。
 5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab
 6. Asset/PengFramework/Prefab下若有预制体，请将其复制到应当出现的地方。例如，MainFreeLook预制体应当放在Resources/Cameras下。
-7. 角色配置完毕后，可在运行时监控中将其设为主控，接受玩家输入，用于测试。
+7. 可以通过角色生成器生成角色，并且配置。之后，使用关卡生成器生成关卡，并且配置其逻辑。之后，将关卡预制体拖入场景中即可。
+    a. 说明：框架中的关卡，实际指代着关卡逻辑的控制器，它能够按照一个流程去等待某条件完成并执行某项操作。
 8. 更多详细信息请参考：https://nicypeng.notion.site/ed948501a86940d389df1c71f7a9e058
 
 # 后续开发计划
 1. 配套AI插件
-2. 更多事件
-3. 配套关卡编辑器
-4. 更多节点
+2. 更多关卡、角色节点（详情可见PengScript.cs和PengLevelRuntimeFunction.cs里的功能类型枚举。）
 
 # 联系我
 
@@ -38,3 +37,4 @@ B站：@Nicy彭彭
 3. PengAddNode里的两个方法里，补充新的脚本类别添加方法
 4. RuntimeScripts文件夹下，根据脚本类别，在对应的脚本文件里写新的运行时功能
 5. PengActorState.ConstructRunTimePengScript()里添加运行时构建新脚本的方法
+关卡节点同理。
