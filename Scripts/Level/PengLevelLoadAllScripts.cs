@@ -106,6 +106,8 @@ public partial class PengLevel : MonoBehaviour
                 return new PengLevelRuntimeFunction.GenerateActor(this, ID, flowOutInfo, varInInfo, specialInfo);
             case PengLevelRuntimeFunction.LevelFunctionType.SetMainActor:
                 return new PengLevelRuntimeFunction.SetMainActor(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.TriggerWaitTime:
+                return new PengLevelRuntimeFunction.TriggerWaitTime(this, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace PengLevelRuntimeFunction
         GetCurrentMainActor,
         [Description("0,Actor组合成List,值")]
         ParseActorsToList,
-        [Description("0,等待时间,触发器")]
+        [Description("1,等待时间,触发器")]
         TriggerWaitTime,
         [Description("0,等待到达区域,触发器")]
         TriggerWaitArrival,
@@ -212,30 +212,6 @@ namespace PengLevelRuntimeFunction
         }
     }
 
-    public class LevelStart : BaseScript
-    {
-        public LevelStart(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
-        {
-            this.level = level;
-            this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
-            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[varInID.Count];
-            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
-            Construct(specialInfo);
-            InitialPengVars();
-        }
-        public override void Construct(string info)
-        {
-            base.Construct(info);
-            type = LevelFunctionType.Start;
-        }
-
-        public override int CheckIfDone()
-        {
-            return 0;
-        }
-    }
 
     public class GenerateActor : BaseScript
     {
@@ -264,7 +240,7 @@ namespace PengLevelRuntimeFunction
         public override void Construct(string info)
         {
             base.Construct(info);
-            type = LevelFunctionType.Start;
+            type = LevelFunctionType.GenerateActor;
             if (info != "")
             {
                 actorID.value = int.Parse(info);

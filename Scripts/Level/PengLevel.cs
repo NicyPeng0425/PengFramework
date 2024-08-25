@@ -20,19 +20,27 @@ public partial class PengLevel : MonoBehaviour
     public List<GameObject> airWalls = new List<GameObject>();
     private void Awake()
     {
-        this.gameObject.tag = "PengLevel";
-        LoadAllScripts(levelID);
-        scripts.ElementAt(0).Value.Execute();
+        
+        
     }
     // Start is called before the first frame update
     void Start()
     {
+        if (gameObject.tag != "PengLevel")
+        {
+            gameObject.tag = "PengLevel";
+            master = GameObject.FindWithTag("PengGameManager").GetComponent<PengLevelRuntimeManager>();
+            master.AddNewLevel(this);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        current.Execute();
+        if (current != null)
+        {
+            current.Execute();
+        }
     }
 
     public void ChangeScript(int ID)

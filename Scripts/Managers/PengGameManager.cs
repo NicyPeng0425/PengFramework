@@ -43,6 +43,10 @@ public class PengGameManager : MonoBehaviour
     public List<int> usedID = new List<int>();
     [HideInInspector]
     public PengLevelRuntimeManager level;
+
+#if UNITY_EDITOR
+    Rect timeRect = new Rect(0, 0, 160, 30);
+#endif
     private void Awake()
     {
         ReadGlobalFrameRate();
@@ -98,7 +102,22 @@ public class PengGameManager : MonoBehaviour
                 Debug.Log("暂无被玩家控制的Actor，请在运行时监控中设置。");
             }
         }
+
+
     }
+
+#if UNITY_EDITOR
+    public void OnGUI()
+    {
+        GUIStyle styleBox = new GUIStyle("Box");
+        styleBox.fontSize = 14;
+        styleBox.alignment = TextAnchor.MiddleCenter;
+        string time = ((float)currentFrame / globalFrameRate).ToString("f2");
+        GUI.Box(timeRect, "运行时间："+ time +"s");
+        
+    }
+#endif
+
 
     public void ReadGlobalFrameRate()
     {

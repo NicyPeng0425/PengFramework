@@ -97,6 +97,14 @@ public class PengLevelEditorNode
                 GUIStyle style = new GUIStyle("flow node 6" + (isSelected ? " on" : ""));
                 style.fontStyle = FontStyle.Bold;
                 GUI.Box(rectScale, name, style);
+                if (inPoints.Length > 0)
+                {
+                    for (int i = 0; i < inPoints.Length; i++)
+                    {
+                        rectMulti = new Rect(rectScale.x, rectScale.y, rectScale.width, (18 + 36 * i) * editor.currentScale);
+                        inPoints[i].Draw(rectMulti);
+                    }
+                }
                 if (outPoints.Length > 0)
                 {
                     for (int i = 0; i < outPoints.Length; i++)
