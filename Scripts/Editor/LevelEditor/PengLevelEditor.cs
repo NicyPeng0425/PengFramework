@@ -45,11 +45,18 @@ public partial class PengLevelEditor : EditorWindow
     private void OnGUI()
     {
         if (Selection.activeGameObject == null)
+        {
+            EditorGUILayout.HelpBox("请选择对象", MessageType.Info);
             return;
+        }
+            
 
         if (Selection.activeGameObject.GetComponent<PengLevel>() == null)
+        {
+            EditorGUILayout.HelpBox("所选对象不含PengLevel组件", MessageType.Warning);
             return;
-
+        }
+            
         if (Selection.activeGameObject != currentSelectingGO)
         {
             currentSelectingGO = Selection.activeGameObject;
@@ -77,7 +84,7 @@ public partial class PengLevelEditor : EditorWindow
 
     void UpdateSegment()
     {
-        header = new Rect(0, 0, position.width, 60);
+        header = new Rect(0, 0, position.width, 55);
         moreInfo = new Rect(0, position.height - 140, position.width, 140);
         nodeMapRect = new Rect(0, header.height, position.width, position.height - header.height - moreInfo.height);
     }
@@ -93,12 +100,18 @@ public partial class PengLevelEditor : EditorWindow
         styleSave.fontStyle = FontStyle.Bold;
         styleSave.fontSize = 13;
         styleSave.normal.textColor = new Color(0.4f, 0.95f, 0.6f);
-        Rect saveButton = new Rect(header.x + 180, header.y + 10, 40, 40);
+        Rect saveButton = new Rect(header.x + 180, header.y + 5, 40, 40);
         EditorGUIUtility.AddCursorRect(saveButton, MouseCursor.Link);
         if (GUI.Button(saveButton, "保存\n数据", styleSave))
         {
             SaveLevelData(true, levelID, nodes);
         }
+
+        Rect idlbl = new Rect(saveButton.x + saveButton.width + 10, saveButton.y, 70, 20);
+        Rect idRect = new Rect(idlbl.x + idlbl.width + 5, idlbl.y, 70, 20);
+
+        GUI.Box(idlbl, "关卡ID：");
+        GUI.Box(idRect, levelID.ToString());
 
         PengEditorMain.DrawPengFrameworkIcon("关卡编辑器");
 

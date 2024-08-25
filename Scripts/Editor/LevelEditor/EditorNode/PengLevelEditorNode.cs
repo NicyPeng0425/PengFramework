@@ -386,6 +386,8 @@ public class PengLevelEditorNode
 
     public virtual void DrawMoreInfo(Rect moreInfoRect)
     {
+        Rect meaningTitle = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 20, 160, 20);
+        Rect meaning = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 45, 160, moreInfoRect.height - 65);
         Rect paraPanel = new Rect(moreInfoRect.x + 200, moreInfoRect.y + 20, moreInfoRect.width - 240, moreInfoRect.height - 40);
         int line = Mathf.FloorToInt(paraPanel.height / 25f);
         int col = 1;
@@ -416,6 +418,12 @@ public class PengLevelEditorNode
                 }
             }
         }
+        GUIStyle style = new GUIStyle("AppToolbar");
+        style.alignment = TextAnchor.UpperLeft;
+        GUIStyle style2 = new GUIStyle("AppToolbar");
+        style2.alignment = TextAnchor.MiddleCenter;
+        GUI.Box(meaningTitle, "节点说明", style2);
+        GUI.Box(meaning, this.meaning, style);
     }
 
     public virtual void DrawInVarValue(int inVarID, Rect field)

@@ -20,6 +20,10 @@ A framework for the development of action games.
 7. 与Cinemachine，InputSystem相配合，不依赖其他付费插件。
 8. 信息集中于角色、关卡，免去配表烦恼。
 
+特别信息：
+
+某位好友出于某种原因，希望我要求该框架的使用者不能用该框架来制作类魂Gameplay。当然，你可以拿来做任何想做的玩法，我只是帮他把这句话贴在这里。
+
 # 使用方式
 1. 创建一个URP的3D项目。
 2. 在你的项目中引入Cinemachine和Input System。
