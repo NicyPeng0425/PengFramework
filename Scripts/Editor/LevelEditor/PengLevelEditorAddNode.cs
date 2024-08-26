@@ -5,10 +5,12 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 using PengLevelRuntimeFunction;
+using System.Reflection;
+using System.Linq;
 
 public partial class PengLevelEditor : EditorWindow
 {
-    public static PengLevelEditorNode ReadPengLevelEditorNode(XmlElement ele)
+    public static PengLevelEditorNodes.PengLevelEditorNode ReadPengLevelEditorNode(XmlElement ele)
     {
         LevelFunctionType type;
         if (ele.GetAttribute("ScriptType") == "Start")
@@ -24,19 +26,25 @@ public partial class PengLevelEditor : EditorWindow
         string varOutID = ele.GetAttribute("VarOutID");
         string varInID = ele.GetAttribute("VarInID");
         string specialInfo = ele.GetAttribute("SpecialInfo");
-        Vector2 pos = PengLevelEditorNode.ParseStringToVector2(ele.GetAttribute("Position"));
+        Vector2 pos = PengLevelEditorNodes.PengLevelEditorNode.ParseStringToVector2(ele.GetAttribute("Position"));
         switch (type)
         {
             default:
                 return null;
             case LevelFunctionType.Start:
-                return new LevelStart(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.LevelStart(pos, null, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.GenerateActor:
-                return new GenerateActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.GenerateActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.SetMainActor:
-                return new SetMainActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.SetMainActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.TriggerWaitTime:
-                return new TriggerWaitTime(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.TriggerWaitTime(pos, null, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.StartControl:
+                return new PengLevelEditorNodes.StartControl(pos, null, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.EndControl:
+                return new PengLevelEditorNodes.EndControl(pos, null, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.TriggerWaitArrival:
+                return new PengLevelEditorNodes.TriggerWaitArrival(pos, null, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -60,24 +68,39 @@ public partial class PengLevelEditor : EditorWindow
         switch (type)
         {
             case LevelFunctionType.Start:
-                nodes.Add(new LevelStart(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
-                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
-                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                nodes.Add(new PengLevelEditorNodes.LevelStart(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
             case LevelFunctionType.GenerateActor:
-                nodes.Add(new GenerateActor(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
-                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
-                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                nodes.Add(new PengLevelEditorNodes.GenerateActor(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case LevelFunctionType.SetMainActor:
-                nodes.Add(new SetMainActor(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
-                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
-                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                nodes.Add(new PengLevelEditorNodes.SetMainActor(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
                 break;
             case LevelFunctionType.TriggerWaitTime:
-                nodes.Add(new TriggerWaitTime(mousePos, this, id, PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
-                    PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
-                    PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                nodes.Add(new PengLevelEditorNodes.TriggerWaitTime(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
+            case LevelFunctionType.StartControl:
+                nodes.Add(new PengLevelEditorNodes.StartControl(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.EndControl:
+                nodes.Add(new PengLevelEditorNodes.EndControl(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.TriggerWaitArrival:
+                nodes.Add(new PengLevelEditorNodes.TriggerWaitArrival(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
         }
     }

@@ -64,17 +64,17 @@ public class PengLevelGenerator : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("关卡ID：");
-        levelID = EditorGUILayout.IntField(levelID, GUILayout.Width(200));
+        levelID = EditorGUILayout.IntField(levelID, GUILayout.Width(300));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("关卡名称：");
-        levelName = EditorGUILayout.TextField(levelName, GUILayout.Width(200));
+        levelName = EditorGUILayout.TextField(levelName, GUILayout.Width(300));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("关卡说明：");
-        info = EditorGUILayout.TextArea(info, GUILayout.Width(200), GUILayout.Height(80));
+        info = EditorGUILayout.TextArea(info, GUILayout.Width(300), GUILayout.Height(80));
         EditorGUILayout.EndHorizontal();
 
         if (GUILayout.Button("一键生成关卡"))
@@ -98,10 +98,11 @@ public class PengLevelGenerator : EditorWindow
                 Directory.CreateDirectory(Application.dataPath + "/Resources/Plot/" + levelID.ToString());
             }
 
-            List<PengLevelEditorNode> nodes = new List<PengLevelEditorNode>();
-            nodes.Add(new LevelStart(new Vector2(20, 80), null, 1, "0|2:0", "", "", ""));
-            nodes.Add(new GenerateActor(new Vector2(200, 80), null, 2, "0|3:0", "0|-1:-1,3:0", "0|-1:-1", "100001"));
-            nodes.Add(new SetMainActor(new Vector2(380, 80), null, 3, "0|-1:-1", "", "0|2:0", ""));
+            List<PengLevelEditorNodes.PengLevelEditorNode> nodes = new List<PengLevelEditorNodes.PengLevelEditorNode>();
+            nodes.Add(new PengLevelEditorNodes.LevelStart(new Vector2(20, 80), null, 1, "0|2:0", "", "", ""));
+            nodes.Add(new PengLevelEditorNodes.GenerateActor(new Vector2(200, 80), null, 2, "0|3:0", "0|-1:-1,3:0", "0|-1:-1", "100001"));
+            nodes.Add(new PengLevelEditorNodes.SetMainActor(new Vector2(380, 80), null, 3, "0|4:0", "", "0|2:0", ""));
+            nodes.Add(new PengLevelEditorNodes.StartControl(new Vector2(560, 80), null, 4, "0|-1:-1", "", "", ""));
 
             PengLevelEditor.SaveLevelData(true, levelID, nodes);
             bool success = false;

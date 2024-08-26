@@ -8,7 +8,7 @@ using PengLevelRuntimeLevelScriptVariables;
 
 public class PengLevelNodeVariables
 {
-    public PengLevelEditorNode node;
+    public PengLevelEditorNodes.PengLevelEditorNode node;
     public string name;
     public PengLevelRuntimeLevelScriptVariables.PengLevelRuntimeLevelScriptVariableType type;
     public Rect varRect;
@@ -41,7 +41,7 @@ public class PengLevelNodeVariables
 public class PengLevelPengActor : PengLevelNodeVariables
 {
     public PengActor value = null;
-    public PengLevelPengActor(PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
+    public PengLevelPengActor(PengLevelEditorNodes.PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
     {
         this.node = node;
         this.name = name;
@@ -55,7 +55,7 @@ public class PengLevelPengActor : PengLevelNodeVariables
 public class PengLevelListPengActor : PengLevelNodeVariables
 {
     public List<PengActor> value = null;
-    public PengLevelListPengActor(PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
+    public PengLevelListPengActor(PengLevelEditorNodes.PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
     {
         this.node = node;
         this.name = name;
@@ -69,7 +69,7 @@ public class PengLevelListPengActor : PengLevelNodeVariables
 public class PengLevelString : PengLevelNodeVariables
 {
     public string value = "";
-    public PengLevelString(PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
+    public PengLevelString(PengLevelEditorNodes.PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
     {
         this.node = node;
         this.name = name;
@@ -83,13 +83,27 @@ public class PengLevelString : PengLevelNodeVariables
 public class PengLevelInt : PengLevelNodeVariables
 {
     public int value;
-    public PengLevelInt(PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
+    public PengLevelInt(PengLevelEditorNodes.PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
     {
         this.node = node;
         this.name = name;
         this.index = index;
         connectionType = pointType;
         type = PengLevelRuntimeLevelScriptVariableType.Int;
+        point = new PengLevelNodeConnection(pointType, index, node, this);
+    }
+}
+
+public class PengLevelVector3 : PengLevelNodeVariables
+{
+    public Vector3 value;
+    public PengLevelVector3(PengLevelEditorNodes.PengLevelEditorNode node, string name, int index, PengLevelNodeConnection.PengLevelNodeConnectionType pointType)
+    {
+        this.node = node;
+        this.name = name;
+        this.index = index;
+        connectionType = pointType;
+        type = PengLevelRuntimeLevelScriptVariableType.Vector3;
         point = new PengLevelNodeConnection(pointType, index, node, this);
     }
 }

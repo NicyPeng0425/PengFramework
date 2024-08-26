@@ -80,7 +80,7 @@ public class PengGameManager : MonoBehaviour
             mainFL = mainFLGO.GetComponent<CinemachineFreeLook>();
         }
     }
-    // Start is called before the first frame update
+
     void Start()
     {
         if (!HasControlledActor())
@@ -90,7 +90,6 @@ public class PengGameManager : MonoBehaviour
         checkHasActorControlledByPlayerTimeCount = Time.time;
     }
 
-    // Update is called once per frame
     void Update()
     {
         currentFrame = Mathf.FloorToInt( Time.time * globalFrameRate );
@@ -363,6 +362,7 @@ public class PengGameManager : MonoBehaviour
         actor.runtimeID = GenerateRuntimeID();
         actor.game = this;
         actor.input.InputListener();
+        actor.input.acceptInput = true;
     }
 }
 

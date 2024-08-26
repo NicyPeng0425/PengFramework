@@ -5,80 +5,135 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
 
-public class GenerateActor : PengLevelEditorNode
+namespace PengLevelEditorNodes
 {
-    public PengLevelInt actorID;
-    public GenerateActor(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+    public class GenerateActor : PengLevelEditorNode
     {
-        InitialDraw(pos, master);
-        nodeID = id;
-        outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
-        varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
-        varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
-        meaning = "生成Actor。";
-
-        inPoints = new PengLevelNodeConnection[1];
-        inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
-        outPoints = new PengLevelNodeConnection[1];
-        outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
-        inVars = new PengLevelNodeVariables[1];
-        actorID = new PengLevelInt(this, "角色ID", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarIn);
-        inVars[0] = actorID;
-        actorID.point = null;
-        outVars = new PengLevelNodeVariables[1];
-        outVars[0] = new PengLevelPengActor(this, "角色", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarOut);
-
-        type = PengLevelRuntimeFunction.LevelFunctionType.GenerateActor;
-        nodeType = LevelNodeType.Function;
-        name = GetDescription(type);
-        ReadSpecialParaDescription(specialInfo);
-        paraNum = 1;
-    }
-
-    public override string SpecialParaDescription()
-    {
-        return actorID.value.ToString();
-    }
-
-    public override void ReadSpecialParaDescription(string info)
-    {
-        if (info != "")
+        public PengLevelInt actorID;
+        public GenerateActor(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
         {
-            actorID.value = int.Parse(info);
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "生成Actor。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[1];
+            actorID = new PengLevelInt(this, "角色ID", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarIn);
+            inVars[0] = actorID;
+            actorID.point = null;
+            outVars = new PengLevelNodeVariables[1];
+            outVars[0] = new PengLevelPengActor(this, "角色", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarOut);
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.GenerateActor;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            ReadSpecialParaDescription(specialInfo);
+            paraNum = 1;
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return actorID.value.ToString();
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                actorID.value = int.Parse(info);
+            }
+        }
+
+        public override void DrawInVarValue(int inVarID, Rect field)
+        {
+            actorID.value = EditorGUI.IntField(field, actorID.value);
         }
     }
 
-    public override void DrawInVarValue(int inVarID, Rect field)
+    public class SetMainActor : PengLevelEditorNode
     {
-        actorID.value = EditorGUI.IntField(field, actorID.value);
+        public PengLevelPengActor actor;
+        public SetMainActor(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "设置主控Actor。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[1];
+            actor = new PengLevelPengActor(this, "角色", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarIn);
+            inVars[0] = actor;
+            outVars = new PengLevelNodeVariables[0];
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.SetMainActor;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            ReadSpecialParaDescription(specialInfo);
+            paraNum = 1;
+        }
     }
-}
 
-public class SetMainActor : PengLevelEditorNode
-{
-    public PengLevelPengActor actor;
-    public SetMainActor(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+    public class StartControl : PengLevelEditorNode
     {
-        InitialDraw(pos, master);
-        nodeID = id;
-        outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
-        varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
-        varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
-        meaning = "设置主控Actor。";
+        public StartControl(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "让所有角色开始接受控制。";
 
-        inPoints = new PengLevelNodeConnection[1];
-        inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
-        outPoints = new PengLevelNodeConnection[1];
-        outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
-        inVars = new PengLevelNodeVariables[1];
-        actor = new PengLevelPengActor(this, "角色", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarIn);
-        inVars[0] = actor;
-        outVars = new PengLevelNodeVariables[0];
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[0];
+            outVars = new PengLevelNodeVariables[0];
 
-        type = PengLevelRuntimeFunction.LevelFunctionType.SetMainActor;
-        nodeType = LevelNodeType.Function;
-        name = GetDescription(type);
-        ReadSpecialParaDescription(specialInfo);
-        paraNum = 1;
+            type = PengLevelRuntimeFunction.LevelFunctionType.StartControl;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            ReadSpecialParaDescription(specialInfo);
+            paraNum = 1;
+        }
+    }
+
+    public class EndControl : PengLevelEditorNode
+    {
+        public EndControl(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "让所有角色停止接受控制。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[0];
+            outVars = new PengLevelNodeVariables[0];
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.EndControl;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            ReadSpecialParaDescription(specialInfo);
+            paraNum = 1;
+        }
     }
 }

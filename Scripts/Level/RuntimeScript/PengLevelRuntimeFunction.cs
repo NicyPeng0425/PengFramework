@@ -30,11 +30,11 @@ namespace PengLevelRuntimeFunction
         SetMainActor,
         [Description("0,增加Buff,功能")]
         AddBuff,
-        [Description("0,激活Actor,功能")]
+        [Description("0,激活ActorAI,功能")]
         ActiveActor,
-        [Description("0,开始操控,功能")]
+        [Description("1,开始操控,功能")]
         StartControl,
-        [Description("0,屏蔽操控,功能")]
+        [Description("1,屏蔽操控,功能")]
         EndControl,
         [Description("0,切状态,功能")]
         TransAction,
@@ -50,7 +50,7 @@ namespace PengLevelRuntimeFunction
         ParseActorsToList,
         [Description("1,等待时间,触发器")]
         TriggerWaitTime,
-        [Description("0,等待到达区域,触发器")]
+        [Description("1,等待到达区域,触发器")]
         TriggerWaitArrival,
         [Description("0,等待主控输入,触发器")]
         TriggerWaitInput,
@@ -212,7 +212,6 @@ namespace PengLevelRuntimeFunction
         }
     }
 
-
     public class GenerateActor : BaseScript
     {
         public PengLevelRuntimeLevelScriptVariables.PengInt actorID = new PengLevelRuntimeLevelScriptVariables.PengInt("角色ID", 0);
@@ -303,6 +302,86 @@ namespace PengLevelRuntimeFunction
         {
             PengLevelRuntimeLevelScriptVariables.PengPengActor val = varSource as PengLevelRuntimeLevelScriptVariables.PengPengActor;
             actor.value = val.value;
+        }
+
+        public override int CheckIfDone()
+        {
+            return 0;
+        }
+    }
+
+    public class StartControl : BaseScript
+    {
+        public bool done = false;
+        public StartControl(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.StartControl;
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                level.master.game.EnableActorInput();
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            return 0;
+        }
+    }
+
+    public class EndControl : BaseScript
+    {
+        public bool done = false;
+        public EndControl(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.EndControl;
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                level.master.game.DisableActorInput();
+                done = true;
+            }
         }
 
         public override int CheckIfDone()

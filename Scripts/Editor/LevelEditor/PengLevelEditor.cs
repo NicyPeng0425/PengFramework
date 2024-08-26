@@ -7,6 +7,10 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using PengLevelRuntimeFunction;
+using NUnit.Framework;
+using System.Data;
+using PengLevelEditorNodes;
+using static PengScript.GetTargetsByRange;
 
 public partial class PengLevelEditor : EditorWindow
 {
@@ -24,7 +28,7 @@ public partial class PengLevelEditor : EditorWindow
     public Vector2 initPos = new Vector2(20, 80);
     public int levelID;
     public PengLevelNodeConnection selectingPoint = null;
-    public List<PengLevelEditorNode> nodes = new List<PengLevelEditorNode>();
+    public List<PengLevelEditorNodes.PengLevelEditorNode> nodes = new List<PengLevelEditorNodes.PengLevelEditorNode>();
     public GameObject currentSelectingGO = null;
 
 
@@ -37,9 +41,14 @@ public partial class PengLevelEditor : EditorWindow
         window.minSize = new Vector2(600, 400);
     }
 
-    public void OnEnable()
+    private void OnEnable()
     {
-        
+        SceneView.duringSceneGui += this.OnSceneGUI;
+    }
+
+    private void OnDisable()
+    {
+        SceneView.duringSceneGui -= this.OnSceneGUI;
     }
 
     private void OnGUI()
@@ -59,6 +68,7 @@ public partial class PengLevelEditor : EditorWindow
             
         if (Selection.activeGameObject != currentSelectingGO)
         {
+            SaveLevelData(false, levelID, nodes);
             currentSelectingGO = Selection.activeGameObject;
             levelID = Selection.activeGameObject.GetComponent<PengLevel>().levelID;
             ReadLevelData(levelID);
@@ -128,7 +138,7 @@ public partial class PengLevelEditor : EditorWindow
         }
     }
 
-    public static void SaveLevelData(bool showMsg, int levelID, List<PengLevelEditorNode> nodes)
+    public static void SaveLevelData(bool showMsg, int levelID, List<PengLevelEditorNodes.PengLevelEditorNode> nodes)
     {
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
@@ -146,13 +156,13 @@ public partial class PengLevelEditor : EditorWindow
             node.SetAttribute("Name", nodes[i].name);
             node.SetAttribute("ScriptType", nodes[i].type.ToString());
             node.SetAttribute("NodeType", nodes[i].nodeType.ToString());
-            node.SetAttribute("NodePos", PengLevelEditorNode.ParseVector2ToString(nodes[i].pos));
+            node.SetAttribute("NodePos", PengLevelEditorNodes.PengLevelEditorNode.ParseVector2ToString(nodes[i].pos));
             node.SetAttribute("ScriptID", nodes[i].nodeID.ToString());
-            node.SetAttribute("Position", PengLevelEditorNode.ParseVector2ToString(nodes[i].pos));
+            node.SetAttribute("Position", PengLevelEditorNodes.PengLevelEditorNode.ParseVector2ToString(nodes[i].pos));
             node.SetAttribute("ParaNum", nodes[i].paraNum.ToString());
-            node.SetAttribute("OutID", PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(nodes[i].outID));
-            node.SetAttribute("VarOutID", PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(nodes[i].varOutID));
-            node.SetAttribute("VarInID", PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(nodes[i].varInID));
+            node.SetAttribute("OutID", PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(nodes[i].outID));
+            node.SetAttribute("VarOutID", PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(nodes[i].varOutID));
+            node.SetAttribute("VarInID", PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(nodes[i].varInID));
             node.SetAttribute("SpecialInfo", nodes[i].SpecialParaDescription());
 
             script.AppendChild(node);
@@ -240,7 +250,7 @@ public partial class PengLevelEditor : EditorWindow
         XmlNodeList scriptChild = levelScript.ChildNodes;
         foreach (XmlElement ele in scriptChild)
         {
-            PengLevelEditorNode node = ReadPengLevelEditorNode(ele);
+            PengLevelEditorNodes.PengLevelEditorNode node = ReadPengLevelEditorNode(ele);
             node.editor = this;
             nodes.Add(node);
         }
@@ -311,7 +321,7 @@ public partial class PengLevelEditor : EditorWindow
         DrawConnectionLines();
     }
 
-    public void ProcessRemoveNode(PengLevelEditorNode node)
+    public void ProcessRemoveNode(PengLevelEditorNodes.PengLevelEditorNode node)
     {
         if (nodes.Count > 1)
         {
@@ -323,7 +333,7 @@ public partial class PengLevelEditor : EditorWindow
                     {
                         if (nodes[i].outID.ElementAt(j).Value.nodeID == node.nodeID)
                         {
-                            PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNode.NodeIDConnectionID();
+                            PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                             nici.nodeID = -1;
                             nodes[i].outID[j] = nici;
                         }
@@ -336,7 +346,7 @@ public partial class PengLevelEditor : EditorWindow
                     {
                         if (nodes[i].varInID.ElementAt(j).Value.nodeID == node.nodeID)
                         {
-                            nodes[i].varInID[j] = PengLevelEditorNode.DefaultNodeIDConnectionID();
+                            nodes[i].varInID[j] = PengLevelEditorNodes.PengLevelEditorNode.DefaultNodeIDConnectionID();
                         }
                     }
                 }
@@ -433,9 +443,9 @@ public partial class PengLevelEditor : EditorWindow
 
     public void RightMouseMenuDetail(ref GenericMenu menu, LevelFunctionType scriptType, Vector2 mousePos)
     {
-        if (PengLevelEditorNode.GetCodedDown(scriptType) /*&& scriptType != LevelFunctionType.Start*/)
+        if (PengLevelEditorNodes.PengLevelEditorNode.GetCodedDown(scriptType) /*&& scriptType != LevelFunctionType.Start*/)
         {
-            menu.AddItem(new GUIContent("添加节点/" + PengLevelEditorNode.GetCatalog(scriptType) + "/" + PengLevelEditorNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+            menu.AddItem(new GUIContent("添加节点/" + PengLevelEditorNodes.PengLevelEditorNode.GetCatalog(scriptType) + "/" + PengLevelEditorNodes.PengLevelEditorNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
         }
     }
 
@@ -451,6 +461,72 @@ public partial class PengLevelEditor : EditorWindow
 
             GUI.changed = true;
 
+        }
+    }
+
+    private void OnSceneGUI(SceneView sv)
+    {
+        if (currentSelectingGO != null && nodes.Count > 0)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].type == LevelFunctionType.TriggerWaitArrival)
+                {
+                    PengLevelEditorNodes.TriggerWaitArrival node = nodes[i] as PengLevelEditorNodes.TriggerWaitArrival;
+                    switch (node.rangeType)
+                    {
+                        case RangeType.Cylinder:
+                            Handles.color = Color.red;
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value, Vector3.up, Selection.activeTransform.forward, node.para.value.z, node.para.value.x);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value, Vector3.up, Selection.activeTransform.forward, -node.para.value.z, node.para.value.x);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, node.para.value.z, node.para.value.x);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, -node.para.value.z, node.para.value.x);
+                            Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x + node.posV.value, Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x + node.posV.value + node.para.value.y * Vector3.up);
+                            Vector3 pos1 = Quaternion.Euler(0, node.para.value.z, 0) * (Selection.activeTransform.forward * node.para.value.x);
+                            pos1 = Selection.activeTransform.position + node.posV.value + pos1;
+                            Vector3 pos3 = pos1 + node.para.value.y * Vector3.up;
+                            Vector3 pos2 = Quaternion.Euler(0, -node.para.value.z, 0) * (Selection.activeTransform.forward * node.para.value.x);
+                            pos2 = Selection.activeTransform.position + node.posV.value + pos2;
+                            Vector3 pos4 = pos2 + node.para.value.y * Vector3.up;
+                            Handles.DrawLine(pos1, pos3);
+                            Handles.DrawLine(pos2, pos4);
+                            Handles.DrawLine(pos1, Selection.activeTransform.position + node.posV.value);
+                            Handles.DrawLine(pos2, Selection.activeTransform.position + node.posV.value);
+                            Handles.DrawLine(pos3, Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up);
+                            Handles.DrawLine(pos4, Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up);
+                            Handles.DrawLine(Selection.activeTransform.position + node.posV.value, Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up);
+                            Handles.DrawLine(Selection.activeTransform.position + node.posV.value, Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x + node.posV.value);
+                            Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x + node.posV.value + node.para.value.y * Vector3.up, Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value, Vector3.up, Selection.activeTransform.forward, node.para.value.z, node.para.value.x * 0.5f);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value, Vector3.up, Selection.activeTransform.forward, -node.para.value.z, node.para.value.x * 0.5f);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, node.para.value.z, node.para.value.x * 0.5f);
+                            Handles.DrawWireArc(Selection.activeTransform.position + node.posV.value + node.para.value.y * Vector3.up, Vector3.up, Selection.activeTransform.forward, -node.para.value.z, node.para.value.x * 0.5f);
+                            Vector3 pos5 = Quaternion.Euler(0, node.para.value.z, 0) * (Selection.activeTransform.forward * node.para.value.x * 0.5f);
+                            pos5 = Selection.activeTransform.position + node.posV.value + pos5;
+                            Vector3 pos7 = pos5 + node.para.value.y * Vector3.up;
+                            Vector3 pos6 = Quaternion.Euler(0, -node.para.value.z, 0) * (Selection.activeTransform.forward * node.para.value.x * 0.5f);
+                            pos6 = Selection.activeTransform.position + node.posV.value + pos6;
+                            Vector3 pos8 = pos6 + node.para.value.y * Vector3.up;
+                            Handles.DrawLine(pos5, pos7);
+                            Handles.DrawLine(pos6, pos8);
+                            Handles.DrawLine(Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x * 0.5f + node.posV.value, Selection.activeTransform.position + Selection.activeTransform.forward * node.para.value.x * 0.5f + node.posV.value + node.para.value.y * Vector3.up);
+
+                            break;
+                        case RangeType.Sphere:
+                            Handles.color = Color.red;
+                            Handles.DrawWireDisc(Selection.activeTransform.position + node.posV.value, Vector3.up, node.para.value.x);
+                            Handles.DrawWireDisc(Selection.activeTransform.position + node.posV.value, Vector3.forward, node.para.value.x);
+                            Handles.DrawWireDisc(Selection.activeTransform.position + node.posV.value, Vector3.right, node.para.value.x);
+                            Handles.DrawWireDisc(Selection.activeTransform.position + node.posV.value, Vector3.forward - Vector3.right, node.para.value.x);
+                            Handles.DrawWireDisc(Selection.activeTransform.position + node.posV.value, Vector3.forward + Vector3.right, node.para.value.x);
+                            break;
+                        case RangeType.Box:
+                            Handles.color = Color.red;
+                            Handles.DrawWireCube(Selection.activeTransform.position + node.posV.value, node.para.value);
+                            break;
+                    }
+                }
+            }
         }
     }
 }

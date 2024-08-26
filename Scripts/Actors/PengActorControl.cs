@@ -18,7 +18,7 @@ public partial class PengActorControl : MonoBehaviour
     [HideInInspector]
     public Vector3 processedInputDir;
     [HideInInspector]
-    public bool acceptInput = true;
+    public bool acceptInput = false;
     public Dictionary<int, List<ActionType>> actions = new Dictionary<int, List<ActionType>>();
 
     // Start is called before the first frame update
@@ -55,21 +55,26 @@ public partial class PengActorControl : MonoBehaviour
 
     public void InputSystemLogic()
     {
-        Vector2 input = actor.game.input.Basic.Move.ReadValue<Vector2>();
-        originalInputDir = new Vector3(input.x, 0, input.y);
-        if (originalInputDir.magnitude > 0.05f)
-        {
-            Vector3 move;
-            Quaternion rot = Quaternion.Euler(0f, actor.game.main.gameObject.transform.rotation.eulerAngles.y, 0f);
-            move = rot * Vector3.forward * originalInputDir.z + rot * Vector3.right * originalInputDir.x;
-            move = new Vector3(move.x, 0f, move.z);
-            move = move.normalized;
-            //inertia = move * _para.dashSpeed;
-            processedInputDir = move;
-        }
+        if(!acceptInput)
+            processedInputDir = Vector2.zero;
         else
         {
-            processedInputDir = Vector3.zero;
+            Vector2 input = actor.game.input.Basic.Move.ReadValue<Vector2>();
+            originalInputDir = new Vector3(input.x, 0, input.y);
+            if (originalInputDir.magnitude > 0.05f)
+            {
+                Vector3 move;
+                Quaternion rot = Quaternion.Euler(0f, actor.game.main.gameObject.transform.rotation.eulerAngles.y, 0f);
+                move = rot * Vector3.forward * originalInputDir.z + rot * Vector3.right * originalInputDir.x;
+                move = new Vector3(move.x, 0f, move.z);
+                move = move.normalized;
+                //inertia = move * _para.dashSpeed;
+                processedInputDir = move;
+            }
+            else
+            {
+                processedInputDir = Vector3.zero;
+            }
         }
     }
 

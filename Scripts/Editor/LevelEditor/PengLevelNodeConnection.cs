@@ -15,10 +15,10 @@ public class PengLevelNodeConnection
     public Rect rect;
     public PengLevelNodeConnectionType connectionType;
     public PengLevelNodeVariables var;
-    public PengLevelEditorNode node;
+    public PengLevelEditorNodes.PengLevelEditorNode node;
     public int index;
 
-    public PengLevelNodeConnection(PengLevelNodeConnectionType type, int index, PengLevelEditorNode node, PengLevelNodeVariables pengVar)
+    public PengLevelNodeConnection(PengLevelNodeConnectionType type, int index, PengLevelEditorNodes.PengLevelEditorNode node, PengLevelNodeVariables pengVar)
     {
         this.connectionType = type;
         this.node = node;
@@ -68,11 +68,11 @@ public class PengLevelNodeConnection
                             if (node.editor.selectingPoint.connectionType == PengLevelNodeConnectionType.VarOut &&
                                 (node.editor.selectingPoint.var.type == var.type))
                             {
-                                PengLevelEditorNode.NodeIDConnectionID thisConnection = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID thisConnection = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;
                                 thisConnection.connectionID = index;
 
-                                PengLevelEditorNode.NodeIDConnectionID selectingConnection = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID selectingConnection = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 selectingConnection.nodeID = node.editor.selectingPoint.node.nodeID;
                                 selectingConnection.connectionID = node.editor.selectingPoint.index;
 
@@ -84,11 +84,11 @@ public class PengLevelNodeConnection
                             if (node.editor.selectingPoint.connectionType == PengLevelNodeConnectionType.VarIn && 
                                 (node.editor.selectingPoint.var.type == var.type))
                             {
-                                PengLevelEditorNode.NodeIDConnectionID thisConnection = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID thisConnection = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 thisConnection.nodeID = node.nodeID;
                                 thisConnection.connectionID = index;
 
-                                PengLevelEditorNode.NodeIDConnectionID selectingConnection = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID selectingConnection = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 selectingConnection.nodeID = node.editor.selectingPoint.node.nodeID;
                                 selectingConnection.connectionID = node.editor.selectingPoint.index;
 
@@ -99,7 +99,7 @@ public class PengLevelNodeConnection
                         case PengLevelNodeConnectionType.FlowIn:
                             if (node.editor.selectingPoint.connectionType == PengLevelNodeConnectionType.FlowOut)
                             {
-                                PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 nici.nodeID = node.nodeID;
                                 nici.connectionID = index;
                                 node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] = nici;
@@ -108,7 +108,7 @@ public class PengLevelNodeConnection
                         case PengLevelNodeConnectionType.FlowOut:
                             if (node.editor.selectingPoint.connectionType == PengLevelNodeConnectionType.FlowIn)
                             {
-                                PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNode.NodeIDConnectionID();
+                                PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID nici = new PengLevelEditorNodes.PengLevelEditorNode.NodeIDConnectionID();
                                 nici.nodeID = node.editor.selectingPoint.node.nodeID;
                                 nici.connectionID = node.editor.selectingPoint.index;
                                 node.outID[index] = nici;

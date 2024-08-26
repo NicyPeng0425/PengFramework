@@ -115,7 +115,7 @@ namespace PengScript
                         foreach (PengActor a in actor.game.actors)
                         {
                             Vector3 selfDir1 = new Vector3(actor.transform.forward.x, 0, actor.transform.forward.z);
-                            Vector3 tarDir1 = new Vector3(a.transform.position.x - actor.transform.position.x, 0, a.transform.position.z - actor.transform.position.z);
+                            Vector3 tarDir1 = new Vector3(a.transform.position.x - pos.x, 0, a.transform.position.z - pos.z);
                             float angle1 = Vector3.Angle(selfDir1, tarDir1);
                             if ((a.transform.position.y >= pos.y && a.transform.position.y <= pos.y + pengPara.value.y) && angle1 <= pengPara.value.z && tarDir1.magnitude <= pengPara.value.x)
                             {
