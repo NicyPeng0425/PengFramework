@@ -173,7 +173,14 @@ namespace PengLevelEditorNodes
                 {
                     if (outID.ElementAt(i).Value.nodeID > 0)
                     {
-                        Handles.DrawBezier(GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center, outPoints[i].rect.center, GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center + Vector2.left * 40f, outPoints[i].rect.center - Vector2.left * 40f, Color.white, null, 6f);
+                        Handles.DrawBezier(
+                            GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center,
+                            outPoints[i].rect.center,
+                            GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center + Vector2.left * 40f,
+                            outPoints[i].rect.center - Vector2.left * 40f,
+                            Color.white,
+                            null,
+                            6f);
 
                         Vector2 buttonSize = new Vector2(20, 20);
                         Vector2 lineCenter = (GetNodeByNodeID(outID.ElementAt(i).Value.nodeID).inPoints[outID.ElementAt(i).Value.connectionID].rect.center + outPoints[i].rect.center) * 0.5f;

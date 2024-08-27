@@ -167,7 +167,7 @@ namespace PengLevelEditorNodes
 
         public override string SpecialParaDescription()
         {
-            string result = isBoss? "1":"0" + ";";
+            string result = isBoss? "1" + ";" :"0" + ";";
             if (trans.Count > 0)
             {
                 for (int i = 0; i < trans.Count; i++)
@@ -189,26 +189,29 @@ namespace PengLevelEditorNodes
             {
                 string[] strings = info.Split(";");
                 isBoss = int.Parse(strings[0]) > 0;
-                if (strings.Length > 1)
+                if (strings.Length > 1 && editor != null)
                 {
                     for (int i = 1; i < strings.Length; i++)
                     {
-                        string[] str = strings[i].Split("|");
-                        Transform trans = new GameObject().transform;
-                        trans.tag = "Temporary";
-                        trans.name = nodeID + "号功能_召唤敌人_位置点_" + i.ToString();
-                        trans.SetParent(editor.currentSelectingGO.transform);
-                        trans.localPosition = BaseScript.ParseStringToVector3(str[0]);
-                        trans.localEulerAngles = BaseScript.ParseStringToVector3(str[1]);
-                        if (str.Length > 2)
+                        if (strings[i] != "")
                         {
-                            id.Add(int.Parse(str[2]));
+                            string[] str = strings[i].Split("|");
+                            Transform trans = new GameObject().transform;
+                            trans.tag = "Temporary";
+                            trans.name = nodeID + "号功能_召唤敌人_位置点_" + i.ToString();
+                            trans.SetParent(editor.currentSelectingGO.transform);
+                            trans.localPosition = BaseScript.ParseStringToVector3(str[0]);
+                            trans.localEulerAngles = BaseScript.ParseStringToVector3(str[1]);
+                            if (str.Length > 2)
+                            {
+                                id.Add(int.Parse(str[2]));
+                            }
+                            else
+                            {
+                                id.Add(100001);
+                            }
+                            this.trans.Add(trans);
                         }
-                        else
-                        {
-                            id.Add(100001);
-                        }
-                        this.trans.Add(trans);
                     }
                 }
             }
@@ -217,7 +220,12 @@ namespace PengLevelEditorNodes
         public override void DrawMoreInfo(Rect moreInfoRect)
         {
             DrawNodeMeaning(moreInfoRect);
-            Rect button1 = new Rect(moreInfoRect.x + 200, moreInfoRect.y + 20, moreInfoRect.width - 240, 20);
+            Rect toggleLabel = new Rect(moreInfoRect.x + 200, moreInfoRect.y + 20, 50, 20);
+            Rect button1 = new Rect(moreInfoRect.x + 280, moreInfoRect.y + 20, moreInfoRect.width - 320, 20);
+
+            Rect toggle = new Rect(moreInfoRect.x + 255, moreInfoRect.y + 20, 20, 20);
+            GUI.Box(toggleLabel, "是Boss");
+            isBoss = EditorGUI.Toggle(toggle, isBoss);
             if (GUI.Button(button1, "增加生成点"))
             {
                 Transform trans = new GameObject().transform;

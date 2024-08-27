@@ -65,9 +65,9 @@ public partial class PengLevelEditor : EditorWindow
 
     private void OnGUI()
     {
-        if (Selection.activeGameObject == null)
+        if (Selection.activeTransform == null)
         {
-            EditorGUILayout.HelpBox("请选择对象", MessageType.Info);
+            EditorGUILayout.HelpBox("请选择场景中的关卡对象", MessageType.Info);
             return;
         }
             
@@ -140,12 +140,27 @@ public partial class PengLevelEditor : EditorWindow
         {
             SaveLevelData(true, levelID, nodes);
         }
+        GUIStyle style1 = new GUIStyle("ObjectPickerPreviewBackground");
+        style1.alignment = TextAnchor.UpperLeft;
+        style1.normal.textColor = Color.white;
+        style1.fontSize = 12;
 
         Rect idlbl = new Rect(saveButton.x + saveButton.width + 10, saveButton.y, 70, 20);
         Rect idRect = new Rect(idlbl.x + idlbl.width + 5, idlbl.y, 70, 20);
 
-        GUI.Box(idlbl, "关卡ID：");
-        GUI.Box(idRect, levelID.ToString());
+        GUI.Box(idlbl, "关卡ID：", style1);
+        GUI.Box(idRect, levelID.ToString(), style1);
+
+        Rect namelbl = new Rect(idRect.x + idRect.width + 5, idRect.y, 70, 20);
+        Rect nameRect = new Rect(namelbl.x + namelbl.width + 5, namelbl.y, 600, 40);
+
+        GUIStyle style2 = new GUIStyle("ObjectPickerPreviewBackground");
+        style2.alignment = TextAnchor.UpperLeft;
+        style2.normal.textColor = new Color(0.8f, 0.6f, 0.2f);
+        style2.fontSize = 12;
+
+        GUI.Box(namelbl, "关卡说明：", style1);
+        GUI.Box(nameRect, currentSelectingGO.GetComponent<PengLevel>().info, style2);
 
         PengEditorMain.DrawPengFrameworkIcon("关卡编辑器");
 

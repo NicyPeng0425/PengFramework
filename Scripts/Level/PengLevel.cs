@@ -9,9 +9,7 @@ public partial class PengLevel : MonoBehaviour
     public PengLevelRuntimeManager master;
     [ReadOnly]
     public int levelID;
-    [ReadOnly]
     public string levelName;
-    [ReadOnly]
     public string info;
     public Dictionary<int, PengLevelRuntimeFunction.BaseScript> scripts = new Dictionary<int, PengLevelRuntimeFunction.BaseScript>();
     public PengLevelRuntimeFunction.BaseScript current;
