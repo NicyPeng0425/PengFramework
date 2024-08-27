@@ -194,4 +194,37 @@ namespace PengLevelRuntimeFunction
             return -1;
         }
     }
+
+    public class TriggerWaitEnemyDie : BaseScript
+    {
+        public TriggerWaitEnemyDie(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.TriggerWaitEnemyDie;
+        }
+
+        public override int CheckIfDone()
+        {
+            if (level.currentEnemy.Count == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+    }
 }

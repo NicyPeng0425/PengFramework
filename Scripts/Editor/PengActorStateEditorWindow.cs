@@ -149,6 +149,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
     {
         PengActorStateEditorWindow window = (PengActorStateEditorWindow)EditorWindow.GetWindow(typeof(PengActorStateEditorWindow));
         window.position = new Rect(100, 100, 1200, 700);
+        window.minSize = new Vector2(1200, 700);
         window.titleContent = new GUIContent("彭框架角色状态编辑器");
     }
 
@@ -2382,7 +2383,6 @@ public partial class PengActorStateEditorWindow : EditorWindow
             {
                 if (psList.Count > 0)
                 {
-                    Debug.Log(psList.Count);
                     for (int i = psList.Count - 1; i >= 0; i--)
                     {
                         DestroyImmediate(psList[i].gameObject);

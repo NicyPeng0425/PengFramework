@@ -365,6 +365,7 @@ namespace PengScript
             ActorDirectionProcessed = 16,
             ActorInertia = 17,
             ActorFallSpeed = 18,
+            ActorAIActive = 19,
         }
 
         public enum VariableTypeCN
@@ -388,6 +389,7 @@ namespace PengScript
             Actor方向输入世界坐标 = 16,
             Actor惯性 = 17,
             下落速度 = 18,
+            AI是否被激活 = 19,
         }
 
         public PengInt int1 = new PengInt("占位", 0, ConnectionPointType.In);
@@ -512,7 +514,7 @@ namespace PengScript
                         {
                             outVars[0] = vec3Out;
                         }
-                        else if(varType == VariableType.ActorOnGround)
+                        else if(varType == VariableType.ActorOnGround || varType == VariableType.ActorAIActive)
                         {
                             outVars[0] = boolOut;
                         }
@@ -649,6 +651,9 @@ namespace PengScript
                             break;
                         case VariableType.ActorFallSpeed:
                             floatOut.value = ppa.value.fallSpeed;
+                            break;
+                        case VariableType.ActorAIActive:
+                            boolOut.value = ppa.value.input.active; 
                             break;
                     }
                     break;

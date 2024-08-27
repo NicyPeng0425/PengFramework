@@ -282,6 +282,10 @@ public class PengActor : MonoBehaviour
     public Transform lookAt;
     [ReadOnly]
     public int runtimeID;
+    //如果为空，说明不算敌人
+    [HideInInspector]
+    public PengLevel belongLevel;
+
     private void Awake()
     {
         anim = this.GetComponent<Animator>();
@@ -523,6 +527,10 @@ public class PengActor : MonoBehaviour
                     globalTrack.scripts[i].Execute(0);
                 }
             }
+        }
+        if (belongLevel != null)
+        {
+            belongLevel.currentEnemy.Remove(this);
         }
     }
 

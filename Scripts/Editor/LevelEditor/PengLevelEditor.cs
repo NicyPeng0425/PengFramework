@@ -48,6 +48,18 @@ public partial class PengLevelEditor : EditorWindow
 
     private void OnDisable()
     {
+        if (nodes.Count > 0)
+        {
+            SaveLevelData(true, levelID, nodes);
+        }
+        GameObject[] gos = GameObject.FindGameObjectsWithTag("Temporary");
+        if (gos.Length > 0)
+        {
+            for (int i = gos.Length -1 ; i >= 0; i--)
+            {
+                DestroyImmediate(gos[i]);
+            }
+        }
         SceneView.duringSceneGui -= this.OnSceneGUI;
     }
 
@@ -60,19 +72,31 @@ public partial class PengLevelEditor : EditorWindow
         }
             
 
-        if (Selection.activeGameObject.GetComponent<PengLevel>() == null)
+        if ((Selection.activeGameObject.GetComponent<PengLevel>() == null) && (Selection.activeGameObject.transform.parent.GetComponent<PengLevel>() == null))
         {
             EditorGUILayout.HelpBox("所选对象不含PengLevel组件", MessageType.Warning);
             return;
         }
-            
-        if (Selection.activeGameObject != currentSelectingGO)
+
+        if (currentSelectingGO == null)
         {
-            SaveLevelData(false, levelID, nodes);
             currentSelectingGO = Selection.activeGameObject;
             levelID = Selection.activeGameObject.GetComponent<PengLevel>().levelID;
             ReadLevelData(levelID);
         }
+        else
+        {
+            if (Selection.activeGameObject != currentSelectingGO && Selection.activeGameObject.transform.parent != currentSelectingGO.transform)
+            {
+                SaveLevelData(false, levelID, nodes);
+                currentSelectingGO = Selection.activeGameObject;
+                levelID = Selection.activeGameObject.GetComponent<PengLevel>().levelID;
+                ReadLevelData(levelID);
+            }
+        }
+        
+            
+        
 
         if (nodes.Count == 0)
         {
@@ -251,7 +275,6 @@ public partial class PengLevelEditor : EditorWindow
         foreach (XmlElement ele in scriptChild)
         {
             PengLevelEditorNodes.PengLevelEditorNode node = ReadPengLevelEditorNode(ele);
-            node.editor = this;
             nodes.Add(node);
         }
 
@@ -524,6 +547,19 @@ public partial class PengLevelEditor : EditorWindow
                             Handles.color = Color.red;
                             Handles.DrawWireCube(Selection.activeTransform.position + node.posV.value, node.para.value);
                             break;
+                    }
+                }
+
+                if (nodes[i].type == LevelFunctionType.GenerateEnemy)
+                {
+                    PengLevelEditorNodes.GenerateEnemy ge = nodes[i] as PengLevelEditorNodes.GenerateEnemy;
+                    if (ge.trans.Count > 0)
+                    {
+                        for (int j = 0; j < ge.trans.Count; j++)
+                        {
+                            Handles.color = Color.yellow;
+                            Handles.ArrowHandleCap(2, ge.trans[j].position, ge.trans[j].rotation, 1, EventType.Repaint);
+                        }
                     }
                 }
             }

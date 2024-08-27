@@ -18,10 +18,11 @@ public partial class PengLevel : MonoBehaviour
 
     [Label("空气墙子物体")]
     public List<GameObject> airWalls = new List<GameObject>();
+
+    [HideInInspector]
+    public List<PengActor> currentEnemy = new List<PengActor>();
     private void Awake()
     {
-        
-        
     }
     // Start is called before the first frame update
     void Start()
@@ -39,7 +40,6 @@ public partial class PengLevel : MonoBehaviour
     {
         if (current != null)
         {
-            Debug.Log(current.type.ToString());
             current.Execute();
         }
     }

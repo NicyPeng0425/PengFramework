@@ -120,6 +120,12 @@ public partial class PengLevel : MonoBehaviour
                 return new PengLevelRuntimeFunction.EaseInBlack(this, ID, flowOutInfo, varInInfo, specialInfo);
             case PengLevelRuntimeFunction.LevelFunctionType.EaseOutBlack:
                 return new PengLevelRuntimeFunction.EaseOutBlack(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.GenerateEnemy:
+                return new PengLevelRuntimeFunction.GenerateEnemy(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.TriggerWaitEnemyDie:
+                return new PengLevelRuntimeFunction.TriggerWaitEnemyDie(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.ActiveActor:
+                return new PengLevelRuntimeFunction.ActiveActor(this, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

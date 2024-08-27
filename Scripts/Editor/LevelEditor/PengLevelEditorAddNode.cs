@@ -7,10 +7,11 @@ using UnityEngine;
 using PengLevelRuntimeFunction;
 using System.Reflection;
 using System.Linq;
+using Unity.VisualScripting;
 
 public partial class PengLevelEditor : EditorWindow
 {
-    public static PengLevelEditorNodes.PengLevelEditorNode ReadPengLevelEditorNode(XmlElement ele)
+    public PengLevelEditorNodes.PengLevelEditorNode ReadPengLevelEditorNode(XmlElement ele)
     {
         LevelFunctionType type;
         if (ele.GetAttribute("ScriptType") == "Start")
@@ -32,25 +33,31 @@ public partial class PengLevelEditor : EditorWindow
             default:
                 return null;
             case LevelFunctionType.Start:
-                return new PengLevelEditorNodes.LevelStart(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.LevelStart(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.GenerateActor:
-                return new PengLevelEditorNodes.GenerateActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.GenerateActor(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.SetMainActor:
-                return new PengLevelEditorNodes.SetMainActor(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.SetMainActor(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.TriggerWaitTime:
-                return new PengLevelEditorNodes.TriggerWaitTime(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.TriggerWaitTime(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.StartControl:
-                return new PengLevelEditorNodes.StartControl(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.StartControl(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.EndControl:
-                return new PengLevelEditorNodes.EndControl(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.EndControl(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.TriggerWaitArrival:
-                return new PengLevelEditorNodes.TriggerWaitArrival(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.TriggerWaitArrival(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.GenerateBlack:
-                return new PengLevelEditorNodes.GenerateBlack(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.GenerateBlack(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.EaseInBlack:
-                return new PengLevelEditorNodes.EaseInBlack(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.EaseInBlack(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.EaseOutBlack:
-                return new PengLevelEditorNodes.EaseOutBlack(pos, null, ID, outID, varOutID, varInID, specialInfo);
+                return new PengLevelEditorNodes.EaseOutBlack(pos, this, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.GenerateEnemy:
+                return new PengLevelEditorNodes.GenerateEnemy(pos, this, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.TriggerWaitEnemyDie:
+                return new PengLevelEditorNodes.TriggerWaitEnemyDie(pos, this, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.ActiveActor:
+                return new PengLevelEditorNodes.ActiveActor(pos, this, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -122,6 +129,21 @@ public partial class PengLevelEditor : EditorWindow
                 nodes.Add(new PengLevelEditorNodes.EaseOutBlack(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)), ""));
+                break;
+            case LevelFunctionType.GenerateEnemy:
+                nodes.Add(new PengLevelEditorNodes.GenerateEnemy(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.TriggerWaitEnemyDie:
+                nodes.Add(new PengLevelEditorNodes.TriggerWaitEnemyDie(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.ActiveActor:
+                nodes.Add(new PengLevelEditorNodes.ActiveActor(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;
         }
     }

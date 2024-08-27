@@ -401,8 +401,7 @@ namespace PengLevelEditorNodes
 
         public virtual void DrawMoreInfo(Rect moreInfoRect)
         {
-            Rect meaningTitle = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 20, 160, 20);
-            Rect meaning = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 45, 160, moreInfoRect.height - 65);
+            DrawNodeMeaning(moreInfoRect);
             Rect paraPanel = new Rect(moreInfoRect.x + 200, moreInfoRect.y + 20, moreInfoRect.width - 240, moreInfoRect.height - 40);
             int line = Mathf.FloorToInt(paraPanel.height / 25f);
             int col = 1;
@@ -433,6 +432,13 @@ namespace PengLevelEditorNodes
                     }
                 }
             }
+            
+        }
+
+        public void DrawNodeMeaning(Rect moreInfoRect)
+        {
+            Rect meaningTitle = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 20, 160, 20);
+            Rect meaning = new Rect(moreInfoRect.x + 20, moreInfoRect.y + 45, 160, moreInfoRect.height - 65);
             GUIStyle style = new GUIStyle("AppToolbar");
             style.alignment = TextAnchor.UpperLeft;
             style.wordWrap = true;

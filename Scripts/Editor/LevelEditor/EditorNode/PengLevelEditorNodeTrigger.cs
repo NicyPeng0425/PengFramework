@@ -165,4 +165,32 @@ namespace PengLevelEditorNodes
             }
         }
     }
+
+    public class TriggerWaitEnemyDie : PengLevelEditorNode
+    {
+        public TriggerWaitEnemyDie(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "等待敌人全部死亡。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[0];
+            outVars = new PengLevelNodeVariables[0];
+
+            ReadSpecialParaDescription(specialInfo);
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.TriggerWaitEnemyDie;
+            nodeType = LevelNodeType.Trigger;
+            name = GetDescription(type);
+
+            paraNum = 1;
+        }
+    }
 }

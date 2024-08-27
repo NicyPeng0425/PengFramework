@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor;
 using UnityEngine;
 
 namespace PengLevelRuntimeFunction
@@ -26,13 +28,15 @@ namespace PengLevelRuntimeFunction
         GenerateBlack,
         [Description("1,生成Actor,功能")]
         GenerateActor,
+        [Description("1,生成敌人,功能")]
+        GenerateEnemy,
         [Description("0,跳转场景,功能")]
         JumpToScene,
         [Description("1,设置主控,功能")]
         SetMainActor,
         [Description("0,增加Buff,功能")]
         AddBuff,
-        [Description("0,激活ActorAI,功能")]
+        [Description("1,激活ActorAI,功能")]
         ActiveActor,
         [Description("1,开始操控,功能")]
         StartControl,
@@ -58,7 +62,7 @@ namespace PengLevelRuntimeFunction
         TriggerWaitInput,
         [Description("0,等待分支选择,触发器")]
         TriggerWaitSelection,
-        [Description("0,等待所有敌人死亡,触发器")]
+        [Description("1,等待所有敌人死亡,触发器")]
         TriggerWaitEnemyDie,
     }
 
@@ -389,6 +393,129 @@ namespace PengLevelRuntimeFunction
         public override int CheckIfDone()
         {
             return 0;
+        }
+    }
+
+    public class GenerateEnemy : BaseScript
+    {
+        public bool done = false;
+        public List<Vector3> pos = new List<Vector3>();
+        public List<Vector3> rot = new List<Vector3>();
+        public List<int> ids = new List<int>();
+        public GenerateEnemy(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.GenerateEnemy;
+            if (info != "")
+            {
+                string[] strings = info.Split(";");
+                if (strings.Length > 0)
+                {
+                    for (int i = 0; i < strings.Length; i++)
+                    {
+                        string[] str = strings[i].Split("|");
+
+                        pos.Add(PengScript.BaseScript.ParseStringToVector3(str[0]));
+                        rot.Add(PengScript.BaseScript.ParseStringToVector3(str[1]));
+                        ids.Add(int.Parse(str[2]));
+                    }
+                }
+            }
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                if (level.master != null)
+                {
+                    if (pos.Count > 0)
+                    {
+                        for (int i = 0; i < pos.Count; i++)
+                        {
+                            PengActor enemy = level.master.game.AddNewActor(ids[i], pos[i], rot[i]);
+                            level.currentEnemy.Add(enemy);
+                        }
+                    }
+                    done = true;
+                }
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            if (done)
+                return 0;
+            else
+                return -1;
+        }
+    }
+
+    public class ActiveActor : BaseScript
+    {
+        public bool done = false;
+        public ActiveActor(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.ActiveActor;
+            if (info != "")
+            {
+            }
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                if (level.currentEnemy.Count > 0)
+                {
+                    for (int i = 0; i < level.currentEnemy.Count; i++)
+                    {
+                        level.currentEnemy[i].input.active = true;
+                    }
+                }
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            if (done)
+                return 0;
+            else
+                return -1;
         }
     }
 }
