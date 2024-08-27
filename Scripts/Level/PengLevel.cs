@@ -39,6 +39,7 @@ public partial class PengLevel : MonoBehaviour
     {
         if (current != null)
         {
+            Debug.Log(current.type.ToString());
             current.Execute();
         }
     }

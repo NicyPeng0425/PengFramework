@@ -9,11 +9,15 @@ public class PengRuntimeMonitor : EditorWindow
 {
     public PengGameManager game;
     public Vector2 scroll;
+    public Vector2 scrollLevel;
+    public float actorWidth = 350;
+    public float levelWidth = 250;
     [MenuItem("PengFramework/运行时数据监控", false, 4)]
     static void Init()
     {
         PengRuntimeMonitor window = (PengRuntimeMonitor)EditorWindow.GetWindow(typeof(PengRuntimeMonitor));
-        window.position = new Rect(100, 100, 400, 700);
+        window.position = new Rect(100, 100, 600, 700);
+        window.minSize = new Vector2(600, 700);
         window.titleContent = new GUIContent("彭框架运行时数据监控");
     }
 
@@ -43,6 +47,52 @@ public class PengRuntimeMonitor : EditorWindow
             game = GameObject.FindWithTag("PengGameManager").GetComponent<PengGameManager>();
         }
 
+        EditorGUILayout.BeginHorizontal();
+        if (game.level.levels.Count > 0)
+        {
+            GUIStyle buffStyle = new GUIStyle("AppToolbar");
+            GUIStyle bbKeyStyle = new GUIStyle("ContentToolbar");
+            GUIStyle bbValueStyle = new GUIStyle("ContentToolbar");
+            bbKeyStyle.alignment = TextAnchor.MiddleLeft;
+            bbValueStyle.alignment = TextAnchor.MiddleLeft;
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(levelWidth), GUILayout.Height(position.height - 10));
+            GUILayout.Space(20);
+            scrollLevel = EditorGUILayout.BeginScrollView(scrollLevel, GUILayout.Width(levelWidth), GUILayout.Height(position.height - 70));
+            for (int i = 0; i < game.level.levels.Count; i++)
+            {
+                EditorGUILayout.BeginVertical(GUILayout.Height(150));
+
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("关卡ID：", GUILayout.Width(110));
+                GUILayout.Label(game.level.levels[i].levelID.ToString(), GUILayout.Width(120));
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("运行中节点ID：", GUILayout.Width(110));
+                GUILayout.Label(game.level.levels[i].current.ID.ToString(), GUILayout.Width(120));
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("运行中功能：", GUILayout.Width(110));
+                GUILayout.Label(game.level.levels[i].current.type.ToString(), GUILayout.Width(120));
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("选中关卡" + game.level.levels[i].levelID.ToString()))
+                {
+                    Selection.activeGameObject = game.level.levels[i].gameObject;
+                }
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.EndVertical();
+            }
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+        }
         if (game.actors.Count > 0)
         {
             GUIStyle buffStyle = new GUIStyle("AppToolbar");
@@ -51,9 +101,9 @@ public class PengRuntimeMonitor : EditorWindow
             bbKeyStyle.alignment = TextAnchor.MiddleLeft;
             bbValueStyle.alignment = TextAnchor.MiddleLeft;
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(position.width - 10), GUILayout.Height(position.height - 10));
+            EditorGUILayout.BeginVertical(GUILayout.Width(position.width - levelWidth - 10), GUILayout.Height(position.height - 10));
             GUILayout.Space(20);
-            scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Width(position.width - 10), GUILayout.Height(position.height - 70));
+            scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Width(position.width - levelWidth - 10), GUILayout.Height(position.height - 70));
             for (int i = 0; i < game.actors.Count; i++)
             {
                 EditorGUILayout.BeginVertical(GUILayout.Height(200));
@@ -167,6 +217,7 @@ public class PengRuntimeMonitor : EditorWindow
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void OnInspectorUpdate()

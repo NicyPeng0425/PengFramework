@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PengGameManager : MonoBehaviour
 {
@@ -43,6 +44,24 @@ public class PengGameManager : MonoBehaviour
     public List<int> usedID = new List<int>();
     [HideInInspector]
     public PengLevelRuntimeManager level;
+    [HideInInspector]
+    public Canvas canvas;
+    [HideInInspector]
+    public RectTransform hpBarRoot;
+    [HideInInspector]
+    public RectTransform hudRoot;
+    [HideInInspector]
+    public RectTransform infoRoot;
+    [HideInInspector]
+    public RectTransform dialogRoot;
+    [HideInInspector]
+    public RectTransform allBlackRoot;
+    [HideInInspector]
+    public RectTransform loadingAnimationRoot;
+    [HideInInspector]
+    public Image blackImage;
+    [HideInInspector]
+    public Coroutine controlBlackChangeCoroutine = null;
 
 #if UNITY_EDITOR
     Rect timeRect = new Rect(0, 0, 160, 30);
@@ -67,6 +86,8 @@ public class PengGameManager : MonoBehaviour
         globalSource = this.GetComponent<AudioSource>();
         level = this.AddComponent<PengLevelRuntimeManager>();
         level.game = this;
+        GenerateUILayer();
+
         GetAllExistingActor();
 
         GameObject mainFLPF = Resources.Load("Cameras/MainFreeLook") as GameObject;
@@ -101,8 +122,6 @@ public class PengGameManager : MonoBehaviour
                 Debug.Log("暂无被玩家控制的Actor，请在运行时监控中设置。");
             }
         }
-
-
     }
 
 #if UNITY_EDITOR
@@ -113,10 +132,8 @@ public class PengGameManager : MonoBehaviour
         styleBox.alignment = TextAnchor.MiddleCenter;
         string time = ((float)currentFrame / globalFrameRate).ToString("f2");
         GUI.Box(timeRect, "运行时间："+ time +"s");
-        
     }
 #endif
-
 
     public void ReadGlobalFrameRate()
     {
@@ -363,6 +380,104 @@ public class PengGameManager : MonoBehaviour
         actor.game = this;
         actor.input.InputListener();
         actor.input.acceptInput = true;
+    }
+
+    public void GenerateUILayer()
+    {
+        canvas = GameObject.Find("MainCanvas").GetComponent<Canvas>();
+
+        GameObject hpBarRootGO = new GameObject();
+        hpBarRootGO.transform.SetParent(canvas.transform);
+        hpBarRoot = hpBarRootGO.AddComponent<RectTransform>();
+        hpBarRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        hpBarRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        hpBarRoot.anchorMin = new Vector2(0, 0);
+        hpBarRoot.anchorMax = new Vector2(1, 1);
+        hpBarRoot.name = "HPBarRoot";
+
+        GameObject hudRootGO = new GameObject();
+        hudRootGO.transform.SetParent(canvas.transform);
+        hudRoot = hudRootGO.AddComponent<RectTransform>();
+        hudRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        hudRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        hudRoot.anchorMin = new Vector2(0, 0);
+        hudRoot.anchorMax = new Vector2(1, 1);
+        hudRoot.name = "HUDRoot";
+
+        GameObject infoRootGO = new GameObject();
+        infoRootGO.transform.SetParent(canvas.transform);
+        infoRoot = infoRootGO.AddComponent<RectTransform>();
+        infoRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        infoRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        infoRoot.anchorMin = new Vector2(0, 0);
+        infoRoot.anchorMax = new Vector2(1, 1);
+        infoRoot.name = "InfoRoot";
+
+        GameObject dialogRootGO = new GameObject();
+        dialogRootGO.transform.SetParent(canvas.transform);
+        dialogRoot = dialogRootGO.AddComponent<RectTransform>();
+        dialogRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        dialogRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        dialogRoot.anchorMin = new Vector2(0, 0);
+        dialogRoot.anchorMax = new Vector2(1, 1);
+        dialogRoot.name = "DialogRoot";
+
+        GameObject allBlackRootGO = new GameObject();
+        allBlackRootGO.transform.SetParent(canvas.transform);
+        allBlackRoot = allBlackRootGO.AddComponent<RectTransform>();
+        allBlackRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        allBlackRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        allBlackRoot.anchorMin = new Vector2(0, 0);
+        allBlackRoot.anchorMax = new Vector2(1, 1);
+        allBlackRoot.name = "AllBlackRoot";
+
+        GameObject loadingAnimationRootGO = new GameObject();
+        loadingAnimationRootGO.transform.SetParent(canvas.transform);
+        loadingAnimationRoot = loadingAnimationRootGO.AddComponent<RectTransform>();
+        loadingAnimationRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, 0);
+        loadingAnimationRoot.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, 0);
+        loadingAnimationRoot.anchorMin = new Vector2(0, 0);
+        loadingAnimationRoot.anchorMax = new Vector2(1, 1);
+        loadingAnimationRoot.name = "LoadingAnimationRoot";
+    }
+
+    public void ControlBlackChangeFunc(bool toBlack, float time)
+    {
+        if (controlBlackChangeCoroutine != null)
+        {
+            StopCoroutine(controlBlackChangeCoroutine);
+            controlBlackChangeCoroutine = null;
+        }
+        controlBlackChangeCoroutine = StartCoroutine(ControlBlackChange(toBlack, time));
+    }
+
+    IEnumerator ControlBlackChange(bool toBlack, float time)
+    {
+        float alpha = blackImage.color.a;
+        float tar = 0;
+        if (toBlack)
+        {
+            tar = 1;
+            blackImage.gameObject.SetActive(true);
+        }
+        float t = 0;
+        float speed = (tar - alpha) / time;
+        while (t < time)
+        {
+            t += Time.deltaTime;
+            blackImage.color = new Color(0.08f, 0.08f, 0.08f, alpha + t * speed);
+            yield return new WaitForEndOfFrame();
+        }
+        if (!toBlack)
+        {
+            blackImage.color = new Color(0.08f, 0.08f, 0.08f, 0);
+            blackImage.gameObject.SetActive(false);
+        }
+        else
+        {
+            blackImage.color = new Color(0.08f, 0.08f, 0.08f, 1);
+        }
+        yield break;
     }
 }
 

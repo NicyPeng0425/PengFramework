@@ -158,6 +158,11 @@ namespace PengLevelEditorNodes
                     outVars[i].DrawVar();
                 }
             }
+            GUIStyle styleNum = new GUIStyle("dockHeader");
+            styleNum.fontStyle = FontStyle.Bold;
+            styleNum.fontSize = 10;
+            Rect num = new Rect(rectScale.x, rectScale.y - 20, 40, 20);
+            GUI.Box(num, nodeID.ToString(), styleNum);
         }
 
         public void DrawLines()
@@ -430,6 +435,7 @@ namespace PengLevelEditorNodes
             }
             GUIStyle style = new GUIStyle("AppToolbar");
             style.alignment = TextAnchor.UpperLeft;
+            style.wordWrap = true;
             GUIStyle style2 = new GUIStyle("AppToolbar");
             style2.alignment = TextAnchor.MiddleCenter;
             GUI.Box(meaningTitle, "节点说明", style2);

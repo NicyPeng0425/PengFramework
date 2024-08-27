@@ -18,10 +18,12 @@ namespace PengLevelRuntimeFunction
         SetAllUIEnabled,
         [Description("0,生成Boss血条,UI")]
         GenerateBossHPBar,
-        [Description("0,黑屏渐入,UI")]
+        [Description("1,黑屏渐入,UI")]
         EaseInBlack,
-        [Description("0,黑屏渐出,UI")]
+        [Description("1,黑屏渐出,UI")]
         EaseOutBlack,
+        [Description("1,生成黑屏,UI")]
+        GenerateBlack,
         [Description("1,生成Actor,功能")]
         GenerateActor,
         [Description("0,跳转场景,功能")]
