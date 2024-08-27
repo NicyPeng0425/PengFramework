@@ -139,6 +139,7 @@ namespace PengLevelEditorNodes
 
     public class GenerateEnemy : PengLevelEditorNode
     {
+        public bool isBoss = false;
         public List<Transform> trans = new List<Transform>();
         public List<int> id = new List<int>();
         public GenerateEnemy(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
@@ -166,7 +167,7 @@ namespace PengLevelEditorNodes
 
         public override string SpecialParaDescription()
         {
-            string result = "";
+            string result = isBoss? "1":"0" + ";";
             if (trans.Count > 0)
             {
                 for (int i = 0; i < trans.Count; i++)
@@ -187,9 +188,10 @@ namespace PengLevelEditorNodes
             if (info != "")
             {
                 string[] strings = info.Split(";");
-                if (strings.Length > 0)
+                isBoss = int.Parse(strings[0]) > 0;
+                if (strings.Length > 1)
                 {
-                    for (int i = 0; i < strings.Length; i++)
+                    for (int i = 1; i < strings.Length; i++)
                     {
                         string[] str = strings[i].Split("|");
                         Transform trans = new GameObject().transform;
@@ -303,6 +305,56 @@ namespace PengLevelEditorNodes
             outVars = new PengLevelNodeVariables[0];
 
             type = PengLevelRuntimeFunction.LevelFunctionType.ActiveActor;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            paraNum = 1;
+        }
+    }
+
+    public class SetAirWall : PengLevelEditorNode
+    {
+        public SetAirWall(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "激活关卡AirWalls属性中的所有空气墙物体。空气墙建议直接使用框架自带预制体，拖入场景后作为Level的子物体，再修改其缩放即可。空气墙应当默认为激活的。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[0];
+            outVars = new PengLevelNodeVariables[0];
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.SetAirWall;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            paraNum = 1;
+        }
+    }
+
+    public class CloseAirWall : PengLevelEditorNode
+    {
+        public CloseAirWall(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "关闭关卡AirWalls属性中的所有空气墙物体。空气墙建议直接使用框架自带预制体，拖入场景后作为Level的子物体，再修改其缩放即可。空气墙应当默认为激活的。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[0];
+            outVars = new PengLevelNodeVariables[0];
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.CloseAirWall;
             nodeType = LevelNodeType.Function;
             name = GetDescription(type);
             paraNum = 1;

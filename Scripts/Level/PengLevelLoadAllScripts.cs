@@ -126,6 +126,10 @@ public partial class PengLevel : MonoBehaviour
                 return new PengLevelRuntimeFunction.TriggerWaitEnemyDie(this, ID, flowOutInfo, varInInfo, specialInfo);
             case PengLevelRuntimeFunction.LevelFunctionType.ActiveActor:
                 return new PengLevelRuntimeFunction.ActiveActor(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.SetAirWall:
+                return new PengLevelRuntimeFunction.SetAirWall(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.CloseAirWall:
+                return new PengLevelRuntimeFunction.CloseAirWall(this, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

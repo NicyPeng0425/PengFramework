@@ -18,8 +18,6 @@ namespace PengLevelRuntimeFunction
         SetAllUIDisabled,
         [Description("0,显示所有UI,UI")]
         SetAllUIEnabled,
-        [Description("0,生成Boss血条,UI")]
-        GenerateBossHPBar,
         [Description("1,黑屏渐入,UI")]
         EaseInBlack,
         [Description("1,黑屏渐出,UI")]
@@ -44,9 +42,9 @@ namespace PengLevelRuntimeFunction
         EndControl,
         [Description("0,切状态,功能")]
         TransAction,
-        [Description("0,设置空气墙,功能")]
+        [Description("1,开启空气墙,功能")]
         SetAirWall,
-        [Description("0,关闭空气墙,功能")]
+        [Description("1,关闭空气墙,功能")]
         CloseAirWall,
         [Description("0,生成对话,剧情")]
         GenerateDialog,
@@ -402,6 +400,7 @@ namespace PengLevelRuntimeFunction
         public List<Vector3> pos = new List<Vector3>();
         public List<Vector3> rot = new List<Vector3>();
         public List<int> ids = new List<int>();
+        public bool isBoss = false;
         public GenerateEnemy(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
         {
             this.level = level;
@@ -425,12 +424,12 @@ namespace PengLevelRuntimeFunction
             if (info != "")
             {
                 string[] strings = info.Split(";");
-                if (strings.Length > 0)
+                isBoss = int.Parse(strings[0]) > 0;
+                if (strings.Length > 1)
                 {
-                    for (int i = 0; i < strings.Length; i++)
+                    for (int i = 1; i < strings.Length; i++)
                     {
                         string[] str = strings[i].Split("|");
-
                         pos.Add(PengScript.BaseScript.ParseStringToVector3(str[0]));
                         rot.Add(PengScript.BaseScript.ParseStringToVector3(str[1]));
                         ids.Add(int.Parse(str[2]));
@@ -451,6 +450,28 @@ namespace PengLevelRuntimeFunction
                         {
                             PengActor enemy = level.master.game.AddNewActor(ids[i], pos[i], rot[i]);
                             level.currentEnemy.Add(enemy);
+                            GameObject hpBarPrefab = null;
+                            if (isBoss)
+                            {
+                                hpBarPrefab = Resources.Load("UIs/Universal/BossHPBar") as GameObject;
+                            }
+                            else
+                            {
+                                hpBarPrefab = Resources.Load("UIs/Universal/EnemyHPBar") as GameObject;
+                            }
+                            if (hpBarPrefab == null)
+                            {
+                                Debug.LogWarning("血条加载失败，请检查UIs/Universal文件夹下是否存在名为BossHPBar和EnemyHPBar的预制体，若没有的话请从PengFramework/Prefab文件夹下复制！");
+                            }
+                            else
+                            {
+                                GameObject hpBarGO = GameObject.Instantiate(hpBarPrefab, level.master.game.hudRoot);
+                                hpBarGO.SetActive(enemy.input.active);
+                                enemy.hpBar = hpBarGO.GetComponent<PengHPBarUI>();
+                                enemy.hpBar.master = enemy;
+                                enemy.hpBar.type = isBoss ? PengHPBarUI.HPBarType.Boss : PengHPBarUI.HPBarType.Enemy;
+                                if (isBoss) { enemy.hpBar.bossName.text = enemy.actorName; }
+                            }
                         }
                     }
                     done = true;
@@ -516,6 +537,104 @@ namespace PengLevelRuntimeFunction
                 return 0;
             else
                 return -1;
+        }
+    }
+
+    public class SetAirWall : BaseScript
+    {
+        public bool done = false;
+        public SetAirWall(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.SetAirWall;
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                if (level.airWalls.Count > 0)
+                {
+                    for (int i = 0; i < level.airWalls.Count; i++)
+                    {
+                        level.airWalls[i].SetActive(true);
+                    }
+                }
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            if (!done)
+                return -1;
+            else
+                return 0;
+        }
+    }
+
+    public class CloseAirWall : BaseScript
+    {
+        public bool done = false;
+        public CloseAirWall(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.CloseAirWall;
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                if (level.airWalls.Count > 0)
+                {
+                    for (int i = 0; i < level.airWalls.Count; i++)
+                    {
+                        level.airWalls[i].SetActive(false);
+                    }
+                }
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            if (!done)
+                return -1;
+            else
+                return 0;
         }
     }
 }

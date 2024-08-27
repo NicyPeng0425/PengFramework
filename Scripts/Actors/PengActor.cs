@@ -161,6 +161,7 @@ public class PengActor : MonoBehaviour
         get { return m_currentHP; }
         set {
             bool yes = false;
+            
             if (buff.buffs.Count > 0)
             {
                 foreach (PengBuff buff in buff.buffs)
@@ -174,9 +175,9 @@ public class PengActor : MonoBehaviour
             }
             else
             {
-                if (value >= m_maxHP) { m_currentHP = m_maxHP; }
+                if (value >= m_maxHP) { m_currentHP = m_maxHP; UpdateHPBar(); }
                 else if (value <= 0) { m_currentHP = 0; OnDie(); }
-                else { m_currentHP = value; }
+                else { m_currentHP = value; UpdateHPBar(); }
             }
         }
     }
@@ -285,6 +286,8 @@ public class PengActor : MonoBehaviour
     //如果为空，说明不算敌人
     [HideInInspector]
     public PengLevel belongLevel;
+    [HideInInspector]
+    public PengHPBarUI hpBar;
 
     private void Awake()
     {
@@ -318,6 +321,7 @@ public class PengActor : MonoBehaviour
         }
 
         ProcessGravity();
+        UpdateHPBarPos();
     }
 
     public void TransState(string name, bool actively)
@@ -333,7 +337,6 @@ public class PengActor : MonoBehaviour
         current = actorStates[name];
         current.OnEnter();
     }
-
 
     public void ProcessStateChange(bool actively)
     {
@@ -518,6 +521,7 @@ public class PengActor : MonoBehaviour
 
     public void OnDie()
     {
+        TransState("Dead", false);
         if (globalTrack != null && globalTrack.scripts.Count > 0)
         {
             for (int i = 0; i < globalTrack.scripts.Count; i++)
@@ -531,6 +535,11 @@ public class PengActor : MonoBehaviour
         if (belongLevel != null)
         {
             belongLevel.currentEnemy.Remove(this);
+        }
+
+        if (hpBar != null)
+        {
+            GameObject.Destroy(hpBar.gameObject);
         }
     }
 
@@ -546,6 +555,31 @@ public class PengActor : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void UpdateHPBarPos()
+    {
+        if (hpBar != null && ((input.active && input.aiCtrl)) || !input.aiCtrl)
+        {
+            if (hpBar.type == PengHPBarUI.HPBarType.Enemy)
+            {
+                Vector3 posi = game.main.WorldToScreenPoint(transform.position + ctrl.height * Vector3.up + 0.2f * Vector3.up);
+                posi.x -= Screen.width / 2;
+                posi.y -= Screen.height / 2;
+                hpBar.transform.localPosition = posi;
+                hpBar.gameObject.SetActive(posi.z > 0);
+            }
+            else
+            {
+                if(!hpBar.gameObject.activeSelf) hpBar.gameObject.SetActive(true);
+            }
+            hpBar.hpBarBuffer.fillAmount = Mathf.Lerp(hpBar.hpBarBuffer.fillAmount, hpBar.hpBar.fillAmount, 2f * Time.deltaTime);
+        }
+    }
+
+    public void UpdateHPBar()
+    {
+        hpBar.hpBar.fillAmount = currentHP / m_maxHP;
     }
 
     private void OnDrawGizmos()

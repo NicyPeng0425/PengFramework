@@ -161,7 +161,7 @@ namespace PengLevelEditorNodes
             GUIStyle styleNum = new GUIStyle("dockHeader");
             styleNum.fontStyle = FontStyle.Bold;
             styleNum.fontSize = 10;
-            Rect num = new Rect(rectScale.x, rectScale.y - 20, 40, 20);
+            Rect num = new Rect(rectScale.x, rectScale.y - 14, 30, 14);
             GUI.Box(num, nodeID.ToString(), styleNum);
         }
 

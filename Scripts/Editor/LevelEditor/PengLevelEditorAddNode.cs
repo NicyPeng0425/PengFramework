@@ -58,6 +58,10 @@ public partial class PengLevelEditor : EditorWindow
                 return new PengLevelEditorNodes.TriggerWaitEnemyDie(pos, this, ID, outID, varOutID, varInID, specialInfo);
             case LevelFunctionType.ActiveActor:
                 return new PengLevelEditorNodes.ActiveActor(pos, this, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.SetAirWall:
+                return new PengLevelEditorNodes.SetAirWall(pos, this, ID, outID, varOutID, varInID, specialInfo);
+            case LevelFunctionType.CloseAirWall:
+                return new PengLevelEditorNodes.CloseAirWall(pos, this, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -142,6 +146,16 @@ public partial class PengLevelEditor : EditorWindow
                 break;
             case LevelFunctionType.ActiveActor:
                 nodes.Add(new PengLevelEditorNodes.ActiveActor(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.SetAirWall:
+                nodes.Add(new PengLevelEditorNodes.SetAirWall(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
+                    PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
+                break;
+            case LevelFunctionType.CloseAirWall:
+                nodes.Add(new PengLevelEditorNodes.CloseAirWall(mousePos, this, id, PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengLevelEditorNodes.PengLevelEditorNode.ParseDictionaryIntNodeIDConnectionIDToString(PengLevelEditorNodes.PengLevelEditorNode.DefaultDictionaryIntNodeIDConnectionID(0)), ""));
                 break;

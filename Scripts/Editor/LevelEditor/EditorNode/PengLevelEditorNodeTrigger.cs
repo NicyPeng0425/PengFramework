@@ -56,7 +56,6 @@ namespace PengLevelEditorNodes
             name = "等待" + waitFrame.value + "帧";
             type = PengLevelRuntimeFunction.LevelFunctionType.TriggerWaitTime;
             nodeType = LevelNodeType.Trigger;
-            name = GetDescription(type);
 
             paraNum = 1;
         }

@@ -64,6 +64,7 @@ public class PengActorGeneratorEditor : EditorWindow
         List<string> group1 = new List<string>();
         group1.Add("Idle");
         group1.Add("Intro");
+        group1.Add("Dead");
         List<string> group2 = new List<string>();
         group2.Add("Move");
         group2.Add("Run");
@@ -82,6 +83,7 @@ public class PengActorGeneratorEditor : EditorWindow
 
         statesLoop.Add("Idle", true);
         statesLoop.Add("Intro", false);
+        statesLoop.Add("Dead", false);
         statesLoop.Add("Move", true);
         statesLoop.Add("Run", true);
         statesLoop.Add("Boost", false);
@@ -216,11 +218,11 @@ public class PengActorGeneratorEditor : EditorWindow
             }
             if (actorModel != null && actorModel.GetComponent<Animator>()  && statesLength.Count > 0)
             {
-                bool hasIdle = statesLength.ContainsKey("Idle");
+                bool hasIdle = statesLength.ContainsKey("Idle") && statesLength.ContainsKey("Dead");
 
                 if (!hasIdle)
                 {
-                    EditorUtility.DisplayDialog("警告", "角色状态没有Idle，无法生成。", "ok");
+                    EditorUtility.DisplayDialog("警告", "角色状态没有Idle或Dead，无法生成。", "ok");
                     return;
                 }
 
