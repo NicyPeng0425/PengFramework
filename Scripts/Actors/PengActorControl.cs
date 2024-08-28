@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+using System.Xml;
 
 public partial class PengActorControl : MonoBehaviour
 {
@@ -25,6 +28,8 @@ public partial class PengActorControl : MonoBehaviour
     [HideInInspector]
     public PengActor target = null;
     [HideInInspector]
+    public List<PengActor> targetHistory = new List<PengActor>();
+    [HideInInspector]
     public float targetDistance { get { if (target != null) { return ((target.transform.position - this.transform.position) - (target.transform.position - this.transform.position).y * Vector3.up).magnitude; }else { return 100f; } } }
     [HideInInspector]
     public Vector3 targetDirection { get { if (target != null) { return ((target.transform.position - this.transform.position) - (target.transform.position - this.transform.position).y * Vector3.up).normalized; } else { return Vector3.zero; } } }
@@ -36,12 +41,33 @@ public partial class PengActorControl : MonoBehaviour
     public float targetCurrentHP { get { if (target != null) { return target.currentHP; } else { return -1; } } }
     [HideInInspector]
     public bool chasing = false;
+    [HideInInspector]
+    public float chasingTimeCount = 0;
     //追逐距离，目标距离超过这个值将触发追逐
     [HideInInspector]
     public float chaseDistance = 999f;
     //追逐停止距离，目标距离小于这个值将停止追逐。一般来说，追逐停止距离要小于追逐距离，且至少小于20%左右，避免刚停止追逐后目标又超出追逐距离进而开始继续追逐。
     [HideInInspector]
     public float chaseStopDistance = 5f;
+    //可视距离
+    [HideInInspector]
+    public float visibleDistance = 10f;
+    //可视角度。从自身正前方出发，向两侧各自延伸该参数一半的角度
+    [HideInInspector]
+    public float visibleAngle = 120f;
+    //可视高度。从自身角色控制器的中心出发，向上下各自延伸该参数一半的高度
+    [HideInInspector]
+    public float visibleHeight = 2.5f;
+    [HideInInspector]
+    public float decideCDTimeCount = 0f;
+    [HideInInspector]
+    public float decideCD = 2f;
+    //条件组 行为组
+
+    private void Awake()
+    {
+        LoadActorAI();
+    }
 
     void Start()
     {
@@ -64,10 +90,7 @@ public partial class PengActorControl : MonoBehaviour
         {
             if (aiCtrl)
             {
-                if (active)
-                {
-                    AIControlLogic();
-                }
+                AIControlLogic();
             }
             else
             {
@@ -104,7 +127,39 @@ public partial class PengActorControl : MonoBehaviour
 
     public bool TryGetTarget()
     {
-        return false;
+        if (!active)
+        {
+            if (actor.game.actors.Count > 0)
+            {
+                for (int i = 0; i < actor.game.actors.Count; i++)
+                {
+                    if (actor.game.actors[i].actorCamp != actor.actorCamp && actor.game.actors[i].alive &&
+                        Mathf.Abs(actor.game.actors[i].transform.position.y - (actor.ctrl.center.y + transform.position.y)) <= visibleAngle * 0.5f &&
+                        Vector3.Angle(transform.forward, ((actor.game.actors[i].transform.position - this.transform.position) - (actor.game.actors[i].transform.position - this.transform.position).y * Vector3.up)) <= visibleAngle * 0.5f &&
+                        ((actor.game.actors[i].transform.position - this.transform.position) - (actor.game.actors[i].transform.position - this.transform.position).y * Vector3.up).magnitude <= visibleDistance)
+                    {
+                        target = actor.game.actors[i];
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        else
+        {
+            if (targetHistory.Count > 0)
+            {
+                for (int i = 0; i < targetHistory.Count; i++)
+                {
+                    if (targetHistory[i].actorCamp != actor.actorCamp && targetHistory[i].alive)
+                    {
+                        target = targetHistory[i];
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     public void AIControlLogic()
@@ -126,6 +181,17 @@ public partial class PengActorControl : MonoBehaviour
             return;
         }
 
+        if (actor.lastHitActor != target)
+        {
+            target = actor.lastHitActor;
+        }
+
+        if (!target.alive)
+        {
+            target = null;
+            TryGetTarget();
+        }
+
         if (actor.currentStateType == PengActorState.StateType.待机 || actor.currentStateType == PengActorState.StateType.移动 || actor.currentStateType == PengActorState.StateType.空中待机 || actor.currentStateType == PengActorState.StateType.空中移动)
         {
             if (targetDistance >= chaseDistance && !chasing)
@@ -139,12 +205,39 @@ public partial class PengActorControl : MonoBehaviour
 
             if (chasing)
             {
-                //追逐
+                actor.agent.SetDestination(target.transform.position);
+                Vector3[] pathPoint = actor.agent.path.corners;
+                Vector3 dir = pathPoint[1];
+                processedInputDir = ((dir - this.transform.position) - (dir - this.transform.position).y * Vector3.up).normalized;
             }
             else
             {
-                //决策
+                decideCDTimeCount += Time.deltaTime;
+                if (decideCDTimeCount >= decideCD)
+                {
+                    Decide();
+                    decideCDTimeCount = 0;
+                }
             }
         }
+    }
+
+    public void Decide()
+    {
+
+    }
+
+    public void LoadActorAI()
+    {
+        TextAsset textAsset = (TextAsset)Resources.Load("AIs/" + actor.actorID.ToString() + "/" + actor.actorID.ToString());
+        if (textAsset == null)
+        {
+            Debug.LogWarning("Actor" +  actor.actorID.ToString() + "的AI逻辑获取失败！");
+            return;
+        }
+
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(textAsset.text);
+        XmlElement root = doc.DocumentElement;
     }
 }

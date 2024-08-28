@@ -20,13 +20,15 @@ namespace PengAIScript
 
     public enum AIScriptType
     {
-        [Description("0,根节点,Action")]
-        Root,
-        [Description("0,序列,Composite")]
-        Sequence,
-        [Description("0,距离条件,Conditional")]
-        Distance,
-        [Description("0,重复,Decorator")]
-        Repeat,
+        [Description("1,决策事件,Event")]
+        EventDecide,
+        [Description("0,条件分支,Condition")]
+        Condition,
+        [Description("0,随机分支,Condition")]
+        Random,
+        [Description("0,输入行为,Action")]
+        InputAction,
+        [Description("0,缩短决策间隔,Action")]
+        ReduceDecideGap,
     }
 }

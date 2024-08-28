@@ -305,6 +305,7 @@ public class PengActor : MonoBehaviour
         buff = this.AddComponent<PengBuffManager>();
         buff.actorOwner = this;
         agent = this.GetComponent<NavMeshAgent>();
+        agent.speed = 0;
         speaker = this.AddComponent<AudioSource>();
         hitVFXPivot = new GameObject().transform;
         hitVFXPivot.SetParent(this.transform);
@@ -561,6 +562,17 @@ public class PengActor : MonoBehaviour
                     globalTrack.scripts[i].Execute(0);
                 }
             }
+        }
+
+        if (input.aiCtrl && !input.active)
+        {
+            input.active = true;
+            input.target = lastHitActor;
+        }
+
+        if (input.aiCtrl && !input.targetHistory.Contains(lastHitActor))
+        {
+            input.targetHistory.Add(lastHitActor);
         }
     }
 
