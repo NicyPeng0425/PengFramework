@@ -116,10 +116,10 @@ public class PengEditorMain : EditorWindow
             AddTag("Temporary");
             AddTag("PengLevel");
             AddTag("AirWall");
-            AddLayer("PengActor", 30);
-            AddLayer("Ground", 29);
-            AddLayer("Wall", 28);
-            AddLayer("AirWall", 27);
+            AddLayer("PengActor", 10);
+            AddLayer("Ground", 11);
+            AddLayer("Wall", 12);
+            AddLayer("AirWall", 13);
 
             GameObject gameManager = new GameObject();
             gameManager.name = "Game";

@@ -123,4 +123,123 @@ public partial class PengActorControl : MonoBehaviour
             actions[actor.game.currentFrame].Add(ActionType.Skill_D);
         }
     }
+
+    public void ProcessInputAttack_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Attack_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Attack_Up);
+        }
+    }
+
+    public void ProcessInputDodge_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Dodge_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Dodge_Up);
+        }
+    }
+
+    public void ProcessInputJump_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Jump_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Jump_Up);
+        }
+    }
+
+    public void ProcessInputSkill_A_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Skill_A_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Skill_A_Up);
+        }
+    }
+
+    public void ProcessInputSkill_B_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Skill_B_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Skill_B_Up);
+        }
+    }
+
+    public void ProcessInputSkill_C_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Skill_C_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Skill_C_Up);
+        }
+    }
+
+    public void ProcessInputSkill_D_Up(InputAction.CallbackContext Obj)
+    {
+        if (!acceptInput || aiCtrl)
+        { return; }
+
+        if (!actions.ContainsKey(actor.game.currentFrame))
+        {
+            List<ActionType> at = new List<ActionType>();
+            at.Add(ActionType.Skill_D_Up);
+            actions.Add(actor.game.currentFrame, at);
+        }
+        else
+        {
+            actions[actor.game.currentFrame].Add(ActionType.Skill_D_Up);
+        }
+    }
 }

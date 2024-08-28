@@ -13,6 +13,13 @@ public partial class PengActorControl : MonoBehaviour
         Skill_B,
         Skill_C,
         Skill_D,
+        Attack_Up,
+        Dodge_Up,
+        Jump_Up,
+        Skill_A_Up,
+        Skill_B_Up,
+        Skill_C_Up,
+        Skill_D_Up,
     }
 
     public void InputListener()
@@ -24,5 +31,13 @@ public partial class PengActorControl : MonoBehaviour
         actor.game.input.Basic.Skill_B.started += ProcessInputSkill_B;
         actor.game.input.Basic.Skill_C.started += ProcessInputSkill_C;
         actor.game.input.Basic.Skill_D.started += ProcessInputSkill_D;
+
+        actor.game.input.Basic.Attack.canceled += ProcessInputAttack_Up;
+        actor.game.input.Basic.Dodge.canceled += ProcessInputDodge_Up;
+        actor.game.input.Basic.Jump.canceled += ProcessInputJump_Up;
+        actor.game.input.Basic.Skill_A.canceled += ProcessInputSkill_A_Up;
+        actor.game.input.Basic.Skill_B.canceled += ProcessInputSkill_B_Up;
+        actor.game.input.Basic.Skill_C.canceled += ProcessInputSkill_C_Up;
+        actor.game.input.Basic.Skill_D.canceled += ProcessInputSkill_D_Up;
     }
 }

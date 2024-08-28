@@ -7,6 +7,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using System.IO;
 using System.ComponentModel;
+using UnityEngine.AI;
 
 public class PengActorGeneratorEditor : EditorWindow
 {
@@ -303,6 +304,8 @@ public class PengActorGeneratorEditor : EditorWindow
                 PengActor pa = actorNew.AddComponent<PengActor>();
                 actorNew.AddComponent<CharacterController>();
                 actorNew.GetComponent<CharacterController>().center = new Vector3(0,1.1f,0);
+                NavMeshAgent agent = actorNew.AddComponent<NavMeshAgent>();
+                
                 pa.actorID = actorID;
                 actorNew.tag = "PengActor";
                 actorNew.layer = LayerMask.NameToLayer("PengActor");

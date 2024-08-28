@@ -73,6 +73,7 @@ public class PengActorState : IPengActorState
         frameCnt = 0f;
         executedTags = InitialBoolList(length, false);
         actor.currentStateLength = length;
+        actor.currentStateType = stateType;
 
         if (tracks.Count > 0)
         {

@@ -56,7 +56,7 @@ namespace PengScript
         SetBlackBoardVariables,
         [Description("1,获取变量,值,H,低封装")]
         GetVariables,
-        [Description("1,输入分歧,功能,S,高封装")]
+        [Description("1,输入分歧,分歧,S,高封装")]
         GetInput,
         [Description("1,条件分歧,分歧,T,低封装")]
         IfElse,

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Xml;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -288,6 +290,10 @@ public class PengActor : MonoBehaviour
     public PengLevel belongLevel;
     [HideInInspector]
     public PengHPBarUI hpBar;
+    [HideInInspector]
+    public PengActorState.StateType currentStateType;
+    [HideInInspector]
+    public NavMeshAgent agent;
 
     private void Awake()
     {
@@ -298,6 +304,7 @@ public class PengActor : MonoBehaviour
         bb = new PengBlackBoard<PengActor>(this);
         buff = this.AddComponent<PengBuffManager>();
         buff.actorOwner = this;
+        agent = this.GetComponent<NavMeshAgent>();
         speaker = this.AddComponent<AudioSource>();
         hitVFXPivot = new GameObject().transform;
         hitVFXPivot.SetParent(this.transform);

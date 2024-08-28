@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public partial class PengActorControl : MonoBehaviour
@@ -20,6 +21,27 @@ public partial class PengActorControl : MonoBehaviour
     [HideInInspector]
     public bool acceptInput = false;
     public Dictionary<int, List<ActionType>> actions = new Dictionary<int, List<ActionType>>();
+
+    [HideInInspector]
+    public PengActor target = null;
+    [HideInInspector]
+    public float targetDistance { get { if (target != null) { return ((target.transform.position - this.transform.position) - (target.transform.position - this.transform.position).y * Vector3.up).magnitude; }else { return 100f; } } }
+    [HideInInspector]
+    public Vector3 targetDirection { get { if (target != null) { return ((target.transform.position - this.transform.position) - (target.transform.position - this.transform.position).y * Vector3.up).normalized; } else { return Vector3.zero; } } }
+    [HideInInspector]
+    public string targetCurrentState{ get { if (target != null) { return target.currentName;  } else { return ""; } }}
+    [HideInInspector]
+    public int targetCurrentStateFrame {  get { if (target != null) { return target.currentStateFrame; } else { return -1; } } }
+    [HideInInspector]
+    public float targetCurrentHP { get { if (target != null) { return target.currentHP; } else { return -1; } } }
+    [HideInInspector]
+    public bool chasing = false;
+    //追逐距离，目标距离超过这个值将触发追逐
+    [HideInInspector]
+    public float chaseDistance = 999f;
+    //追逐停止距离，目标距离小于这个值将停止追逐。一般来说，追逐停止距离要小于追逐距离，且至少小于20%左右，避免刚停止追逐后目标又超出追逐距离进而开始继续追逐。
+    [HideInInspector]
+    public float chaseStopDistance = 5f;
 
     void Start()
     {
@@ -80,8 +102,49 @@ public partial class PengActorControl : MonoBehaviour
         }
     }
 
+    public bool TryGetTarget()
+    {
+        return false;
+    }
+
     public void AIControlLogic()
     {
+        //距离过远时：追逐（正常Move状态）方向读取Agent
+        //距离较近时：决策一次
+        //决策完毕：缩短或不缩短下次决策的间隔
+        //立回
+        //立回完毕继续决策
 
+
+        if (target == null)
+        {
+            active = TryGetTarget();
+        }
+
+        if (target == null)
+        {
+            return;
+        }
+
+        if (actor.currentStateType == PengActorState.StateType.待机 || actor.currentStateType == PengActorState.StateType.移动 || actor.currentStateType == PengActorState.StateType.空中待机 || actor.currentStateType == PengActorState.StateType.空中移动)
+        {
+            if (targetDistance >= chaseDistance && !chasing)
+            {
+                chasing = true;
+            }
+            if (chasing && targetDistance <= chaseStopDistance)
+            {
+                chasing = false;
+            }
+
+            if (chasing)
+            {
+                //追逐
+            }
+            else
+            {
+                //决策
+            }
+        }
     }
 }

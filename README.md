@@ -26,7 +26,7 @@ A framework for the development of action games.
 
 # 使用方式
 1. 创建一个URP的3D项目。
-2. 在你的项目中引入Cinemachine和Input System。
+2. 在你的项目中引入Cinemachine, AI Navigation和Input System。
 3. 将此项目克隆到Asset文件夹。例如：C:nicy/PengFrameworkSample/Asset/PengFramework
 4. 打开启动器，进行全局配置。
 5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab

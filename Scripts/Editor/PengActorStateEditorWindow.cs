@@ -1913,7 +1913,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
         SaveActorData(currentActorID, currentActorCamp, currentActorName, states, statesTrack, statesLength, statesLoop, statesTypes, showMsg, globalTrack);
     }
 
-    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, Dictionary<string, PengActorState.StateType> stateTypes, bool showMsg, PengEditorTrack globalTrack)
+    public static void SaveActorData(int actorID, int actorCamp, string actorName, Dictionary<string, List<string>> stateGroup, Dictionary<string, List<PengEditorTrack>> stateTrack, Dictionary<string, int> statesLength, Dictionary<string, bool> statesLoop, Dictionary<string, PengActorState.StateType> stateTypes, bool showMsg, PengEditorTrack GlobalTrack)
     {
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
@@ -1930,18 +1930,32 @@ public partial class PengActorStateEditorWindow : EditorWindow
         camp.SetAttribute("Camp", actorCamp.ToString());
         XmlElement name = doc.CreateElement("ActorName");
         name.SetAttribute("ActorName", actorName.ToString());
-        if (globalTrack != null)
+        if (GlobalTrack != null)
         {
-            info.AppendChild(GenerateTrackInfo(ref doc, globalTrack));
+            info.AppendChild(GenerateTrackInfo(ref doc, GlobalTrack));
         }
 
         XmlElement attr = doc.CreateElement("Attribute");
-        attr.SetAttribute("MaxHP", globalTrack.master.currentActorMaxHP.ToString());
-        attr.SetAttribute("AttackPower", globalTrack.master.currentActorAttackPower.ToString());
-        attr.SetAttribute("DefendPower", globalTrack.master.currentActorDefendPower.ToString());
-        attr.SetAttribute("CriticalRate", globalTrack.master.currentActorCriticalRate.ToString());
-        attr.SetAttribute("CriticalDamageRatio", globalTrack.master.currentActorCriticalDamageRatio.ToString());
-        attr.SetAttribute("Resist", globalTrack.master.currentActorResist.ToString());
+
+        if (GlobalTrack.master != null)
+        {
+            attr.SetAttribute("MaxHP", GlobalTrack.master.currentActorMaxHP.ToString());
+            attr.SetAttribute("AttackPower", GlobalTrack.master.currentActorAttackPower.ToString());
+            attr.SetAttribute("DefendPower", GlobalTrack.master.currentActorDefendPower.ToString());
+            attr.SetAttribute("CriticalRate", GlobalTrack.master.currentActorCriticalRate.ToString());
+            attr.SetAttribute("CriticalDamageRatio", GlobalTrack.master.currentActorCriticalDamageRatio.ToString());
+            attr.SetAttribute("Resist", GlobalTrack.master.currentActorResist.ToString());
+        }
+        else
+        {
+            attr.SetAttribute("MaxHP", "2000");
+            attr.SetAttribute("AttackPower", "100");
+            attr.SetAttribute("DefendPower", "20");
+            attr.SetAttribute("CriticalRate", "0.05");
+            attr.SetAttribute("CriticalDamageRatio", "2");
+            attr.SetAttribute("Resist", "50");
+        }
+        
 
 
         info.AppendChild(ID);
