@@ -13,7 +13,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[varInID.Count];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -43,7 +43,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
             inVars[0] = waitTime;
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
@@ -109,7 +109,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[2];
             inVars[0] = posV;
             inVars[1] = para;
@@ -202,7 +202,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);

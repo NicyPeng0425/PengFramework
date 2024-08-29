@@ -272,76 +272,6 @@ namespace PengAIEditorNode
             this.editor = master;
         }
 
-        public static string ParseDictionaryIntIntToString(Dictionary<int,int> dic)
-        {
-            string result = "";
-            if (dic.Count > 0)
-            {
-                for (int i = 0; i < dic.Count; i++)
-                {
-                    result += dic.ElementAt(i).Key.ToString() + ":" + dic.ElementAt(i).Value.ToString();
-                    if (i != dic.Count - 1)
-                    {
-                        result += ";";
-                    }
-                }
-            }
-            return result;
-        }
-
-        public static Dictionary<int, int> ParseStringToDictionaryIntInt(string str)
-        {
-            Dictionary<int, int> result = new Dictionary<int, int>();
-            if (str != "")
-            {
-                string[] strings = str.Split(";");
-                if (strings.Length > 0)
-                {
-                    for (int i = 0; i < strings.Length; i++)
-                    {
-                        string[] s = strings[i].Split(":");
-                        result.Add(int.Parse(s[0]), int.Parse(s[1]));
-                    }
-                }
-            }
-            return result;
-        }
-
-        public static string ParseVector2ToString(Vector2 vec)
-        {
-            string result = "";
-            result += vec.x.ToString() + ",";
-            result += vec.y.ToString();
-            return result;
-        }
-
-        public static Vector2 ParseStringToVector2(string str)
-        {
-            string[] s = str.Split(",");
-            if (s.Length == 2)
-            {
-                return new Vector2(float.Parse(s[0]), float.Parse(s[1]));
-            }
-            else
-            {
-                Debug.LogError("字符串格式不正确，无法转成Vector2！");
-                return Vector2.zero;
-            }
-        }
-
-        public static Dictionary<int, int> DefaultDictionaryIntInt(int num)
-        {
-            Dictionary<int, int> result = new Dictionary<int, int>();
-            if (num > 0)
-            {
-                for (int i = 0; i < num; i++)
-                {
-                    result.Add(i, -1);
-                }
-            }
-            return result;
-        }
-
         public static string GetDescription(Enum value)
         {
             Type type = value.GetType();
@@ -414,7 +344,7 @@ namespace PengAIEditorNode
         {
             InitialDraw(pos, editor);
             nodeID = id;
-            outID = ParseStringToDictionaryIntInt(flowOut);
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
             meaning = "决策树根节点";
 
             inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);

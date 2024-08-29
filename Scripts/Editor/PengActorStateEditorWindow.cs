@@ -144,7 +144,7 @@ public partial class PengActorStateEditorWindow : EditorWindow
     //
 
 
-    [MenuItem("PengFramework/角色状态编辑器", false, 1)]
+    [MenuItem("PengFramework/角色编辑器", false, 1)]
     static void Init()
     {
         PengActorStateEditorWindow window = (PengActorStateEditorWindow)EditorWindow.GetWindow(typeof(PengActorStateEditorWindow));

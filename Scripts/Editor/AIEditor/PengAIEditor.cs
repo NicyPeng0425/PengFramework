@@ -2,8 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using UnityEditor;
 using UnityEngine;
+using System.IO;
+using System.Runtime.Remoting.Messaging;
 
 public partial class PengAIEditor : EditorWindow
 {
@@ -11,7 +14,7 @@ public partial class PengAIEditor : EditorWindow
     public PengAIEditorNodeConnection selectingPoint = null;
     public Rect nodeMapRect;
     public Rect sidePanelRect;
-    public Vector2 initPos = new Vector2(270, 40);
+    public Vector2 initPos = new Vector2(540, 40);
     public Vector2 gridOffset = Vector2.zero;
     public int currentActorID = 0;
     public GameObject currentSelectingGO = null;
@@ -28,7 +31,6 @@ public partial class PengAIEditor : EditorWindow
 
     private void OnEnable()
     {
-        nodes.Add(new PengAIEditorNode.EventDecide(initPos, this, 0, "0:-1", ""));
     }
 
     private void OnGUI()
@@ -97,8 +99,82 @@ public partial class PengAIEditor : EditorWindow
 
     public void ReadActorAIData(int actorID)
     {
-        //nodes.Clear();
+        nodes.Clear();
         currentActorID = actorID;
+        string path = Application.dataPath + "/Resources/AIs/" + actorID.ToString() + "/" + actorID.ToString() + ".xml";
+
+        if (!File.Exists(path))
+        {
+            Debug.LogError("未读取到ID为" + actorID.ToString() + "的关卡数据！读取地址：" + path);
+            return;
+        }
+        TextAsset textAsset = (TextAsset)Resources.Load("AIs/" + actorID.ToString() + "/" + actorID.ToString());
+        if (textAsset == null)
+        {
+            Debug.LogError(actorID.ToString() + "的数据读取失败！怎么回事呢？");
+            return;
+        }
+        XmlDocument doc = new XmlDocument();
+        XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
+        doc.LoadXml(textAsset.text);
+
+        XmlElement root = doc.DocumentElement;
+        XmlNodeList childs = root.ChildNodes;
+
+        XmlElement aiInfo = null;
+        XmlElement aiScript = null;
+        foreach (XmlElement ele in childs)
+        {
+            if (ele.Name == "ActorAIInfo")
+            {
+                aiInfo = ele;
+                continue;
+            }
+            if (ele.Name == "ActorAIScript")
+            {
+                aiScript = ele;
+                continue;
+            }
+        }
+
+        if (aiInfo == null || aiInfo.ChildNodes.Count == 0)
+        {
+            Debug.LogError(actorID.ToString() + "的关卡数据里没有关卡信息！怎么回事呢？");
+            return;
+        }
+
+        if (aiScript == null || aiScript.ChildNodes.Count == 0)
+        {
+            Debug.LogError(actorID.ToString() + "的关卡数据里没有关卡脚本！怎么回事呢？");
+            return;
+        }
+
+        XmlNodeList infoChilds = aiInfo.ChildNodes;
+        foreach (XmlElement ele in infoChilds)
+        {
+            if (ele.Name == "ID")
+            {
+                //读取ID
+                actorID = int.Parse(ele.GetAttribute("ActorID"));
+                continue;
+            }
+        }
+
+        XmlNodeList scriptChild = aiScript.ChildNodes;
+        foreach (XmlElement ele in scriptChild)
+        {
+            PengAIEditorNode.PengAIEditorNode node = ReadPengAIEditorNode(ele);
+            nodes.Add(node);
+        }
+
+        currentScale = 1;
+
+        if (nodes.Count > 0)
+        {
+            Vector2 currentPos = nodes[0].pos;
+            Vector2 targetPos = initPos - currentPos;
+            DragAllNodes(targetPos);
+        }
     }
 
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
@@ -159,6 +235,18 @@ public partial class PengAIEditor : EditorWindow
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
         GUI.Box(sidePanelRect, "", style);
         PengEditorMain.DrawPengFrameworkIcon("AI编辑器");
+
+        GUIStyle styleSave = new GUIStyle("Button");
+        styleSave.alignment = TextAnchor.MiddleCenter;
+        styleSave.fontStyle = FontStyle.Bold;
+        styleSave.fontSize = 13;
+        styleSave.normal.textColor = new Color(0.4f, 0.95f, 0.6f);
+        Rect saveButton = new Rect(sidePanelRect.x + 180, sidePanelRect.y + 5, 40, 40);
+        EditorGUIUtility.AddCursorRect(saveButton, MouseCursor.Link);
+        if (GUI.Button(saveButton, "保存\n数据", styleSave))
+        {
+            SaveActorAIData(true, currentActorID, nodes);
+        }
     }
 
     private void ProcessEvents(Event e)
@@ -257,5 +345,48 @@ public partial class PengAIEditor : EditorWindow
             GUI.changed = true;
 
         }
+    }
+
+    public static void SaveActorAIData(bool showMsg, int actorID, List<PengAIEditorNode.PengAIEditorNode> nodes)
+    {
+        XmlDocument doc = new XmlDocument();
+        XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
+        XmlElement root = doc.CreateElement("ActorAI");
+        XmlElement info = doc.CreateElement("ActorAIInfo");
+        XmlElement script = doc.CreateElement("ActorAIScript");
+
+        XmlElement id = doc.CreateElement("ID");
+        id.SetAttribute("ActorID", actorID.ToString());
+        info.AppendChild(id);
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            XmlElement node = doc.CreateElement("Script" + nodes[i].nodeID.ToString());
+            node.SetAttribute("Name", nodes[i].name);
+            node.SetAttribute("ScriptType", nodes[i].type.ToString());
+            node.SetAttribute("NodeType", nodes[i].nodeType.ToString());
+            node.SetAttribute("NodePos", PengGameManager.ParseVector2ToString(nodes[i].pos));
+            node.SetAttribute("ScriptID", nodes[i].nodeID.ToString());
+            node.SetAttribute("Position", PengGameManager.ParseVector2ToString(nodes[i].pos));
+            node.SetAttribute("OutID", PengGameManager.ParseDictionaryIntIntToString(nodes[i].outID));
+            node.SetAttribute("SpecialInfo", nodes[i].SpecialParaDescription());
+
+            script.AppendChild(node);
+        }
+
+        root.AppendChild(info);
+        root.AppendChild(script);
+        doc.AppendChild(root);
+
+        if (!Directory.Exists(Application.dataPath + "/Resources/AIs/" + actorID.ToString()))
+        {
+            Directory.CreateDirectory(Application.dataPath + "/Resources/AIs/" + actorID.ToString());
+        }
+        doc.Save(Application.dataPath + "/Resources/AIs/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+        if (showMsg)
+        {
+            Debug.Log("保存成功，保存于" + Application.dataPath + "/Resources/AIs/" + actorID.ToString() + "/" + actorID.ToString() + ".xml");
+        }
+        AssetDatabase.Refresh();
     }
 }

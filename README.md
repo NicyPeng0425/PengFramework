@@ -33,7 +33,8 @@ A framework for the development of action games.
 6. Asset/PengFramework/Prefab下若有预制体，请将其复制到应当出现的地方。例如，MainFreeLook预制体应当放在Resources/Cameras下；PlayerHPBar、EnemyHPBar、BossHPBar应当放在Resources/UIs/Universal下。MainCanvas和EventSystem则不需要额外的移动，拖入场景中即可；AirWall一般直接放置在Level的子层级即可。请勿修改任何预制体的名称、Tag、层级等信息。
 7. 可以通过角色生成器生成角色，并且配置。之后，使用关卡生成器生成关卡，并且配置其逻辑。之后，将关卡预制体拖入场景中即可。
 8. 说明：框架中的关卡，实际指代着关卡逻辑的控制器，它能够按照一个流程去等待某条件完成并执行某项操作。
-9. 更多详细信息请参考：https://nicypeng.notion.site/ed948501a86940d389df1c71f7a9e058
+9. 关卡编辑完毕后，点击Game预制体中的NavMeshSurface组件的Bake按键，以生成AI可通过的区域。
+10. 更多详细信息请参考：https://nicypeng.notion.site/ed948501a86940d389df1c71f7a9e058
 
 # 后续开发计划
 1. 配套AI插件

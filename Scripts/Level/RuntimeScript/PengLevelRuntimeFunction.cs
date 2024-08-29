@@ -227,7 +227,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
             inVars[0] = actorID;
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
@@ -275,7 +275,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[1];
             inVars[0] = actor;
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
@@ -322,7 +322,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -362,7 +362,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -406,7 +406,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -496,7 +496,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -548,7 +548,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);
@@ -597,7 +597,7 @@ namespace PengLevelRuntimeFunction
             this.level = level;
             this.ID = ID;
             this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
             inVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             outVars = new PengLevelRuntimeLevelScriptVariables.PengLevelVar[0];
             Construct(specialInfo);

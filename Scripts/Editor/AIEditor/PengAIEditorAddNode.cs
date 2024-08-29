@@ -52,7 +52,7 @@ public partial class PengAIEditor : EditorWindow
         switch (type)
         {
             case PengAIScript.AIScriptType.EventDecide:
-                nodes.Add(new PengAIEditorNode.EventDecide(mousePos, this, id, PengAIEditorNode.PengAIEditorNode.ParseDictionaryIntIntToString(PengAIEditorNode.PengAIEditorNode.DefaultDictionaryIntInt(1)), "")); break;
+                nodes.Add(new PengAIEditorNode.EventDecide(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "")); break;
         }
     }
 }

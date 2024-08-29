@@ -12,7 +12,7 @@ public class PengRuntimeMonitor : EditorWindow
     public Vector2 scrollLevel;
     public float actorWidth = 350;
     public float levelWidth = 250;
-    [MenuItem("PengFramework/运行时数据监控", false, 4)]
+    [MenuItem("PengFramework/运行时数据监控", false, 45)]
     static void Init()
     {
         PengRuntimeMonitor window = (PengRuntimeMonitor)EditorWindow.GetWindow(typeof(PengRuntimeMonitor));

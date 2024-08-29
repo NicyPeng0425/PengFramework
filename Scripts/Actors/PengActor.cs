@@ -578,7 +578,9 @@ public class PengActor : MonoBehaviour
 
     public void UpdateHPBarPos()
     {
-        if (hpBar != null && ((input.active && input.aiCtrl)) || !input.aiCtrl)
+        if (hpBar == null)
+            return;
+        if (((input.active && input.aiCtrl)) || !input.aiCtrl)
         {
             if (hpBar.type == PengHPBarUI.HPBarType.Enemy)
             {
@@ -598,6 +600,8 @@ public class PengActor : MonoBehaviour
 
     public void UpdateHPBar()
     {
+        if (hpBar == null)
+            return;
         hpBar.hpBar.fillAmount = currentHP / m_maxHP;
     }
 

@@ -49,6 +49,15 @@ public partial class PengActorControl : MonoBehaviour
     //追逐停止距离，目标距离小于这个值将停止追逐。一般来说，追逐停止距离要小于追逐距离，且至少小于20%左右，避免刚停止追逐后目标又超出追逐距离进而开始继续追逐。
     [HideInInspector]
     public float chaseStopDistance = 5f;
+    [HideInInspector]
+    public NavMeshPath chasePath;
+    [HideInInspector]
+    public float calculatePathGap = 0;
+    [HideInInspector]
+    public Vector3 chaseDir
+    {
+        get { if (chasePath != null && chasePath.corners.Length >= 2) { return chasePath.corners[1]; } else { return this.transform.position + this.transform.forward; } }
+    }
     //可视距离
     [HideInInspector]
     public float visibleDistance = 10f;
@@ -62,15 +71,17 @@ public partial class PengActorControl : MonoBehaviour
     public float decideCDTimeCount = 0f;
     [HideInInspector]
     public float decideCD = 2f;
-    //条件组 行为组
+    [HideInInspector]
+    public Dictionary<int, PengAIScript.PengAIBaseScript> scripts = new Dictionary<int, PengAIScript.PengAIBaseScript>();
 
     private void Awake()
     {
-        LoadActorAI();
+        
     }
 
     void Start()
     {
+        LoadActorAI();
     }
 
     void Update()
@@ -197,6 +208,7 @@ public partial class PengActorControl : MonoBehaviour
             if (targetDistance >= chaseDistance && !chasing)
             {
                 chasing = true;
+                calculatePathGap = 0.6f;
             }
             if (chasing && targetDistance <= chaseStopDistance)
             {
@@ -205,10 +217,7 @@ public partial class PengActorControl : MonoBehaviour
 
             if (chasing)
             {
-                actor.agent.SetDestination(target.transform.position);
-                Vector3[] pathPoint = actor.agent.path.corners;
-                Vector3 dir = pathPoint[1];
-                processedInputDir = ((dir - this.transform.position) - (dir - this.transform.position).y * Vector3.up).normalized;
+                Chase();
             }
             else
             {
@@ -222,22 +231,36 @@ public partial class PengActorControl : MonoBehaviour
         }
     }
 
-    public void Decide()
+    public void Chase()
     {
-
+        calculatePathGap += Time.deltaTime;
+        if (calculatePathGap >= 0.5f || chaseDir.magnitude <= 1f)
+        {
+            actor.agent.CalculatePath(target.transform.position, chasePath);
+            processedInputDir = ((chaseDir - this.transform.position) - (chaseDir - this.transform.position).y * Vector3.up).normalized;
+            calculatePathGap = 0;
+        }
     }
 
-    public void LoadActorAI()
+    public void Decide()
     {
-        TextAsset textAsset = (TextAsset)Resources.Load("AIs/" + actor.actorID.ToString() + "/" + actor.actorID.ToString());
-        if (textAsset == null)
-        {
-            Debug.LogWarning("Actor" +  actor.actorID.ToString() + "的AI逻辑获取失败！");
-            return;
-        }
+        scripts.ElementAt(0).Value.Execute();
+    }
 
-        XmlDocument doc = new XmlDocument();
-        doc.LoadXml(textAsset.text);
-        XmlElement root = doc.DocumentElement;
+    public void OnDrawGizmos()
+    {
+        if (chasePath != null && chasePath.corners.Length > 0)
+        {
+            for (int i = 0; i < chasePath.corners.Length; i++)
+            {
+                if (i != chasePath.corners.Length - 1)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawLine(chasePath.corners[i], chasePath.corners[i + 1]);
+                }
+            }
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(this.transform.position, chaseDir);
+        }
     }
 }

@@ -6,7 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PengGameManager : MonoBehaviour
+public partial class PengGameManager : MonoBehaviour
 {
     [ReadOnly]
     public float globalFrameRate = 60;

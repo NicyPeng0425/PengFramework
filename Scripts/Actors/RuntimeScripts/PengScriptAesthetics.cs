@@ -18,8 +18,8 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
             Construct(specialInfo);
@@ -106,8 +106,8 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
             Construct(specialInfo);
@@ -170,8 +170,8 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
             Construct(specialInfo);

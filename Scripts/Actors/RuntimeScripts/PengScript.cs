@@ -287,22 +287,6 @@ namespace PengScript
             return s;
         }
 
-        public static string ParseStringListToString(List<string> list)
-        {
-            string str = "";
-            if (list.Count > 0)
-            {
-                for (global::System.Int32 i = 0; i < list.Count; i++)
-                {
-                    str += list[i];
-                    if (i < list.Count - 1)
-                    {
-                        str += ",";
-                    }
-                }
-            }
-            return str;
-        }
         public static string GetDescription(Enum value)
         {
             Type type = value.GetType();
@@ -321,65 +305,6 @@ namespace PengScript
             }
             return null;
         }
-
-        public static List<string> ParseStringToStringList(string str)
-        {
-            List<string> s = new List<string>();
-            string[] strings = str.Split(",");
-            if (strings.Length > 0)
-            {
-                for (int i = 0; i < strings.Length; i++)
-                {
-                    s.Add(strings[i]);
-                }
-            }
-            return s;
-        }
-
-        public static ScriptIDVarID InitialScriptIDVarID()
-        {
-            ScriptIDVarID sivi = new ScriptIDVarID();
-            sivi.scriptID = -1;
-            sivi.varID = -1;
-            return sivi;
-        }
-
-        public static Dictionary<int, ScriptIDVarID> ParseStringToDictionaryIntScriptIDVarID(string str)
-        {
-            Dictionary<int, ScriptIDVarID> result = new Dictionary<int, ScriptIDVarID>();
-            if (str == "")
-                return result;
-            string[] strings = str.Split(";");
-            if (strings.Length > 0)
-            {
-                for (int i = 0; i < strings.Length; i++)
-                {
-                    string[] s1 = strings[i].Split("|");
-                    string[] s2 = s1[1].Split(":");
-                    ScriptIDVarID sivi = new ScriptIDVarID();
-                    sivi.scriptID = int.Parse(s2[0]);
-                    sivi.varID = int.Parse(s2[1]);
-                    result.Add(int.Parse(s1[0]), sivi);
-                }
-            }
-            return result;
-        }
-        public static Dictionary<int, int> ParseStringToDictionaryIntInt(string str)
-        {
-            Dictionary<int, int> result = new Dictionary<int, int>();
-            if (str == "")
-                return result;
-            string[] strings = str.Split(",");
-            if (strings.Length > 0)
-            {
-                for (int i = 0; i < strings.Length; i++)
-                {
-                    string[] s = strings[i].Split(":");
-                    result.Add(int.Parse(s[0]), int.Parse(s[1]));
-                }
-            }
-            return result;
-        }
     }
 
     public class DebugLog : BaseScript
@@ -391,8 +316,8 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
             Construct(specialInfo);
@@ -496,8 +421,8 @@ namespace PengScript
             this.actor = actor;
             this.trackMaster = track;
             this.ID = ID;
-            this.flowOutInfo = ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
-            this.varInID = ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
             inVars = new PengVar[varInID.Count];
             outVars = new PengVar[0];
             Construct(specialInfo);
