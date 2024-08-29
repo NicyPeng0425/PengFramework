@@ -72,6 +72,8 @@ public partial class PengActorControl : MonoBehaviour
     [HideInInspector]
     public float decideCD = 2f;
     [HideInInspector]
+    public float wanderTime = 0f;
+    [HideInInspector]
     public Dictionary<int, PengAIScript.PengAIBaseScript> scripts = new Dictionary<int, PengAIScript.PengAIBaseScript>();
 
     private void Awake()
@@ -205,6 +207,10 @@ public partial class PengActorControl : MonoBehaviour
 
         if (actor.currentStateType == PengActorState.StateType.待机 || actor.currentStateType == PengActorState.StateType.移动 || actor.currentStateType == PengActorState.StateType.空中待机 || actor.currentStateType == PengActorState.StateType.空中移动)
         {
+            if(actor.currentStateType == PengActorState.StateType.移动 || actor.currentStateType == PengActorState.StateType.空中移动)
+            {
+                wanderTime += Time.deltaTime;
+            }
             if (targetDistance >= chaseDistance && !chasing)
             {
                 chasing = true;
@@ -225,7 +231,8 @@ public partial class PengActorControl : MonoBehaviour
                 if (decideCDTimeCount >= decideCD)
                 {
                     Decide();
-                    decideCDTimeCount = 0;
+                    decideCDTimeCount = 0f;
+                    wanderTime = 0f;
                 }
             }
         }

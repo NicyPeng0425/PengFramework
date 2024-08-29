@@ -96,6 +96,8 @@ public partial class PengActorControl : MonoBehaviour
                 return null;
             case PengAIScript.AIScriptType.EventDecide:
                 return new PengAIScript.DecideEvent(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.Condition:
+                return new PengAIScript.Condition(this, ID, flowOutInfo, specialInfo);
         }
     }
 }

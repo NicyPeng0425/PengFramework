@@ -9,7 +9,7 @@ using UnityEngine;
 public partial class PengAIEditor : EditorWindow
 {
 
-    public PengAIEditorNode.PengAIEditorNode ReadPengAIEditorNode(XmlElement ele)
+    public static PengAIEditorNode.PengAIEditorNode ReadPengAIEditorNode(XmlElement ele, PengAIEditor editor)
     {
         PengAIScript.AIScriptType type;
         if (ele.GetAttribute("ScriptType") == "EventDecide")
@@ -29,7 +29,9 @@ public partial class PengAIEditor : EditorWindow
             default:
                 return null;
             case PengAIScript.AIScriptType.EventDecide:
-                return new PengAIEditorNode.EventDecide(pos, this, ID, outID, specialInfo);
+                return new PengAIEditorNode.EventDecide(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.Condition:
+                return new PengAIEditorNode.Condition(pos, editor, ID, outID, specialInfo);
         }
     }
     private void ProcessAddNode(Vector2 mousePos, PengAIScript.AIScriptType type)
@@ -53,6 +55,18 @@ public partial class PengAIEditor : EditorWindow
         {
             case PengAIScript.AIScriptType.EventDecide:
                 nodes.Add(new PengAIEditorNode.EventDecide(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "")); break;
+            case PengAIScript.AIScriptType.Condition:
+                PengAIEditorNode.Condition result = new PengAIEditorNode.Condition(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "");
+                PengAIScript.ConditionVar cond = new PengAIScript.ConditionVar();
+                cond.type = PengAIScript.ConditionVar.JudgmentType.If;
+                PengAIScript.Judgement judge = new PengAIScript.Judgement();
+                judge.type = PengAIScript.ConditionVar.JudgmentEntryType.双目运算式;
+                judge.compareType = PengScript.MathCompare.CompareTypeCN.不小于;
+                judge.sensor1 = PengAIScript.AISensor.TargetDistance;
+                judge.sensor2 = PengAIScript.AISensor.Value;
+                cond.judge = judge;
+                result.conditions.Add(cond);
+                nodes.Add(result); break;
         }
     }
 }

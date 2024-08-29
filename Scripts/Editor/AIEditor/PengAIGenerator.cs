@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
+using System.Xml;
+using UnityEditor.Animations;
 
 public class PengAIGenerator : EditorWindow
 {
@@ -13,6 +15,8 @@ public class PengAIGenerator : EditorWindow
     }
 
     public int actorID;
+    public int copyID;
+    public int pasteID;
     public AITemplate aiTplt = AITemplate.新角色;
 
     [MenuItem("PengFramework/AI生成器", false, 34)]
@@ -86,84 +90,72 @@ public class PengAIGenerator : EditorWindow
     }
 
     private void CopyActor()
-    {/*
+    {
         EditorGUILayout.BeginVertical();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("关卡ID：");
-        levelID = EditorGUILayout.IntField(levelID, GUILayout.Width(300));
+        GUILayout.Label("原有对象ID：");
+        copyID = EditorGUILayout.IntField(copyID);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("关卡名称：");
-        levelName = EditorGUILayout.TextField(levelName, GUILayout.Width(300));
+        GUILayout.Label("目标对象ID：");
+        pasteID = EditorGUILayout.IntField(pasteID);
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("关卡说明：");
-        info = EditorGUILayout.TextArea(info, GUILayout.Width(300), GUILayout.Height(80));
-        EditorGUILayout.EndHorizontal();
-
-        if (GUILayout.Button("一键生成关卡"))
+        if (GUILayout.Button("一键复制"))
         {
-            if (File.Exists(Application.dataPath + "/Resources/Plot/" + levelID.ToString() + "/" + levelID.ToString() + ".xml"))
+            if (File.Exists(Application.dataPath + "/Resources/AIs/" + copyID.ToString() + "/" + copyID.ToString() + ".xml"))
             {
-                EditorUtility.DisplayDialog("警告", "已存在关卡数据！", "ok");
-                EditorGUILayout.EndVertical();
-                return;
+                TextAsset textAsset = (TextAsset)Resources.Load("AIs/" + copyID.ToString() + "/" + copyID.ToString());
+                if (textAsset == null)
+                {
+                    Debug.LogError(copyID.ToString() + "的数据读取失败！怎么回事呢？");
+                    return;
+                }
+                XmlDocument doc = new XmlDocument();
+                XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
+                doc.LoadXml(textAsset.text);
+                XmlElement root = doc.DocumentElement;
+                XmlElement info = null;
+                XmlElement script = null;
+                foreach (XmlElement node in root.ChildNodes)
+                {
+                    if (node.Name == "ActorAIInfo")
+                    {
+                        info = node;
+                    }
+                    if (node.Name == "ActorAIScript")
+                    {
+                        script = node;
+                    }
+                }
+                foreach (XmlElement ele in info.ChildNodes)
+                {
+                    if (ele.Name == "ActorID")
+                    {
+                        ele.SetAttribute("ActorID", pasteID.ToString());
+                        continue;
+                    }
+                }
+
+                if (!Directory.Exists(Application.dataPath + "/Resources/AIs/" + pasteID.ToString()))
+                {
+                    Directory.CreateDirectory(Application.dataPath + "/Resources/AIs/" + pasteID.ToString());
+                }
+
+                List<PengAIEditorNode.PengAIEditorNode> nodes = new List<PengAIEditorNode.PengAIEditorNode>();
+                foreach (XmlElement ele in script.ChildNodes)
+                {
+                    PengAIEditorNode.PengAIEditorNode node = PengAIEditor.ReadPengAIEditorNode(ele, null);
+                    nodes.Add(node);
+                }
+
+                PengAIEditor.SaveActorAIData(true, pasteID, nodes);
+                AssetDatabase.Refresh();
             }
-
-            GameObject lvl = new GameObject();
-            PengLevel lv = lvl.AddComponent<PengLevel>();
-            lvl.tag = "PengLevel";
-            lvl.name = "Level" + levelID.ToString();
-            lv.levelID = levelID;
-            lv.levelName = levelName;
-            lv.info = info;
-            if (!Directory.Exists(Application.dataPath + "/Resources/Plot/" + levelID.ToString()))
-            {
-                Directory.CreateDirectory(Application.dataPath + "/Resources/Plot/" + levelID.ToString());
-            }
-            string path = Application.dataPath + "/PengFramework/Prefab/Airwall.prefab";
-
-            GameObject airwall1 = PrefabUtility.LoadPrefabContents(path);
-            airwall1.transform.position = new Vector3(0, 0, -3);
-            airwall1.transform.localScale = new Vector3(6, 6, 0.5f);
-
-            GameObject airwall2 = PrefabUtility.LoadPrefabContents(path);
-            airwall2.transform.position = new Vector3(3, 0, 0);
-            airwall2.transform.localScale = new Vector3(0.5f, 6, 6);
-
-            GameObject airwall3 = PrefabUtility.LoadPrefabContents(path);
-            airwall3.transform.position = new Vector3(-3, 0, 0);
-            airwall3.transform.localScale = new Vector3(0.5f, 6, 6);
-
-            GameObject airwall4 = PrefabUtility.LoadPrefabContents(path);
-            airwall4.transform.position = new Vector3(0, 0, 3);
-            airwall4.transform.localScale = new Vector3(6, 6, 0.5f);
-
-            airwall1.transform.SetParent(lvl.transform);
-            airwall2.transform.SetParent(lvl.transform);
-            airwall3.transform.SetParent(lvl.transform);
-            airwall4.transform.SetParent(lvl.transform);
-
-            List<PengLevelEditorNodes.PengLevelEditorNode> nodes = new List<PengLevelEditorNodes.PengLevelEditorNode>();
-            nodes.Add(new PengLevelEditorNodes.LevelStart(new Vector2(20, 80), null, 1, "0|2:0", "", "", ""));
-            nodes.Add(new PengLevelEditorNodes.CloseAirWall(new Vector2(200, 80), null, 2, "0|3:0", "", "", ""));
-            nodes.Add(new PengLevelEditorNodes.GenerateEnemy(new Vector2(380, 80), null, 3, "0|4:0", "", "", "0;"));
-            nodes.Add(new PengLevelEditorNodes.TriggerWaitArrival(new Vector2(560, 80), null, 4, "0|5:0", "", "0|-1:-1;1|-1:-1;2|-1:-1", "2;(0,0,0);(4,2,4)"));
-            nodes.Add(new PengLevelEditorNodes.ActiveActor(new Vector2(740, 80), null, 5, "0|6:0", "", "", ""));
-            nodes.Add(new PengLevelEditorNodes.SetAirWall(new Vector2(920, 80), null, 6, "0|7:0", "", "", ""));
-            nodes.Add(new PengLevelEditorNodes.TriggerWaitEnemyDie(new Vector2(1100, 80), null, 7, "0|8:0", "", "", ""));
-            nodes.Add(new PengLevelEditorNodes.CloseAirWall(new Vector2(1280, 80), null, 8, "0|-1:-1", "", "", ""));
-
-            PengLevelEditor.SaveLevelData(true, levelID, nodes);
-            bool success = false;
-            PrefabUtility.SaveAsPrefabAsset(lvl, Application.dataPath + "/Resources/Plot/" + levelID.ToString() + "/Level" + levelID.ToString() + ".prefab", out success);
-            Debug.Log(string.Format("Level" + levelID.ToString() + "保存[{0}]", success ? "成功" : "失败"));
-            DestroyImmediate(lvl);
-            AssetDatabase.Refresh();
         }
-        EditorGUILayout.EndVertical();*/
+
+        EditorGUILayout.EndVertical();
     }
 }

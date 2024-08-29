@@ -71,7 +71,6 @@ public partial class PengLevelEditor : EditorWindow
             return;
         }
             
-
         if ((Selection.activeGameObject.GetComponent<PengLevel>() == null) && (Selection.activeGameObject.transform.parent.GetComponent<PengLevel>() == null))
         {
             EditorGUILayout.HelpBox("所选对象不含PengLevel组件", MessageType.Warning);
@@ -94,9 +93,6 @@ public partial class PengLevelEditor : EditorWindow
                 ReadLevelData(levelID);
             }
         }
-        
-            
-        
 
         if (nodes.Count == 0)
         {

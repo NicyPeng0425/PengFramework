@@ -20,6 +20,14 @@ public partial class PengActorControl : MonoBehaviour
         Skill_B_Up,
         Skill_C_Up,
         Skill_D_Up,
+        AI_Forward,
+        AI_Backward,
+        AI_Right,
+        AI_Left,
+        AI_Forward_Right,
+        AI_Forward_Left,
+        AI_Backward_Right,
+        AI_Backward_Left,
     }
 
     public void InputListener()

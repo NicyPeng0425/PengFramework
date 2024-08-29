@@ -15,6 +15,7 @@ public class PengAIEditorNodeConnection
     public AINodeConnectionType type;
     public PengAIEditorNode.PengAIEditorNode node;
     public int index;
+    public bool inOccupied = false;
 
     public PengAIEditorNodeConnection(AINodeConnectionType type, int index, PengAIEditorNode.PengAIEditorNode node)
     {
@@ -38,7 +39,7 @@ public class PengAIEditorNodeConnection
                 break;
         }
 
-        if (GUI.Button(this.rect, ""))
+        if (GUI.Button(this.rect, total > 1 ? index.ToString():""))
         {
             if (node.editor.selectingPoint == null)
             {
@@ -51,15 +52,17 @@ public class PengAIEditorNodeConnection
                     switch (type)
                     {
                         case AINodeConnectionType.In:
-                            if (node.editor.selectingPoint.type == AINodeConnectionType.Out)
+                            if (node.editor.selectingPoint.type == AINodeConnectionType.Out && !inOccupied)
                             {
                                 node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] = node.nodeID;
+                                inOccupied = true;
                             }
                             break;
                         case AINodeConnectionType.Out:
-                            if (node.editor.selectingPoint.type == AINodeConnectionType.In)
+                            if (node.editor.selectingPoint.type == AINodeConnectionType.In && !node.editor.selectingPoint.inOccupied)
                             {
                                 node.outID[index] = node.editor.selectingPoint.node.nodeID;
+                                node.editor.selectingPoint.inOccupied = true;
                             }
                             break;
                     }

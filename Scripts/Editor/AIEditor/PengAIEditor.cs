@@ -51,10 +51,20 @@ public partial class PengAIEditor : EditorWindow
 
         if (Selection.activeGameObject.GetComponent<PengActor>().actorID != currentActorID)
         {
+            currentActorID = Selection.activeGameObject.GetComponent<PengActor>().actorID;
             ReadActorAIData(Selection.activeGameObject.GetComponent<PengActor>().actorID);
         }
 
-        sidePanelRect = new Rect(0, 0, 250, position.height);
+        if (nodes.Count == 0)
+        {
+            if (Selection.activeGameObject != null || currentSelectingGO != null)
+            {
+                currentActorID = Selection.activeGameObject.GetComponent<PengActor>().actorID;
+                ReadActorAIData(currentActorID);
+            }
+        }
+
+        sidePanelRect = new Rect(0, 0, 300, position.height);
         nodeMapRect = new Rect(sidePanelRect.width, 0, position.width - sidePanelRect.width, position.height);
         GUIStyle style1 = new GUIStyle("flow background");
         GUI.Box(nodeMapRect, "", style1);
@@ -163,7 +173,7 @@ public partial class PengAIEditor : EditorWindow
         XmlNodeList scriptChild = aiScript.ChildNodes;
         foreach (XmlElement ele in scriptChild)
         {
-            PengAIEditorNode.PengAIEditorNode node = ReadPengAIEditorNode(ele);
+            PengAIEditorNode.PengAIEditorNode node = ReadPengAIEditorNode(ele, this);
             nodes.Add(node);
         }
 
@@ -174,6 +184,23 @@ public partial class PengAIEditor : EditorWindow
             Vector2 currentPos = nodes[0].pos;
             Vector2 targetPos = initPos - currentPos;
             DragAllNodes(targetPos);
+        }
+
+        if (nodes.Count > 0)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].outID.Count > 0)
+                {
+                    for (int j = 0; j < nodes[i].outID.Count; j++)
+                    {
+                        if (nodes[i].outID[j] >= 0)
+                        {
+                            nodes[nodes[i].outID[j]].inPoint.inOccupied = true;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -228,6 +255,8 @@ public partial class PengAIEditor : EditorWindow
                 nodes[i].Draw();
             }
         }
+
+        DrawConnectionLines();
     }
 
     public void DrawSidePanel()
@@ -246,6 +275,14 @@ public partial class PengAIEditor : EditorWindow
         if (GUI.Button(saveButton, "保存\n数据", styleSave))
         {
             SaveActorAIData(true, currentActorID, nodes);
+        }
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i].isSelected)
+            {
+                nodes[i].DrawSideBar(new Rect(sidePanelRect.x, sidePanelRect.y + 130, sidePanelRect.width, sidePanelRect.height - 130));
+            }
         }
     }
 
@@ -317,9 +354,7 @@ public partial class PengAIEditor : EditorWindow
     {
         if (PengNode.GetCodedDown(scriptType) && scriptType != PengAIScript.AIScriptType.EventDecide)
         {
-                menu.AddItem(new GUIContent("添加节点/按类型分类/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
-                menu.AddItem(new GUIContent("添加节点/按首字母分类/" + PengNode.GetCatalogByName(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
-                menu.AddItem(new GUIContent("添加节点/按封装程度分类/" + PengNode.GetCatalogByPackage(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
+             menu.AddItem(new GUIContent("添加节点/" + PengNode.GetCatalogByFunction(scriptType) + "/" + PengNode.GetDescription(scriptType)), false, () => { ProcessAddNode(mousePos, scriptType); });
         }
     }
 
@@ -359,6 +394,7 @@ public partial class PengAIEditor : EditorWindow
         id.SetAttribute("ActorID", actorID.ToString());
         info.AppendChild(id);
 
+        bool conditioNodeHasOutNoConnected = false;
         for (int i = 0; i < nodes.Count; i++)
         {
             XmlElement node = doc.CreateElement("Script" + nodes[i].nodeID.ToString());
@@ -371,7 +407,28 @@ public partial class PengAIEditor : EditorWindow
             node.SetAttribute("OutID", PengGameManager.ParseDictionaryIntIntToString(nodes[i].outID));
             node.SetAttribute("SpecialInfo", nodes[i].SpecialParaDescription());
 
+            if (nodes[i].type == PengAIScript.AIScriptType.Condition)
+            {
+                PengAIEditorNode.Condition cond = nodes[i] as PengAIEditorNode.Condition;
+                if (cond.outID.Count > 0)
+                {
+                    for (int j = 0; j < cond.outID.Count; j++)
+                    {
+                        if (cond.outID[j] < 0)
+                        {
+                            conditioNodeHasOutNoConnected = true;
+                        }
+                    }
+                }
+            }
+
             script.AppendChild(node);
+        }
+
+        if (conditioNodeHasOutNoConnected)
+        {
+            EditorUtility.DisplayDialog("风险", "存在分支节点的分支没有连接后续节点，将不会保存！", "确认");
+            return;
         }
 
         root.AppendChild(info);
