@@ -15,7 +15,6 @@ public class PengAIEditorNodeConnection
     public AINodeConnectionType type;
     public PengAIEditorNode.PengAIEditorNode node;
     public int index;
-    public bool inOccupied = false;
 
     public PengAIEditorNodeConnection(AINodeConnectionType type, int index, PengAIEditorNode.PengAIEditorNode node)
     {
@@ -52,25 +51,41 @@ public class PengAIEditorNodeConnection
                     switch (type)
                     {
                         case AINodeConnectionType.In:
-                            if (node.editor.selectingPoint.type == AINodeConnectionType.Out && !inOccupied)
+                            if (node.editor.selectingPoint.type == AINodeConnectionType.Out)
                             {
-                                if (node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] >= 0)
+                                for (int i = 0; i < node.editor.nodes.Count; i++)
                                 {
-                                    node.editor.nodes[node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index]].inPoint.inOccupied = false;
+                                    if (node.editor.nodes[i].outID.Count > 0)
+                                    {
+                                        for (int j = 0; j < node.editor.nodes[i].outID.Count; j++)
+                                        {
+                                            if (node.editor.nodes[i].outID[j] == node.nodeID)
+                                            {
+                                                node.editor.nodes[i].outID[j] = -1;
+                                            }
+                                        }
+                                    }
                                 }
                                 node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] = node.nodeID;
-                                inOccupied = true;
                             }
                             break;
                         case AINodeConnectionType.Out:
-                            if (node.editor.selectingPoint.type == AINodeConnectionType.In && !node.editor.selectingPoint.inOccupied)
+                            if (node.editor.selectingPoint.type == AINodeConnectionType.In)
                             {
-                                if (node.outID[index] >= 0)
+                                for (int i = 0; i < node.editor.nodes.Count; i++)
                                 {
-                                    node.editor.nodes[node.outID[index]].inPoint.inOccupied = false;
+                                    if (node.editor.nodes[i].outID.Count > 0)
+                                    {
+                                        for (int j = 0; j < node.editor.nodes[i].outID.Count; j++)
+                                        {
+                                            if (node.editor.nodes[i].outID[j] == node.editor.selectingPoint.node.nodeID)
+                                            {
+                                                node.editor.nodes[i].outID[j] = -1;
+                                            }
+                                        }
+                                    }
                                 }
                                 node.outID[index] = node.editor.selectingPoint.node.nodeID;
-                                node.editor.selectingPoint.inOccupied = true;
                             }
                             break;
                     }

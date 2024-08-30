@@ -250,7 +250,6 @@ namespace PengAIEditorNode
 
                         if (GUI.Button(new Rect(lineCenter - buttonSize / 2, buttonSize), "×"))
                         {
-                            editor.nodes[outID[i]].inPoint.inOccupied = false;
                             outID[i] = -1;
                         }
                     }
@@ -717,7 +716,7 @@ namespace PengAIEditorNode
         public override void Draw()
         {
             base.Draw();
-            Rect newRect = new Rect(rect.x, rect.y + 0.5f * rect.height, rect.width, 0.5f * rect.height);
+            Rect newRect = new Rect(rect.x - 60, rect.y + 0.5f * rect.height, rect.width + 120, 0.5f * rect.height);
             GUI.Box(newRect, "决策间隔减少" + reduceTime1.ToString() + "-" + reduceTime2.ToString() + "秒");
         }
 

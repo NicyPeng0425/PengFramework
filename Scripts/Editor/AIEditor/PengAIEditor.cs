@@ -212,23 +212,6 @@ public partial class PengAIEditor : EditorWindow
             Vector2 targetPos = initPos - currentPos;
             DragAllNodes(targetPos);
         }
-
-        if (nodes.Count > 0)
-        {
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                if (nodes[i].outID.Count > 0)
-                {
-                    for (int j = 0; j < nodes[i].outID.Count; j++)
-                    {
-                        if (nodes[i].outID[j] >= 0)
-                        {
-                            nodes[nodes[i].outID[j]].inPoint.inOccupied = true;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)

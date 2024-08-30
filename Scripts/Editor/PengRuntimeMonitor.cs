@@ -131,6 +131,17 @@ public class PengRuntimeMonitor : EditorWindow
                         game.SetMainActor(game.actors[i], true);
                     }
                 }
+                else
+                {
+                    if (game.actors[i].input.active)
+                    {
+                        GUILayout.Label("下次决策：" + (game.actors[i].input.decideCD - game.actors[i].input.decideCDTimeCount).ToString() + "s");
+                    }
+                    else
+                    {
+                        GUILayout.Label("AI未激活");
+                    }
+                }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
 
