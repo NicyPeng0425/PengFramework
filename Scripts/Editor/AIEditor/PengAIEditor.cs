@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
+using static PengActorControl;
 
 public partial class PengAIEditor : EditorWindow
 {
@@ -19,6 +20,7 @@ public partial class PengAIEditor : EditorWindow
     public int currentActorID = 0;
     public GameObject currentSelectingGO = null;
     public List<PengAIEditorNode.PengAIEditorNode> nodes = new List<PengAIEditorNode.PengAIEditorNode>();
+    public PengActorControl.AIAttribute attribute = new PengActorControl.AIAttribute();
 
     [MenuItem("PengFramework/AI编辑器", false, 33)]
     static void Init()
@@ -110,6 +112,7 @@ public partial class PengAIEditor : EditorWindow
     public void ReadActorAIData(int actorID)
     {
         nodes.Clear();
+        attribute = new PengActorControl.AIAttribute();
         currentActorID = actorID;
         string path = Application.dataPath + "/Resources/AIs/" + actorID.ToString() + "/" + actorID.ToString() + ".xml";
 
@@ -160,6 +163,8 @@ public partial class PengAIEditor : EditorWindow
         }
 
         XmlNodeList infoChilds = aiInfo.ChildNodes;
+        bool hasAttr = false;
+        AIAttribute attr = new AIAttribute();
         foreach (XmlElement ele in infoChilds)
         {
             if (ele.Name == "ID")
@@ -168,7 +173,29 @@ public partial class PengAIEditor : EditorWindow
                 actorID = int.Parse(ele.GetAttribute("ActorID"));
                 continue;
             }
+            if (ele.Name == "Attribute")
+            {
+                hasAttr = true;
+                attr.chaseDistance = float.Parse(ele.GetAttribute("ChaseDistance"));
+                attr.chaseStopDistance = float.Parse(ele.GetAttribute("ChaseStopDistance"));
+                attr.decideCD = float.Parse(ele.GetAttribute("DecideCD"));
+                attr.visibleDistance = float.Parse(ele.GetAttribute("VisibleDistance"));
+                attr.visibleHeight = float.Parse(ele.GetAttribute("VisibleHeight"));
+                attr.visibleAngle = float.Parse(ele.GetAttribute("VisibleAngle"));
+            }
         }
+
+        if (!hasAttr)
+        {
+            attr.chaseDistance = 10f;
+            attr.chaseStopDistance = 3f;
+            attr.decideCD = 2f;
+            attr.visibleDistance = 15f;
+            attr.visibleHeight = 3f;
+            attr.visibleAngle = 180f;
+        }
+
+        attribute = attr;
 
         XmlNodeList scriptChild = aiScript.ChildNodes;
         foreach (XmlElement ele in scriptChild)
@@ -263,6 +290,7 @@ public partial class PengAIEditor : EditorWindow
     {
         GUIStyle style = new GUIStyle("ObjectPickerPreviewBackground");
         GUI.Box(sidePanelRect, "", style);
+        style.alignment = TextAnchor.MiddleLeft;
         PengEditorMain.DrawPengFrameworkIcon("AI编辑器");
 
         GUIStyle styleSave = new GUIStyle("Button");
@@ -274,16 +302,49 @@ public partial class PengAIEditor : EditorWindow
         EditorGUIUtility.AddCursorRect(saveButton, MouseCursor.Link);
         if (GUI.Button(saveButton, "保存\n数据", styleSave))
         {
-            SaveActorAIData(true, currentActorID, nodes);
+            SaveActorAIData(true, currentActorID, nodes, attribute);
         }
 
         for (int i = 0; i < nodes.Count; i++)
         {
             if (nodes[i].isSelected)
             {
-                nodes[i].DrawSideBar(new Rect(sidePanelRect.x, sidePanelRect.y + 130, sidePanelRect.width, sidePanelRect.height - 130));
+                nodes[i].DrawSideBar(new Rect(sidePanelRect.x, sidePanelRect.y + 150, sidePanelRect.width, sidePanelRect.height - 150));
             }
         }
+
+        Rect basicInfo = new Rect(sidePanelRect.x + 5, sidePanelRect.y + 50, sidePanelRect.width - 10, 80);
+        Rect id = new Rect(basicInfo.x, basicInfo.y, basicInfo.width, 20);
+        Rect id2 = new Rect(id.x + 70, id.y, id.width - 70, 20);
+        Rect chaseDisLbl = new Rect(id.x, id.y + 25, basicInfo.width * 0.16f, 20);
+        Rect chaseDis = new Rect(chaseDisLbl.x + chaseDisLbl.width, chaseDisLbl.y, chaseDisLbl.width, 20);
+        Rect chaseStopDisLbl = new Rect(chaseDis.x + chaseDis.width + 5, chaseDis.y, chaseDis.width, 20);
+        Rect chaseStopDis = new Rect(chaseStopDisLbl.x + chaseStopDisLbl.width, chaseStopDisLbl.y, chaseStopDisLbl.width, 20);
+        Rect dcdCDLbl = new Rect(chaseStopDis.x + chaseStopDis.width + 5, chaseStopDis.y, chaseStopDis.width, 20);
+        Rect dcdCD = new Rect(dcdCDLbl.x + dcdCDLbl.width, dcdCDLbl.y, dcdCDLbl.width, 20);
+
+        Rect vsbDisLbl = new Rect(id.x, id.y + 50, basicInfo.width * 0.16f, 20);
+        Rect vsbDis = new Rect(vsbDisLbl.x + vsbDisLbl.width, vsbDisLbl.y, vsbDisLbl.width, 20);
+        Rect vsbHgtLbl = new Rect(vsbDis.x + vsbDis.width + 5, vsbDis.y, vsbDis.width, 20);
+        Rect vsbHgt = new Rect(vsbHgtLbl.x + vsbHgtLbl.width, vsbHgtLbl.y, vsbHgtLbl.width, 20);
+        Rect vsbAgLbl = new Rect(vsbHgt.x + vsbHgt.width + 5, vsbHgt.y, vsbHgt.width, 20);
+        Rect vsbAg = new Rect(vsbAgLbl.x + vsbAgLbl.width, vsbAgLbl.y, vsbAgLbl.width, 20);
+
+        GUI.Box(id, "角色ID：", style);
+        GUI.Box(id2, currentActorID.ToString(), style);
+        GUI.Box(chaseDisLbl, "追逐距离", style);
+        attribute.chaseDistance = EditorGUI.FloatField(chaseDis, attribute.chaseDistance);
+        GUI.Box(chaseStopDisLbl, "停止距离", style);
+        attribute.chaseStopDistance = EditorGUI.FloatField(chaseStopDis, attribute.chaseStopDistance);
+        GUI.Box(dcdCDLbl, "决策间隔", style);
+        attribute.decideCD = EditorGUI.FloatField(dcdCD, attribute.decideCD);
+        GUI.Box(vsbDisLbl, "可视距离", style);
+        attribute.visibleDistance = EditorGUI.FloatField(vsbDis, attribute.visibleDistance);
+        GUI.Box(vsbHgtLbl, "可视高度", style);
+        attribute.visibleHeight = EditorGUI.FloatField(vsbHgt, attribute.visibleHeight);
+        GUI.Box(vsbAgLbl, "可视角度", style);
+        attribute.visibleAngle = EditorGUI.FloatField(vsbAg, attribute.visibleAngle);
+
     }
 
     private void ProcessEvents(Event e)
@@ -382,7 +443,7 @@ public partial class PengAIEditor : EditorWindow
         }
     }
 
-    public static void SaveActorAIData(bool showMsg, int actorID, List<PengAIEditorNode.PengAIEditorNode> nodes)
+    public static void SaveActorAIData(bool showMsg, int actorID, List<PengAIEditorNode.PengAIEditorNode> nodes, PengActorControl.AIAttribute attribute)
     {
         XmlDocument doc = new XmlDocument();
         XmlDeclaration decl = doc.CreateXmlDeclaration("1.0", "UTF-8", "");
@@ -394,7 +455,18 @@ public partial class PengAIEditor : EditorWindow
         id.SetAttribute("ActorID", actorID.ToString());
         info.AppendChild(id);
 
+        XmlElement attr = doc.CreateElement("Attribute");
+        attr.SetAttribute("ChaseDistance", attribute.chaseDistance.ToString());
+        attr.SetAttribute("ChaseStopDistance", attribute.chaseStopDistance.ToString());
+        attr.SetAttribute("DecideCD", attribute.decideCD.ToString());
+        attr.SetAttribute("VisibleDistance", attribute.visibleDistance.ToString());
+        attr.SetAttribute("VisibleHeight", attribute.visibleHeight.ToString());
+        attr.SetAttribute("VisibleAngle", attribute.visibleAngle.ToString());
+
+        info.AppendChild(attr);
+
         bool conditioNodeHasOutNoConnected = false;
+        bool ratioOutOfRange = false;
         for (int i = 0; i < nodes.Count; i++)
         {
             XmlElement node = doc.CreateElement("Script" + nodes[i].nodeID.ToString());
@@ -407,20 +479,59 @@ public partial class PengAIEditor : EditorWindow
             node.SetAttribute("OutID", PengGameManager.ParseDictionaryIntIntToString(nodes[i].outID));
             node.SetAttribute("SpecialInfo", nodes[i].SpecialParaDescription());
 
-            if (nodes[i].type == PengAIScript.AIScriptType.Condition)
+            if (nodes[i].type == PengAIScript.AIScriptType.Condition ||
+                nodes[i].type == PengAIScript.AIScriptType.Random ||
+                nodes[i].type == PengAIScript.AIScriptType.Sequence)
             {
-                PengAIEditorNode.Condition cond = nodes[i] as PengAIEditorNode.Condition;
-                if (cond.outID.Count > 0)
+                switch (nodes[i].type)
                 {
-                    for (int j = 0; j < cond.outID.Count; j++)
-                    {
-                        if (cond.outID[j] < 0)
+                    case PengAIScript.AIScriptType.Condition:
+                        PengAIEditorNode.Condition cond = nodes[i] as PengAIEditorNode.Condition;
+                        if (cond.outID.Count > 0)
                         {
-                            conditioNodeHasOutNoConnected = true;
+                            for (int j = 0; j < cond.outID.Count; j++)
+                            {
+                                if (cond.outID[j] < 0)
+                                {
+                                    conditioNodeHasOutNoConnected = true;
+                                }
+                            }
                         }
-                    }
+                        break;
+                    case PengAIScript.AIScriptType.Random:
+                        PengAIEditorNode.Random rand = nodes[i] as PengAIEditorNode.Random;
+                        if (rand.outID.Count > 0)
+                        {
+                            for (int j = 0; j < rand.outID.Count; j++)
+                            {
+                                if (rand.outID[j] < 0)
+                                {
+                                    conditioNodeHasOutNoConnected = true;
+                                }
+                            }
+                        }
+                        if(rand.SpecialParaDescription() == "TotalRatioOutOfRange")
+                        {
+                            ratioOutOfRange = true;
+                        }
+                        break;
+                    case PengAIScript.AIScriptType.Sequence:
+                        PengAIEditorNode.Sequence seq = nodes[i] as PengAIEditorNode.Sequence;
+                        if (seq.outID.Count > 0)
+                        {
+                            for (int j = 0; j < seq.outID.Count; j++)
+                            {
+                                if (seq.outID[j] < 0)
+                                {
+                                    conditioNodeHasOutNoConnected = true;
+                                }
+                            }
+                        }
+                        break;
                 }
+
             }
+
 
             script.AppendChild(node);
         }
@@ -428,6 +539,11 @@ public partial class PengAIEditor : EditorWindow
         if (conditioNodeHasOutNoConnected)
         {
             EditorUtility.DisplayDialog("风险", "存在分支节点的分支没有连接后续节点，将不会保存！", "确认");
+            return;
+        }
+        else if (ratioOutOfRange)
+        {
+            EditorUtility.DisplayDialog("风险", "存在随机分支节点的概率总和不等于1，将不会保存！", "确认");
             return;
         }
 

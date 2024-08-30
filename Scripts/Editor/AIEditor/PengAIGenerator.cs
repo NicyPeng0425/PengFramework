@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using System.Xml;
 using UnityEditor.Animations;
+using static PengActorControl;
 
 public class PengAIGenerator : EditorWindow
 {
@@ -83,7 +84,14 @@ public class PengAIGenerator : EditorWindow
 
             nodes.Add(new PengAIEditorNode.EventDecide(new Vector2(270, 40), null, 0, "0:-1", ""));
 
-            PengAIEditor.SaveActorAIData(true, actorID, nodes);
+            PengActorControl.AIAttribute attr = new PengActorControl.AIAttribute();
+            attr.chaseDistance = 10f;
+            attr.chaseStopDistance = 3f;
+            attr.decideCD = 2f;
+            attr.visibleDistance = 15f;
+            attr.visibleHeight = 3f;
+            attr.visibleAngle = 180f;
+            PengAIEditor.SaveActorAIData(true, actorID, nodes, attr);
             AssetDatabase.Refresh();
         }
         EditorGUILayout.EndVertical();
@@ -130,6 +138,8 @@ public class PengAIGenerator : EditorWindow
                         script = node;
                     }
                 }
+                bool hasAttr = false;
+                AIAttribute attr = new AIAttribute();
                 foreach (XmlElement ele in info.ChildNodes)
                 {
                     if (ele.Name == "ActorID")
@@ -137,6 +147,25 @@ public class PengAIGenerator : EditorWindow
                         ele.SetAttribute("ActorID", pasteID.ToString());
                         continue;
                     }
+                    if (ele.Name == "Attribute")
+                    {
+                        hasAttr = true;
+                        attr.chaseDistance = float.Parse(ele.GetAttribute("ChaseDistance"));
+                        attr.chaseStopDistance = float.Parse(ele.GetAttribute("ChaseStopDistance"));
+                        attr.decideCD = float.Parse(ele.GetAttribute("DecideCD"));
+                        attr.visibleDistance = float.Parse(ele.GetAttribute("VisibleDistance"));
+                        attr.visibleHeight = float.Parse(ele.GetAttribute("VisibleHeight"));
+                        attr.visibleAngle = float.Parse(ele.GetAttribute("VisibleAngle"));
+                    }
+                }
+                if (!hasAttr)
+                {
+                    attr.chaseDistance = 10f;
+                    attr.chaseStopDistance = 3f;
+                    attr.decideCD = 2f;
+                    attr.visibleDistance = 15f;
+                    attr.visibleHeight = 3f;
+                    attr.visibleAngle = 180f;
                 }
 
                 if (!Directory.Exists(Application.dataPath + "/Resources/AIs/" + pasteID.ToString()))
@@ -151,7 +180,7 @@ public class PengAIGenerator : EditorWindow
                     nodes.Add(node);
                 }
 
-                PengAIEditor.SaveActorAIData(true, pasteID, nodes);
+                PengAIEditor.SaveActorAIData(true, pasteID, nodes, attr);
                 AssetDatabase.Refresh();
             }
         }

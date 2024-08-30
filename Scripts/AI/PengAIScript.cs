@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static PengActorControl;
 
 namespace PengAIScript
 {
@@ -33,18 +34,18 @@ namespace PengAIScript
     {
         [Description("1,决策事件,事件")]
         EventDecide,
-        [Description("1,条件分支,条件")]
+        [Description("1,条件分支,分支")]
         Condition,
-        [Description("0,随机分支,条件")]
+        [Description("1,随机分支,分支")]
         Random,
-        [Description("0,输入行为,行为")]
+        [Description("1,输入行为,行为")]
         InputAction,
-        [Description("0,缩短决策间隔,行为")]
+        [Description("1,缩短决策间隔,行为")]
         ReduceDecideGap,
-        [Description("0,空逻辑,行为")]
+        [Description("1,空逻辑,行为")]
         Empty,
-        [Description("0,输出调试,行为")]
-        DebugLog,
+        [Description("1,序列分支,分支")]
+        Sequence,
     }
 
     public class PengAIBaseScript
@@ -442,6 +443,174 @@ namespace PengAIScript
         public override void Function()
         {
             base.Function();
+        }
+    }
+
+    public class Empty : PengAIBaseScript
+    {
+        bool returns;
+        public Empty(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = new Dictionary<int, int>();
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+
+            if (info != "")
+            {
+                returns = int.Parse(info) > 0;
+            }
+
+            type = AIScriptType.Empty;
+        }
+
+        public override bool ScriptFlowNext()
+        {
+            return returns;
+        }
+    }
+
+    public class InputAction : PengAIBaseScript
+    {
+        public ActionType action;
+        public InputAction(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntInt(flowOutInfo);
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+
+            if (info != "")
+            {
+                action = (ActionType)Enum.Parse(typeof(ActionType), info);
+            }
+
+            type = AIScriptType.InputAction;
+        }
+
+        public override void Function()
+        {
+            if (!ai.actions.ContainsKey(ai.actor.game.currentFrame))
+            {
+                List<ActionType> at = new List<ActionType>();
+                at.Add(action);
+                ai.actions.Add(ai.actor.game.currentFrame, at);
+            }
+            else
+            {
+                ai.actions[ai.actor.game.currentFrame].Add(action);
+            }
+        }
+    }
+
+    public class ReduceDecideGap : PengAIBaseScript
+    {
+        public float time1;
+        public float time2;
+        public ReduceDecideGap(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntInt(flowOutInfo);
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+
+            if (info != "")
+            {
+                string[] str = info.Split(",");
+                time1 = float.Parse(str[0]);
+                time2 = float.Parse(str[1]);
+            }
+
+            type = AIScriptType.ReduceDecideGap;
+        }
+
+        public override void Function()
+        {
+            if (time1 == time2){ ai.decideCDTimeCount += time1;}
+            else { ai.decideCDTimeCount += UnityEngine.Random.Range(time1, time2); }
+        }
+    }
+
+    public class Sequence : PengAIBaseScript
+    {
+        public Sequence(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntInt(flowOutInfo);
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = PengAIScript.AIScriptType.Sequence;
+        }
+    }
+
+    public class Random : PengAIBaseScript
+    {
+        public List<float> ratios = new List<float>();
+        public Random(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntInt(flowOutInfo);
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+
+            if (info != "")
+            {
+                ratios = new List<float>();
+                string[] str = info.Split(",");
+                for (int i = 0; i < str.Length; i++)
+                {
+                    ratios.Add(float.Parse(str[i]));
+                }
+            }
+            type = PengAIScript.AIScriptType.Random;
+        }
+
+        public override bool ScriptFlowNext()
+        {
+            float rand = UnityEngine.Random.Range(0f, 1f);
+            float cal = 0;
+            bool toReturn = false;
+            for (int i = 0; i < ratios.Count; i++)
+            {
+                if (rand >= cal && rand <= ratios[i])
+                {
+                    if (ai.scripts[flowOutInfo.ElementAt(i).Value].Execute())
+                    {
+                        toReturn = true;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                cal += ratios[i];
+            }
+            return toReturn;
         }
     }
 }

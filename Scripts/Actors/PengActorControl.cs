@@ -69,6 +69,7 @@ public partial class PengActorControl : MonoBehaviour
     public float visibleHeight = 2.5f;
     [HideInInspector]
     public float decideCDTimeCount = 0f;
+    //决策间隔
     [HideInInspector]
     public float decideCD = 2f;
     [HideInInspector]
@@ -251,7 +252,10 @@ public partial class PengActorControl : MonoBehaviour
 
     public void Decide()
     {
-        scripts.ElementAt(0).Value.Execute();
+        if (!scripts.ElementAt(0).Value.Execute())
+        {
+            Debug.LogWarning("决策失败！");
+        }
     }
 
     public void OnDrawGizmos()

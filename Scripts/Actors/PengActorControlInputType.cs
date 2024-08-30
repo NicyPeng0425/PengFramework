@@ -28,6 +28,14 @@ public partial class PengActorControl : MonoBehaviour
         AI_Forward_Left,
         AI_Backward_Right,
         AI_Backward_Left,
+        AI_Reserved_1,
+        AI_Reserved_2,
+        AI_Reserved_3,
+        AI_Reserved_4,
+        AI_Reserved_5,
+        AI_Reserved_6,
+        AI_Reserved_7,
+        AI_Reserved_8,
     }
 
     public void InputListener()

@@ -10,13 +10,14 @@ using UnityEditor;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using PengLevelEditorNodes;
+using Codice.Client.Common;
 
 namespace PengAIEditorNode
 {
     public enum PengAIEditorNodeType
     {
         Event,
-        Condition,
+        Branch,
         Action
     }
 
@@ -97,7 +98,7 @@ namespace PengAIEditorNode
                         }
                     }
                     break;
-                case PengAIEditorNodeType.Condition:
+                case PengAIEditorNodeType.Branch:
                     GUIStyle style4 = new GUIStyle("flow node 2" + (isSelected ? " on" : ""));
                     style4.fontStyle = FontStyle.Bold;
                     GUI.Box(rectScale, name, style4);
@@ -127,8 +128,11 @@ namespace PengAIEditorNode
         {
             if (isSelected)
             {
-                Rect box = new Rect(sidebar.x + 10, sidebar.y + 10, sidebar.width - 20, 40);
-                GUI.Box(box, meaning);
+                GUIStyle style = new GUIStyle("Box");
+                style.wordWrap = true;
+                style.alignment = TextAnchor.UpperLeft;
+                Rect box = new Rect(sidebar.x + 10, sidebar.y + 10, sidebar.width - 20, 50);
+                GUI.Box(box, meaning, style);
             }
         }
 
@@ -371,7 +375,6 @@ namespace PengAIEditorNode
         }
     }
 
-
     public class Condition : PengAIEditorNode
     {
         public List<PengAIScript.ConditionVar> conditions = new List<PengAIScript.ConditionVar>();
@@ -392,7 +395,7 @@ namespace PengAIEditorNode
             ReadSpecialParaDescription(info);
 
             type = PengAIScript.AIScriptType.Condition;
-            nodeType = PengAIEditorNodeType.Condition;
+            nodeType = PengAIEditorNodeType.Branch;
             name = GetDescription(type);
         }
 
@@ -587,6 +590,412 @@ namespace PengAIEditorNode
             judge.sensor2 = PengAIScript.AISensor.Value;
             cond.judge = judge;
             conditions.Add(cond);
+        }
+    }
+
+    public class Empty : PengAIEditorNode
+    {
+        public bool returns = false;
+        public Empty(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "空执行，强制返回false以继续后续的决策树判断，或强制返回true以中断决策树判断。";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[0];
+
+            ReadSpecialParaDescription(info);
+            type = PengAIScript.AIScriptType.Empty;
+            nodeType = PengAIEditorNodeType.Action;
+            name = GetDescription(type);
+        }
+
+        public override void Draw()
+        {
+            base.Draw();
+            Rect newRect = new Rect(rect.x, rect.y + 0.5f * rect.height, rect.width, 0.5f * rect.height);
+            GUI.Box(newRect, returns ? EditorGUIUtility.IconContent("CollabDeleted Icon") : EditorGUIUtility.IconContent("CollabMoved Icon"));
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return returns ? "1" : "0";
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                returns = int.Parse(info) > 0;
+            }
+        }
+
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            GUIStyle style = new GUIStyle("Box");
+            style.wordWrap = true;
+            style.alignment = TextAnchor.MiddleLeft;
+            Rect rect = new Rect(sidebar.x + 5, sidebar.y + 90, sidebar.width, 20);
+            Rect rect2 = new Rect(rect.x + 80, rect.y, rect.width - 85, 20);
+            GUI.Box(rect, "返回值：", style);
+            returns = EditorGUI.Toggle(rect2, returns);
+        }
+    }
+
+    public class InputAction : PengAIEditorNode
+    {
+        public PengActorControl.ActionType action;
+        public InputAction(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "发出一个输入指令以使角色更改状态。";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[1];
+            outPoints[0] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, 0, this);
+            ReadSpecialParaDescription(info);
+            type = PengAIScript.AIScriptType.InputAction;
+            nodeType = PengAIEditorNodeType.Action;
+            name = GetDescription(type);
+        }
+        public override void Draw()
+        {
+            base.Draw();
+            Rect newRect = new Rect(rect.x, rect.y + 0.5f * rect.height, rect.width, 0.5f * rect.height);
+            GUI.Box(newRect, action.ToString());
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return action.ToString();
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                action = (PengActorControl.ActionType)Enum.Parse(typeof(PengActorControl.ActionType), info);
+            }
+        }
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            GUIStyle style = new GUIStyle("Box");
+            style.wordWrap = true;
+            style.alignment = TextAnchor.MiddleLeft;
+            Rect rect = new Rect(sidebar.x + 5, sidebar.y + 90, sidebar.width, 20);
+            Rect rect2 = new Rect(rect.x + 80, rect.y, rect.width - 90, 20);
+            GUI.Box(rect, "输入值：", style);
+            action = (PengActorControl.ActionType)EditorGUI.EnumPopup(rect2, action);
+        }
+    }
+
+    public class ReduceDecideGap : PengAIEditorNode
+    {
+        public float reduceTime1;
+        public float reduceTime2;
+        public ReduceDecideGap(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "减少距离下次决策的时间，其值为两个参数之间的一个随机数。";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[1];
+            outPoints[0] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, 0, this);
+            ReadSpecialParaDescription(info);
+            type = PengAIScript.AIScriptType.ReduceDecideGap;
+            nodeType = PengAIEditorNodeType.Action;
+            name = GetDescription(type);
+        }
+        public override void Draw()
+        {
+            base.Draw();
+            Rect newRect = new Rect(rect.x, rect.y + 0.5f * rect.height, rect.width, 0.5f * rect.height);
+            GUI.Box(newRect, "决策间隔减少" + reduceTime1.ToString() + "-" + reduceTime2.ToString() + "秒");
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return reduceTime1.ToString() + "," + reduceTime2.ToString();
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                string[] str = info.Split(",");
+                reduceTime1 = float.Parse(str[0]);
+                reduceTime2 = float.Parse(str[1]);
+            }
+        }
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            GUIStyle style = new GUIStyle("Box");
+            style.wordWrap = true;
+            style.alignment = TextAnchor.MiddleLeft;
+            Rect rect = new Rect(sidebar.x + 5, sidebar.y + 90, sidebar.width, 20);
+            Rect rect2 = new Rect(rect.x + 80, rect.y, rect.width - 90, 20);
+            GUI.Box(rect, "时间下限：", style);
+            reduceTime1 = EditorGUI.FloatField(rect2, reduceTime1);
+            if (reduceTime1 >= reduceTime2)
+            {
+                reduceTime1 = reduceTime2;
+            }
+            Rect rect3 = new Rect(sidebar.x + 5, sidebar.y + 120, sidebar.width, 20);
+            Rect rect4 = new Rect(rect3.x + 80, rect3.y, rect3.width - 90, 20);
+            GUI.Box(rect3, "时间上限：", style);
+            reduceTime2 = EditorGUI.FloatField(rect4, reduceTime2);
+            if (reduceTime1 >= reduceTime2)
+            {
+                reduceTime2 = reduceTime1;
+            }
+        }
+    }
+
+    public class Sequence : PengAIEditorNode
+    {
+        public Sequence(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "条件节点";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[outID.Count];
+            for (int i = 0; i < outID.Count; i++)
+            {
+                outPoints[i] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, i, this);
+            }
+
+            ReadSpecialParaDescription(info);
+
+            type = PengAIScript.AIScriptType.Sequence;
+            nodeType = PengAIEditorNodeType.Branch;
+            name = GetDescription(type);
+        }
+
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            Rect addConditionButton = new Rect(sidebar.x + 10, sidebar.y + 60, 80, 20);
+            if (GUI.Button(addConditionButton, "添加分支"))
+            {
+                AddBranch();
+            }
+
+            if (outID.Count > 0)
+            {
+                int remove = -1;
+                for (int i = 0; i < outID.Count; i++)
+                {
+                    Rect box = new Rect(sidebar.x + 10, sidebar.y + 90 + 30 * i, sidebar.width - 20, 45);
+                    Rect enum1 = new Rect(box.x + 5, box.y, (box.width - 10) * 0.25f - 2.5f, 20);
+                    Rect enum2 = new Rect(enum1.x + enum1.width + 5, enum1.y, (box.width - 10) * 0.35f - 2.5f, 20);
+                    
+                    if (i > 0)
+                    {
+                        if (GUI.Button(enum2, "删除"))
+                        {
+                            remove = i;
+                        }
+                    }
+                    GUI.Box(enum1, "分支" + i.ToString());
+                }
+
+                if (remove >= 0)
+                {
+                    PengAIEditorNodeConnection[] newPAENC = new PengAIEditorNodeConnection[outPoints.Length - 1];
+                    int j = 0;
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        if (i != remove)
+                        {
+                            newPAENC[j] = outPoints[i];
+                        }
+                        if (i > j)
+                        {
+                            outID[j] = outID.ElementAt(i).Value;
+                        }
+                        if (i != remove)
+                        {
+                            j++;
+                        }
+                    }
+                    outID.Remove(outID.ElementAt(outID.Count - 1).Key);
+                    outPoints = newPAENC;
+                }
+            }
+        }
+
+        public void AddBranch()
+        {
+            PengAIEditorNodeConnection[] newPAENC = new PengAIEditorNodeConnection[outPoints.Length + 1];
+            outID.Add(outPoints.Length, -1);
+            for (int i = 0; i < outPoints.Length; i++)
+            {
+                newPAENC[i] = outPoints[i];
+            }
+            newPAENC[outPoints.Length] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, outPoints.Length, this);
+            outPoints = newPAENC;
+        }
+    }
+
+    public class Random : PengAIEditorNode
+    {
+        public List<float> ratios = new List<float>();
+        public Random(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "随机节点。各分支概率总和必须为1。添加分支时将自动分配1-当前概率总和的值作为新分支的概率，可以灵活运用这一特性。";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[outID.Count];
+            for (int i = 0; i < outID.Count; i++)
+            {
+                outPoints[i] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, i, this);
+            }
+
+            ReadSpecialParaDescription(info);
+
+            type = PengAIScript.AIScriptType.Random;
+            nodeType = PengAIEditorNodeType.Branch;
+            name = GetDescription(type);
+        }
+
+        public override string SpecialParaDescription()
+        {
+            float total = 0;
+            string result = "";
+            for (int i = 0; i < ratios.Count; i++)
+            {
+                total += ratios[i];
+                result += ratios[i].ToString();
+                if (i != ratios.Count - 1)
+                {
+                    result += ","; 
+                }
+            }
+            if (total != 1)
+            {
+                result = "TotalRatioOutOfRange";
+            }
+            return result;
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                ratios = new List<float>();
+                string[] str = info.Split(",");
+                for (int i = 0; i < str.Length; i++)
+                {
+                    ratios.Add(float.Parse(str[i]));
+                }
+            }
+        }
+
+        public override void Draw()
+        {
+            base.Draw();
+            for (int i = 0; i < outPoints.Length; i++)
+            {
+                Rect ratio = new Rect(outPoints[i].rect.x - 10, outPoints[i].rect.y - 13, outPoints[i].rect.width + 20, 20);
+                GUI.Box(ratio, ratios[i].ToString());
+            }
+        }
+
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            Rect addConditionButton = new Rect(sidebar.x + 10, sidebar.y + 60, 80, 20);
+            if (GUI.Button(addConditionButton, "添加分支"))
+            {
+                AddBranch();
+            }
+
+            if (outID.Count > 0)
+            {
+                int remove = -1;
+                
+                for (int i = 0; i < outID.Count; i++)
+                {
+                    Rect box = new Rect(sidebar.x + 10, sidebar.y + 90 + 30 * i, sidebar.width - 20, 45);
+                    Rect enum1 = new Rect(box.x + 5, box.y, 70, 20);
+                    Rect enum2 = new Rect(enum1.x + enum1.width + 5, enum1.y, box.width - 150, 20);
+                    Rect enum3 = new Rect(box.x + box.width - 70, box.y, 70, 20);
+                    
+                    GUI.Box(enum1, "分支" + i.ToString() + "概率：");
+                    ratios[i] = EditorGUI.Slider(enum2, ratios[i], 0f, 1f);
+                    if (i > 0)
+                    {
+                        if (GUI.Button(enum3, "删除"))
+                        {
+                            remove = i;
+                        }
+                    }
+                }
+
+                if (remove >= 0)
+                {
+                    ratios.RemoveAt(remove);
+                    PengAIEditorNodeConnection[] newPAENC = new PengAIEditorNodeConnection[outPoints.Length - 1];
+                    int j = 0;
+                    for (int i = 0; i < outPoints.Length; i++)
+                    {
+                        if (i != remove)
+                        {
+                            newPAENC[j] = outPoints[i];
+                        }
+                        if (i > j)
+                        {
+                            outID[j] = outID.ElementAt(i).Value;
+                        }
+                        if (i != remove)
+                        {
+                            j++;
+                        }
+                    }
+                    outID.Remove(outID.ElementAt(outID.Count - 1).Key);
+                    outPoints = newPAENC;
+                }
+            }
+        }
+
+        public void AddBranch()
+        {
+            PengAIEditorNodeConnection[] newPAENC = new PengAIEditorNodeConnection[outPoints.Length + 1];
+            outID.Add(outPoints.Length, -1);
+            for (int i = 0; i < outPoints.Length; i++)
+            {
+                newPAENC[i] = outPoints[i];
+            }
+            newPAENC[outPoints.Length] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, outPoints.Length, this);
+            outPoints = newPAENC;
+            float total = 0;
+            for (int i = 0; i < ratios.Count; i++)
+            {
+                total += ratios[i];
+            }
+            if (total >= 1)
+            {
+                ratios.Add(0);
+            }
+            else
+            {
+                ratios.Add(1 - total);
+            }
         }
     }
 }

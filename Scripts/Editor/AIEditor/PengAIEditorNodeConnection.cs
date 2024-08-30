@@ -54,6 +54,10 @@ public class PengAIEditorNodeConnection
                         case AINodeConnectionType.In:
                             if (node.editor.selectingPoint.type == AINodeConnectionType.Out && !inOccupied)
                             {
+                                if (node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] >= 0)
+                                {
+                                    node.editor.nodes[node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index]].inPoint.inOccupied = false;
+                                }
                                 node.editor.selectingPoint.node.outID[node.editor.selectingPoint.index] = node.nodeID;
                                 inOccupied = true;
                             }
@@ -61,6 +65,10 @@ public class PengAIEditorNodeConnection
                         case AINodeConnectionType.Out:
                             if (node.editor.selectingPoint.type == AINodeConnectionType.In && !node.editor.selectingPoint.inOccupied)
                             {
+                                if (node.outID[index] >= 0)
+                                {
+                                    node.editor.nodes[node.outID[index]].inPoint.inOccupied = false;
+                                }
                                 node.outID[index] = node.editor.selectingPoint.node.nodeID;
                                 node.editor.selectingPoint.inOccupied = true;
                             }

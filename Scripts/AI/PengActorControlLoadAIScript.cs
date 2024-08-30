@@ -7,6 +7,15 @@ using static Cinemachine.DocumentationSortingAttribute;
 
 public partial class PengActorControl : MonoBehaviour
 {
+    public struct AIAttribute
+    {
+        public float chaseDistance;
+        public float chaseStopDistance;
+        public float decideCD;
+        public float visibleDistance;
+        public float visibleHeight;
+        public float visibleAngle;
+    }
     public void LoadActorAI()
     {
         TextAsset textAsset = (TextAsset)Resources.Load("AIs/" + actor.actorID.ToString() + "/" + actor.actorID.ToString());
@@ -50,7 +59,9 @@ public partial class PengActorControl : MonoBehaviour
         }
 
         XmlNodeList infoChilds = aiInfo.ChildNodes;
-        /*
+
+        bool hasAttr = false;
+        AIAttribute attr = new AIAttribute();
         foreach (XmlElement ele in infoChilds)
         {
             if (ele.Name == "ID")
@@ -59,7 +70,34 @@ public partial class PengActorControl : MonoBehaviour
                 this.actor.actorID = int.Parse(ele.GetAttribute("ActorID"));
                 continue;
             }
-        }*/
+            if (ele.Name == "Attribute")
+            {
+                hasAttr = true;
+                attr.chaseDistance = float.Parse(ele.GetAttribute("ChaseDistance"));
+                attr.chaseStopDistance = float.Parse(ele.GetAttribute("ChaseStopDistance"));
+                attr.decideCD = float.Parse(ele.GetAttribute("DecideCD"));
+                attr.visibleDistance = float.Parse(ele.GetAttribute("VisibleDistance"));
+                attr.visibleHeight = float.Parse(ele.GetAttribute("VisibleHeight"));
+                attr.visibleAngle = float.Parse(ele.GetAttribute("VisibleAngle"));
+            }
+        }
+
+        if (!hasAttr) 
+        {
+            attr.chaseDistance = 10f;
+            attr.chaseStopDistance = 3f;
+            attr.decideCD = 2f;
+            attr.visibleDistance = 15f;
+            attr.visibleHeight = 3f;
+            attr.visibleAngle = 180f;
+        }
+
+        chaseDistance = attr.chaseDistance;
+        chaseStopDistance = attr.chaseStopDistance;
+        decideCD = attr.decideCD;
+        visibleDistance = attr.visibleDistance;
+        visibleAngle = attr.visibleAngle;
+        visibleHeight = attr.visibleHeight;
 
         XmlNodeList scriptChild = aiScript.ChildNodes;
 
@@ -98,6 +136,16 @@ public partial class PengActorControl : MonoBehaviour
                 return new PengAIScript.DecideEvent(this, ID, flowOutInfo, specialInfo);
             case PengAIScript.AIScriptType.Condition:
                 return new PengAIScript.Condition(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.Empty:
+                return new PengAIScript.Empty(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.InputAction:
+                return new PengAIScript.InputAction(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.ReduceDecideGap:
+                return new PengAIScript.ReduceDecideGap(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.Sequence:
+                return new PengAIScript.Sequence(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.Random:
+                return new PengAIScript.Random(this, ID, flowOutInfo, specialInfo);
         }
     }
 }

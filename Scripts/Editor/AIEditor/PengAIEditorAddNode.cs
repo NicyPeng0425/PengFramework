@@ -1,4 +1,5 @@
-﻿using PengLevelRuntimeFunction;
+﻿using PengAIEditorNode;
+using PengLevelRuntimeFunction;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,6 +33,16 @@ public partial class PengAIEditor : EditorWindow
                 return new PengAIEditorNode.EventDecide(pos, editor, ID, outID, specialInfo);
             case PengAIScript.AIScriptType.Condition:
                 return new PengAIEditorNode.Condition(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.Empty:
+                return new PengAIEditorNode.Empty(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.InputAction:
+                return new PengAIEditorNode.InputAction(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.ReduceDecideGap:
+                return new PengAIEditorNode.ReduceDecideGap(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.Sequence:
+                return new PengAIEditorNode.Sequence(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.Random:
+                return new PengAIEditorNode.Random(pos, editor, ID, outID, specialInfo);
         }
     }
     private void ProcessAddNode(Vector2 mousePos, PengAIScript.AIScriptType type)
@@ -67,6 +78,18 @@ public partial class PengAIEditor : EditorWindow
                 cond.judge = judge;
                 result.conditions.Add(cond);
                 nodes.Add(result); break;
+            case PengAIScript.AIScriptType.Empty:
+                nodes.Add(new PengAIEditorNode.Empty(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(0)), "")); break;
+            case PengAIScript.AIScriptType.InputAction:
+                nodes.Add(new PengAIEditorNode.InputAction(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "")); break;
+            case PengAIScript.AIScriptType.ReduceDecideGap:
+                nodes.Add(new PengAIEditorNode.ReduceDecideGap(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "")); break;
+            case PengAIScript.AIScriptType.Sequence:
+                nodes.Add(new PengAIEditorNode.Sequence(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "")); break;
+            case PengAIScript.AIScriptType.Random:
+                PengAIEditorNode.Random rand = new PengAIEditorNode.Random(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "");
+                rand.ratios.Add(1);
+                nodes.Add(rand); break;
         }
     }
 }
