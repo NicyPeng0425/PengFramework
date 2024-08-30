@@ -382,7 +382,7 @@ namespace PengAIEditorNode
             InitialDraw(pos, editor);
             nodeID = id;
             outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
-            meaning = "条件节点";
+            meaning = "条件分支，从左往右执行，直到返回值为True。";
 
             inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
             outPoints = new PengAIEditorNodeConnection[outID.Count];
@@ -766,7 +766,7 @@ namespace PengAIEditorNode
             InitialDraw(pos, editor);
             nodeID = id;
             outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
-            meaning = "条件节点";
+            meaning = "序列分支，从左往右执行，直到返回值为True。";
 
             inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
             outPoints = new PengAIEditorNodeConnection[outID.Count];
