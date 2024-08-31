@@ -35,10 +35,10 @@ A framework for the development of action games.
 
 # 使用方式
 1. 创建一个URP的3D项目。
-2. 在你的项目中引入Cinemachine, AI Navigation和Input System。
+2. 在你的项目中引入Cinemachine, AI Navigation, Post Process和Input System。
 3. 将此项目克隆到Asset文件夹。例如：C:nicy/PengFrameworkSample/Asset/PengFramework
 4. 打开启动器，进行全局配置；每次更新后，建议都使用启动器更新一遍，以补全可能需要的文件夹。
-5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab
+5. 记得在场景中放置一个名为Game的Prefab，它在Assets/Resources/Managers/GameManager/Game.prefab；再在场景中放置MainVolume，检查其Volume组件中的Profile属性是否引用了同文件夹下的Profile文件（不同场景可以对其进行替换以达到不同的效果）；再为Main Camera附加Post Process Layer组件，并将组件的Layer属性修改为PostProcess。
 6. Asset/PengFramework/Prefab下若有预制体，请将其复制到应当出现的地方。例如，MainFreeLook预制体应当放在Resources/Cameras下；PlayerHPBar、EnemyHPBar、BossHPBar应当放在Resources/UIs/Universal下。MainCanvas和EventSystem则不需要额外的移动，拖入场景中即可；AirWall一般直接放置在Level的子层级即可。请勿修改任何预制体的名称、Tag、层级等信息。
 7. 可以通过角色生成器生成角色，并且配置。之后，使用关卡生成器生成关卡，并且配置其逻辑。之后，将关卡预制体拖入场景中即可。
 8. 说明：框架中的关卡，实际指代着关卡逻辑的控制器，它能够按照一个流程去等待某条件完成并执行某项操作。
