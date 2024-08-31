@@ -44,7 +44,7 @@ namespace PengScript
         PlayAudio,
         [Description("1,播放特效,表现,B,高封装")]
         PlayEffects,
-        [Description("0,尝试索敌,功能,C,高封装")]
+        [Description("1,尝试索敌,功能,C,高封装")]
         TryGetEnemy,
         [Description("1,允许转向,功能,Y,高封装")]
         AllowChangeDirection,
