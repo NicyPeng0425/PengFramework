@@ -120,6 +120,7 @@ public class PengEditorMain : EditorWindow
             AddLayer("Ground", 11);
             AddLayer("Wall", 12);
             AddLayer("AirWall", 13);
+            AddLayer("PostProcess", 14);
 
             GameObject gameManager = new GameObject();
             gameManager.name = "Game";

@@ -68,12 +68,14 @@ public partial class PengLevelEditor : EditorWindow
         if (Selection.activeTransform == null)
         {
             EditorGUILayout.HelpBox("请选择场景中的关卡对象", MessageType.Info);
+            currentSelectingGO = null;
             return;
         }
             
         if ((Selection.activeGameObject.GetComponent<PengLevel>() == null) && (Selection.activeGameObject.transform.parent.GetComponent<PengLevel>() == null))
         {
             EditorGUILayout.HelpBox("所选对象不含PengLevel组件", MessageType.Warning);
+            currentSelectingGO = null;
             return;
         }
 
