@@ -529,7 +529,6 @@ public class PengActor : MonoBehaviour
 
     public void OnDie()
     {
-        TransState("Dead", false);
         if (globalTrack != null && globalTrack.scripts.Count > 0)
         {
             for (int i = 0; i < globalTrack.scripts.Count; i++)
@@ -540,14 +539,18 @@ public class PengActor : MonoBehaviour
                 }
             }
         }
-        if (belongLevel != null)
+        if (currentHP <= 0)
         {
-            belongLevel.currentEnemy.Remove(this);
-        }
+            TransState("Dead", false);
+            if (belongLevel != null)
+            {
+                belongLevel.currentEnemy.Remove(this);
+            }
 
-        if (hpBar != null)
-        {
-            GameObject.Destroy(hpBar.gameObject);
+            if (hpBar != null)
+            {
+                GameObject.Destroy(hpBar.gameObject);
+            }
         }
     }
 
