@@ -130,6 +130,8 @@ public partial class PengLevel : MonoBehaviour
                 return new PengLevelRuntimeFunction.SetAirWall(this, ID, flowOutInfo, varInInfo, specialInfo);
             case PengLevelRuntimeFunction.LevelFunctionType.CloseAirWall:
                 return new PengLevelRuntimeFunction.CloseAirWall(this, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengLevelRuntimeFunction.LevelFunctionType.JumpToScene:
+                return new PengLevelRuntimeFunction.JumpToScene(this, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

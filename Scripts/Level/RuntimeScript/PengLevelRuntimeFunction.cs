@@ -4,9 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace PengLevelRuntimeFunction
 {
@@ -28,7 +27,7 @@ namespace PengLevelRuntimeFunction
         GenerateActor,
         [Description("1,生成敌人,功能")]
         GenerateEnemy,
-        [Description("0,跳转场景,功能")]
+        [Description("1,跳转场景,功能")]
         JumpToScene,
         [Description("1,设置主控,功能")]
         SetMainActor,
@@ -635,6 +634,49 @@ namespace PengLevelRuntimeFunction
                 return -1;
             else
                 return 0;
+        }
+    }
+
+    public class JumpToScene : BaseScript
+    {
+        public string sceneName;
+        public bool done = false;
+        public JumpToScene(PengLevel level, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.level = level;
+            this.ID = ID;
+            this.flowOutInfo = ParseStringToDictionaryIntInt(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarIDLevel(varInInfo);
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Enter()
+        {
+            done = false;
+        }
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+            type = LevelFunctionType.JumpToScene;
+            if (info != "")
+            {
+                sceneName = info;
+            }
+        }
+
+        public override void Function()
+        {
+            if (!done)
+            {
+                SceneManager.LoadScene(sceneName);
+                done = true;
+            }
+        }
+
+        public override int CheckIfDone()
+        {
+            return 0;
         }
     }
 }

@@ -269,3 +269,89 @@ public class MathStringEqual : PengNode
         }
     }
 }
+
+public class MathFourBaseCalculation : PengNode
+{
+    public PengScript.MathFourBaseCalculation.CalType calType;
+
+    public PengEditorVariables.PengFloat val1;
+    public PengEditorVariables.PengInt calTypeInt;
+    public PengEditorVariables.PengFloat val2;
+
+    public PengEditorVariables.PengFloat result;
+
+    public MathFourBaseCalculation(Vector2 pos, PengActorStateEditorWindow master, ref PengEditorTrack trackMaster, int nodeID, string outID, string varOutID, string varInID, string specialInfo)
+    {
+        InitialDraw(pos, master);
+        this.trackMaster = trackMaster;
+        this.nodeID = nodeID;
+        this.outID = ParseStringToDictionaryIntNodeIDConnectionID(outID);
+        this.varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOutID);
+        this.varInID = ParseStringToDictionaryIntNodeIDConnectionID(varInID);
+        meaning = "布尔运算。";
+        inVars = new PengEditorVariables.PengVar[3];
+        outVars = new PengEditorVariables.PengVar[1];
+
+        val1 = new PengEditorVariables.PengFloat(this, "值一", 0, ConnectionPointType.In);
+        calTypeInt = new PengEditorVariables.PengInt(this, "运算方式", 1, ConnectionPointType.In);
+        calTypeInt.value = 0;
+        val2 = new PengEditorVariables.PengFloat(this, "值二", 2, ConnectionPointType.In);
+        result = new PengEditorVariables.PengFloat(this, "结果", 0, ConnectionPointType.Out);
+        calType = PengScript.MathFourBaseCalculation.CalType.加;
+
+        inVars[0] = val1;
+        inVars[1] = calTypeInt;
+        inVars[2] = val2;
+        outVars[0] = result;
+
+        calTypeInt.point = null;
+        ReadSpecialParaDescription(specialInfo);
+        type = NodeType.Value;
+        scriptType = PengScript.PengScriptType.MathFourBaseCalculation;
+        nodeName = GetDescription(scriptType);
+
+        paraNum = 3;
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+        for (int i = 0; i < paraNum; i++)
+        {
+            if (varInID[i].nodeID < 0)
+            {
+                Rect field = new Rect(inVars[i].varRect.x + 45, inVars[i].varRect.y, 65, 18);
+                switch (i)
+                {
+                    case 0:
+                        val1.value = EditorGUI.FloatField(field, val1.value);
+                        break;
+                    case 1:
+                        calType = (PengScript.MathFourBaseCalculation.CalType)EditorGUI.EnumPopup(field, calType);
+                        calTypeInt.value = (int)calType;
+                        break;
+                    case 2:
+                        val2.value = EditorGUI.FloatField(field, val2.value);
+                        break;
+                }
+            }
+        }
+    }
+    public override string SpecialParaDescription()
+    {
+        return (val1.value.ToString()) + "," + calTypeInt.value.ToString() + "," + (val2.value.ToString());
+    }
+
+    public override void ReadSpecialParaDescription(string info)
+    {
+        if (info != "")
+        {
+            string[] str = info.Split(",");
+            val1.value = float.Parse(str[0]);
+            calTypeInt.value = int.Parse(str[1]);
+            calType = (PengScript.MathFourBaseCalculation.CalType)calTypeInt.value;
+            val2.value = float.Parse(str[2]);
+        }
+    }
+
+}

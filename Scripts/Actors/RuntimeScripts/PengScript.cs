@@ -74,16 +74,8 @@ namespace PengScript
         CameraOffset,
         [Description("0,相机Fov,表现,X,高封装")]
         CameraFOV,
-        [Description("0,加,运算,J,低封装")]
-        MathPlus,
-        [Description("0,减,运算,J,低封装")]
-        MathMinus,
-        [Description("0,乘,运算,C,低封装")]
-        MathTime,
-        [Description("0,除,运算,C,低封装")]
-        MathDivide,
-        [Description("0,平方,运算,P,低封装")]
-        MathSquare,
+        [Description("1,加减乘除,运算,J,低封装")]
+        MathFourBaseCalculation,
         [Description("1,浮点比较,运算,B,低封装")]
         MathCompare,
         [Description("1,布尔运算,运算,B,低封装")]
@@ -134,6 +126,10 @@ namespace PengScript
         OnDie,
         [Description("1,受击事件,事件,S,高封装")]
         OnHit,
+        [Description("0,开局事件,事件,K,高封装")]
+        OnBirth,
+        [Description("0,强制决策,功能,Q,高封装")]
+        ForceAIDecide,
     }
 
     public struct ScriptIDVarID

@@ -46,6 +46,8 @@ namespace PengAIScript
         Empty,
         [Description("1,序列分支,分支")]
         Sequence,
+        [Description("1,呼叫角色事件,行为")]
+        CallActorEvent,
     }
 
     public class PengAIBaseScript
@@ -611,6 +613,45 @@ namespace PengAIScript
                 cal += ratios[i];
             }
             return toReturn;
+        }
+    }
+
+    public class CallActorEvent : PengAIBaseScript
+    {
+        public string eventName;
+
+        public int intPara;
+        public float floatPara;
+        public string strPara;
+        public bool boolPara;
+        public CallActorEvent(PengActorControl ai, int ID, string flowOutInfo, string specialInfo)
+        {
+            this.ai = ai;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntInt(flowOutInfo);
+            Construct(specialInfo);
+        }
+
+        public override void Construct(string info)
+        {
+            base.Construct(info);
+
+            if (info != "")
+            {
+                string[] str = info.Split(",");
+                eventName = str[0];
+                intPara = int.Parse(str[1]);
+                floatPara = float.Parse(str[2]);
+                strPara = str[3];
+                boolPara = int.Parse(str[4]) > 0;
+            }
+
+            type = AIScriptType.CallActorEvent;
+        }
+
+        public override void Function()
+        {
+            ai.actor.game.eventManager.TriggerEvent(eventName, intPara, floatPara, strPara, boolPara);
         }
     }
 }

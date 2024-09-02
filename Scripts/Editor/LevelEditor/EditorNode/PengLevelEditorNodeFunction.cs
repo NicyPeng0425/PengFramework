@@ -368,4 +368,44 @@ namespace PengLevelEditorNodes
             paraNum = 1;
         }
     }
+
+    public class JumpToScene : PengLevelEditorNode
+    {
+        public PengLevelString sceneName;
+        public JumpToScene(Vector2 pos, PengLevelEditor master, int id, string flowOut, string varOut, string varIn, string specialInfo)
+        {
+            InitialDraw(pos, master);
+            nodeID = id;
+            outID = ParseStringToDictionaryIntNodeIDConnectionID(flowOut);
+            varOutID = ParseStringToDictionaryIntListNodeIDConnectionID(varOut);
+            varInID = ParseStringToDictionaryIntNodeIDConnectionID(varIn);
+            meaning = "跳转场景。";
+
+            inPoints = new PengLevelNodeConnection[1];
+            inPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowIn, 0, this, null);
+            outPoints = new PengLevelNodeConnection[1];
+            outPoints[0] = new PengLevelNodeConnection(PengLevelNodeConnection.PengLevelNodeConnectionType.FlowOut, 0, this, null);
+            inVars = new PengLevelNodeVariables[1];
+            sceneName = new PengLevelString(this, "场景名称", 0, PengLevelNodeConnection.PengLevelNodeConnectionType.VarIn);
+            inVars[0] = sceneName;
+            sceneName.point = null;
+            outVars = new PengLevelNodeVariables[0];
+
+            type = PengLevelRuntimeFunction.LevelFunctionType.JumpToScene;
+            nodeType = LevelNodeType.Function;
+            name = GetDescription(type);
+            sceneName.value = specialInfo;
+            paraNum = 1;
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return sceneName.value;
+        }
+
+        public override void DrawInVarValue(int inVarID, Rect field)
+        {
+            sceneName.value = EditorGUI.TextField(field, sceneName.value);
+        }
+    }
 }

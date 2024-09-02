@@ -265,6 +265,8 @@ public class PengActorState : IPengActorState
                 return new TryGetEnemy(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
             case PengScriptType.PerfectDodge:
                 return new PerfectDodge(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
+            case PengScriptType.MathFourBaseCalculation:
+                return new MathFourBaseCalculation(actor, track, ID, flowOutInfo, varInInfo, specialInfo);
         }
     }
 }

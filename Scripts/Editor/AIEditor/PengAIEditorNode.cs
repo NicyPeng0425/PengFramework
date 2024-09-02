@@ -997,4 +997,85 @@ namespace PengAIEditorNode
             }
         }
     }
+
+    public class CallActorEvent : PengAIEditorNode
+    {
+        public string eventName;
+
+        public int intPara;
+        public float floatPara;
+        public string strPara;
+        public bool boolPara;
+        public CallActorEvent(Vector2 pos, PengAIEditor editor, int id, string flowOut, string info)
+        {
+            InitialDraw(pos, editor);
+            nodeID = id;
+            outID = PengGameManager.ParseStringToDictionaryIntInt(flowOut);
+            meaning = "发出一个事件以使角色全局节点图上的某个事件执行。";
+
+            inPoint = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.In, 0, this);
+            outPoints = new PengAIEditorNodeConnection[1];
+            outPoints[0] = new PengAIEditorNodeConnection(PengAIEditorNodeConnection.AINodeConnectionType.Out, 0, this);
+            ReadSpecialParaDescription(info);
+            type = PengAIScript.AIScriptType.CallActorEvent;
+            nodeType = PengAIEditorNodeType.Action;
+            name = GetDescription(type);
+        }
+        public override void Draw()
+        {
+            base.Draw();
+            Rect newRect = new Rect(rect.x, rect.y + 0.5f * rect.height, rect.width, 0.5f * rect.height);
+            GUI.Box(newRect, eventName);
+        }
+
+        public override string SpecialParaDescription()
+        {
+            return eventName + "," + intPara.ToString() + "," + floatPara.ToString() + "," + strPara + ","  + (boolPara? "1" : "0");
+        }
+
+        public override void ReadSpecialParaDescription(string info)
+        {
+            if (info != "")
+            {
+                string[] str = info.Split(",");
+                eventName = str[0];
+                intPara = int.Parse(str[1]);
+                floatPara = float.Parse(str[2]);
+                strPara = str[3];
+                boolPara = int.Parse(str[4]) > 0;
+            }
+        }
+
+        public override void DrawSideBar(Rect sidebar)
+        {
+            base.DrawSideBar(sidebar);
+            GUIStyle style = new GUIStyle("Box");
+            style.wordWrap = true;
+            style.alignment = TextAnchor.MiddleLeft;
+            Rect rect = new Rect(sidebar.x + 5, sidebar.y + 90, sidebar.width, 20);
+            Rect rect2 = new Rect(rect.x + 80, rect.y, rect.width - 90, 20);
+            GUI.Box(rect, "事件名称：", style);
+            eventName = EditorGUI.TextField(rect2, eventName);
+
+            Rect rect3 = new Rect(sidebar.x + 5, sidebar.y + 125, sidebar.width, 20);
+            Rect rect4 = new Rect(rect3.x + 80, rect3.y, rect3.width - 90, 20);
+            GUI.Box(rect3, "整型参数：", style);
+            intPara = EditorGUI.IntField(rect4, intPara);
+
+            Rect rect5 = new Rect(sidebar.x + 5, sidebar.y + 150, sidebar.width, 20);
+            Rect rect6 = new Rect(rect5.x + 80, rect5.y, rect5.width - 90, 20);
+            GUI.Box(rect5, "整型参数：", style);
+            floatPara = EditorGUI.FloatField(rect6, floatPara);
+
+            Rect rect7 = new Rect(sidebar.x + 5, sidebar.y + 175, sidebar.width, 20);
+            Rect rect8 = new Rect(rect7.x + 80, rect7.y, rect7.width - 90, 20);
+            GUI.Box(rect7, "整型参数：", style);
+            strPara = EditorGUI.TextField(rect8, strPara);
+
+            Rect rect9 = new Rect(sidebar.x + 5, sidebar.y + 200, sidebar.width, 20);
+            Rect rect10 = new Rect(rect9.x + 80, rect9.y, rect9.width - 90, 20);
+            GUI.Box(rect9, "整型参数：", style);
+            boolPara = EditorGUI.Toggle(rect10, boolPara);
+        }
+    }
 }

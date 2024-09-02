@@ -293,5 +293,107 @@ namespace PengScript
             }
         }
     }
+
+    public class MathFourBaseCalculation : BaseScript
+    {
+        public enum CalType
+        {
+            加 = 0,
+            减 = 1,
+            乘 = 2,
+            除 = 3,
+        }
+
+        public PengFloat val1 = new PengFloat("值一", 0, ConnectionPointType.In);
+        public PengInt calTypeInt = new PengInt("运算方式", 1, ConnectionPointType.In);
+        public PengFloat val2 = new PengFloat("值二", 2, ConnectionPointType.In);
+
+        public CalType calType;
+
+        public PengFloat result = new PengFloat("结果", 0, ConnectionPointType.Out);
+        public MathFourBaseCalculation(PengActor actor, PengTrack track, int ID, string flowOutInfo, string varInInfo, string specialInfo)
+        {
+            this.actor = actor;
+            this.trackMaster = track;
+            this.ID = ID;
+            this.flowOutInfo = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(flowOutInfo);
+            this.varInID = PengGameManager.ParseStringToDictionaryIntScriptIDVarID(varInInfo);
+            inVars = new PengVar[varInID.Count];
+            outVars = new PengVar[1];
+            Construct(specialInfo);
+            InitialPengVars();
+        }
+
+        public override void Construct(string specialInfo)
+        {
+            type = PengScriptType.MathFourBaseCalculation;
+            scriptName = GetDescription(type);
+            inVars[0] = val1;
+            inVars[1] = calTypeInt;
+            inVars[2] = val2;
+            outVars[0] = result;
+            if (specialInfo != "")
+            {
+                string[] str = specialInfo.Split(",");
+                val1.value = float.Parse(str[0]);
+                calTypeInt.value = int.Parse(str[1]);
+                calType = (CalType)calTypeInt.value;
+                val1.value = float.Parse(str[2]);
+            }
+        }
+
+        public override void GetValue()
+        {
+            base.GetValue();
+            if (varInID.Count > 0 && inVars.Length > 0)
+            {
+                for (int i = 0; i < varInID.Count; i++)
+                {
+                    if (varInID.ElementAt(i).Value.scriptID > 0)
+                    {
+                        PengVar vari = trackMaster.GetOutPengVarByScriptIDPengVarID(varInID.ElementAt(i).Value.scriptID, varInID.ElementAt(i).Value.varID);
+                        vari.script.GetValue();
+                        SetValue(i, vari);
+                    }
+                }
+            }
+            switch (calType)
+            {
+                case CalType.加:
+                    result.value = val1.value + val2.value;
+                    break;
+                case CalType.减:
+                    result.value = val1.value - val2.value;
+                    break;
+                case CalType.乘:
+                    result.value = val1.value * val2.value;
+                    break;
+                case CalType.除:
+                    result.value = val1.value / val2.value;
+                    break;
+            }
+        }
+
+        public override void SetValue(int inVarID, PengVar varSource)
+        {
+            base.SetValue(inVarID, varSource);
+            switch (inVarID)
+            {
+                case 0:
+                    PengFloat pb1 = varSource as PengFloat;
+                    val1.value = pb1.value;
+                    break;
+                case 1:
+                    PengInt pi = varSource as PengInt;
+                    calTypeInt.value = pi.value;
+                    calType = (CalType)calTypeInt.value;
+                    break;
+                case 2:
+                    PengFloat pb2 = varSource as PengFloat;
+                    val2.value = pb2.value;
+                    break;
+            }
+        }
+    }
 }
 

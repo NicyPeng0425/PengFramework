@@ -43,6 +43,8 @@ public partial class PengAIEditor : EditorWindow
                 return new PengAIEditorNode.Sequence(pos, editor, ID, outID, specialInfo);
             case PengAIScript.AIScriptType.Random:
                 return new PengAIEditorNode.Random(pos, editor, ID, outID, specialInfo);
+            case PengAIScript.AIScriptType.CallActorEvent:
+                return new PengAIEditorNode.CallActorEvent(pos, editor, ID, outID, specialInfo);
         }
     }
     private void ProcessAddNode(Vector2 mousePos, PengAIScript.AIScriptType type)
@@ -90,6 +92,8 @@ public partial class PengAIEditor : EditorWindow
                 PengAIEditorNode.Random rand = new PengAIEditorNode.Random(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(1)), "");
                 rand.ratios.Add(1);
                 nodes.Add(rand); break;
+            case PengAIScript.AIScriptType.CallActorEvent:
+                nodes.Add(new PengAIEditorNode.CallActorEvent(mousePos, this, id, PengGameManager.ParseDictionaryIntIntToString(PengGameManager.DefaultDictionaryIntInt(0)), "")); break;
         }
     }
 }

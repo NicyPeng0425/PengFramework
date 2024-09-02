@@ -146,6 +146,8 @@ public partial class PengActorControl : MonoBehaviour
                 return new PengAIScript.Sequence(this, ID, flowOutInfo, specialInfo);
             case PengAIScript.AIScriptType.Random:
                 return new PengAIScript.Random(this, ID, flowOutInfo, specialInfo);
+            case PengAIScript.AIScriptType.CallActorEvent:
+                return new PengAIScript.CallActorEvent(this, ID, flowOutInfo, specialInfo);
         }
     }
 }

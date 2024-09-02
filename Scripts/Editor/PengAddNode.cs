@@ -102,6 +102,8 @@ public partial class PengActorStateEditorWindow : EditorWindow
                 return new TryGetEnemy(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
             case PengScript.PengScriptType.PerfectDodge:
                 return new PerfectDodge(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
+            case PengScript.PengScriptType.MathFourBaseCalculation:
+                return new MathFourBaseCalculation(pos, null, ref track, ID, outID, varOutID, varInID, specialInfo);
         }
     }
 
@@ -367,6 +369,12 @@ public partial class PengActorStateEditorWindow : EditorWindow
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
                     PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(0)),
                     PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(2)), ""));
+                break;
+            case PengScript.PengScriptType.MathFourBaseCalculation:
+                track.nodes.Add(new MathFourBaseCalculation(mousePos, this, ref track, id,
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntListNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntListNodeIDConnectionID(1)),
+                    PengNode.ParseDictionaryIntNodeIDConnectionIDToString(PengNode.DefaultDictionaryIntNodeIDConnectionID(3)), ""));
                 break;
         }
     }
